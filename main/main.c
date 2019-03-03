@@ -42,6 +42,14 @@ void app_main(){
     xTaskCreate(&main_task, "MainTask", 1024, NULL, configMAX_PRIORITIES - 1, NULL);
     //xTaskCreate(&sensor_task, "SensorTask", 512, NULL, configMAX_PRIORITIES, NULL);
 
+    pid_config conf = {
+        .kp = 5,
+        .kd = 0,
+        .ki = 69,
+        .absMax = 420
+    };
+    pid_update(&conf, 42.0, 32.0, 33.0);
+
     /*
     max - 1 sensor read - small stack size (or big due to buffering?), biggest priority, 
     max - 2 main task (maths, etc) - big stack size, large priority
