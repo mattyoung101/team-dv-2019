@@ -50,6 +50,10 @@ void app_main(){
     };
     pid_update(&conf, 42.0, 32.0, 33.0);
 
+    motor_init_pins();
+    motor_calc(30, 40, 8);
+    motor_move();
+
     /*
     max - 1 sensor read - small stack size (or big due to buffering?), biggest priority, 
     max - 2 main task (maths, etc) - big stack size, large priority

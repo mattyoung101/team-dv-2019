@@ -27,7 +27,7 @@ void motor_init_pins(){
     ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
 }
 
-void motor_calc(int16_t angle, int16_t direction, int16_t speed){
+void motor_calc(int16_t angle, int16_t direction, int8_t speed){
     // TODO cast required?
     float radAngle = DEG_RAD * (float) angle;
 
@@ -54,7 +54,7 @@ void motor_calc(int16_t angle, int16_t direction, int16_t speed){
 void motor_write_controller(int8_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
     bool reversed, bool brake){        
         // set PWM value using LEDC
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, 0, 255)));
+        ESP_ERROR_CHECK(ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255)));
         ESP_ERROR_CHECK(ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0));
         
         // TODO refactor this method
@@ -85,4 +85,8 @@ void motor_write_controller(int8_t speed, gpio_num_t inOnePin, gpio_num_t inTwoP
                 ESP_ERROR_CHECK(gpio_set_level(pwmPin, 1));
             }
         }
+}
+
+void motor_move(void){
+
 }
