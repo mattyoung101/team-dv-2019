@@ -1,7 +1,7 @@
 #include "motor.h"
 
-void motor_init_pins(){
-    // TODO do we actually need all these error check calls
+void motor_init_pins(void){
+    // error check these gpio sets because if these failed, we're screwed
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_PWM, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN2, GPIO_MODE_OUTPUT));
@@ -52,41 +52,51 @@ void motor_calc(int16_t angle, int16_t direction, int8_t speed){
 }
 
 void motor_write_controller(int8_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
-    bool reversed, bool brake){        
+    bool reversed, bool brake){
+        /*
+         * note that while technically all these calls to gpio_XYZ can return an error,
+         * we don't run ESP_ERROR_CHECK on them because quite frankly we don't care
+         * and it's not worth bringing down the entire device because some GPIO port stopped working
+         * if the motors don't move it doesn't matter, but if the motors don't init correctly, it DOES matter
+         */   
+
         // set PWM value using LEDC
-        ESP_ERROR_CHECK(ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255)));
-        ESP_ERROR_CHECK(ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0));
+        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255));
+        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
         
-        // TODO refactor this method
+        // TODO refactor this section
         if (speed > 0){
             if (reversed){
-                ESP_ERROR_CHECK(gpio_set_level(inOnePin, 1));
-                ESP_ERROR_CHECK(gpio_set_level(inTwoPin, 0));
+                gpio_set_level(inOnePin, 1);
+                gpio_set_level(inTwoPin, 0);
             } else {
-                ESP_ERROR_CHECK(gpio_set_level(inOnePin, 0));
-                ESP_ERROR_CHECK(gpio_set_level(inTwoPin, 1));
+                gpio_set_level(inOnePin, 0);
+                gpio_set_level(inTwoPin, 1);
             }
         } else if (speed < 0){
             if (reversed){
-                ESP_ERROR_CHECK(gpio_set_level(inOnePin, 0));
-                ESP_ERROR_CHECK(gpio_set_level(inTwoPin, 1));
+                gpio_set_level(inOnePin, 0);
+                gpio_set_level(inTwoPin, 1);
             } else {
-                ESP_ERROR_CHECK(gpio_set_level(inOnePin, 1));
-                ESP_ERROR_CHECK(gpio_set_level(inTwoPin, 0));
+                gpio_set_level(inOnePin, 1);
+                gpio_set_level(inTwoPin, 0);
             }
         } else {
             if (brake){
-                ESP_ERROR_CHECK(gpio_set_level(inOnePin, 0));
-                ESP_ERROR_CHECK(gpio_set_level(inTwoPin, 0));
-                ESP_ERROR_CHECK(gpio_set_level(pwmPin, 1));
+                gpio_set_level(inOnePin, 0);
+                gpio_set_level(inTwoPin, 0);
+                gpio_set_level(pwmPin, 1);
             } else {
-                ESP_ERROR_CHECK(gpio_set_level(inOnePin, 1));
-                ESP_ERROR_CHECK(gpio_set_level(inTwoPin, 1));
-                ESP_ERROR_CHECK(gpio_set_level(pwmPin, 1));
+                gpio_set_level(inOnePin, 1);
+                gpio_set_level(inTwoPin, 1);
+                gpio_set_level(pwmPin, 1);
             }
         }
 }
 
-void motor_move(void){
-
+void motor_move(bool brake){
+    motor_write_controller(flmotor_pwm, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, brake);
+    motor_write_controller(frmotor_pwm, MOTOR_FR_IN1, MOTOR_FR_IN2, MOTOR_FR_PWM, MOTOR_FR_REVERSED, brake);
+    motor_write_controller(blmotor_pwm, MOTOR_BL_IN1, MOTOR_BL_IN2, MOTOR_BL_PWM, MOTOR_BL_REVERSED, brake);
+    motor_write_controller(brmotor_pwm, MOTOR_BR_IN1, MOTOR_BR_IN2, MOTOR_BR_PWM, MOTOR_BR_REVERSED, brake);
 }

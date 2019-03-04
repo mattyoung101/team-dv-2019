@@ -10,6 +10,9 @@
 #define CONF_LOG_LEVEL ESP_LOG_INFO
 #define CONF_BAUD 9600
 
+// ADC
+#define ADC_SAMPLES 32
+
 // WiFi
 #define CONF_WIFI_SSID "Deus Vult Robot"
 #define CONF_WIFI_PASS "ClapInts123"
@@ -48,3 +51,8 @@
 #define MOTOR_BR_REVERSED true
 #define ENC_BR_IN1 7
 #define ENC_BR_IN2 6
+
+// Light sensor
+#define LS_CALIBRATION_COUNT 10
+#define LS_CALIBRATION_BUFFER 300
+#define LS_NUM 24

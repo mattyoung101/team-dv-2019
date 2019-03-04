@@ -9,6 +9,7 @@
 #include <math.h>
 #include "pid.h"
 #include "motor.h"
+#include "light.h"
 
 void main_task(void *pvParameter){
     // should be the same as xTaskCreate pcName
@@ -36,11 +37,11 @@ void app_main(){
     nvs_flash_init();
     // set log level for all loggers to the one we specified, TODO only for our loggers?
     esp_log_level_set("*", CONF_LOG_LEVEL);
-    uart_set_baudrate(UART_NUM_0, CONF_BAUD);
+    // uart_set_baudrate(UART_NUM_0, CONF_BAUD);
 
     // run the tasks
     xTaskCreate(&main_task, "MainTask", 1024, NULL, configMAX_PRIORITIES - 1, NULL);
-    //xTaskCreate(&sensor_task, "SensorTask", 512, NULL, configMAX_PRIORITIES, NULL);
+    // xTaskCreate(&sensor_task, "SensorTask", 512, NULL, configMAX_PRIORITIES, NULL);
 
     pid_config conf = {
         .kp = 5,
@@ -50,9 +51,14 @@ void app_main(){
     };
     pid_update(&conf, 42.0, 32.0, 33.0);
 
+    // Initialise hardware
+    // TODO do this in the main task???
     motor_init_pins();
-    motor_calc(30, 40, 8);
-    motor_move();
+    ls_init_adc();
+
+    ls_cluster *myCluster = cluster_new(3.0f, 1);
+    ls_cluster *myCluster2 = cluster_new(6.9f, 2);
+    cluster_add_cluster(myCluster, myCluster2);
 
     /*
     max - 1 sensor read - small stack size (or big due to buffering?), biggest priority, 

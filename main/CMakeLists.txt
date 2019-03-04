@@ -3,8 +3,10 @@ set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
 set(COMPONENT_SRCS "main.c"
-                    "motor.c"
+                   "utils.c"
+                   "motor.c"
                    "pid.c"
+                   "light.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 

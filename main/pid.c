@@ -1,11 +1,11 @@
 #include "pid.h"
 
-float pid_update(pid_config* conf, float input, float setpoint, float modulus){
+float pid_update(pid_config *conf, float input, float setpoint, float modulus){
     float derivative;
     float error = setpoint - input;
 
     int64_t currentTime = esp_timer_get_time();
-    float elapsedTime = (float) (currentTime - lastTime) / 1000000.0;
+    float elapsedTime = (float) (currentTime - lastTime) / 1000000.0f;
     lastTime = currentTime;
 
     integral += lastTime * error;
