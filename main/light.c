@@ -1,7 +1,6 @@
 #include "light.h"
 
 ////////// LIGHT SENSOR //////////
-
 void ls_init_adc(void){
     // Teensy ADC is 10 bit
     adc1_config_width(ADC_WIDTH_BIT_12);
@@ -37,16 +36,6 @@ bool ls_on_white(light_sensor *ls){
 }
 
 ///////// CLUSTER ////////
-ls_cluster *cluster_new(float centre, int32_t length){
-    // cheeky malloc with the boys (otherwise the variable is destroyed when this function goes out of scope)
-    ls_cluster *cluster = (ls_cluster*) malloc(sizeof(ls_cluster)); 
-    cluster->centre = centre;
-    cluster->length = length;
-
-    cluster_update_left_right(cluster);
-    return cluster;
-}
-
 void cluster_update_left_right(ls_cluster *cluster){
     cluster->leftSensor = mod(cluster->centre - ((cluster->length - 1) / 2.0f), LS_NUM);
     cluster->rightSensor = mod(cluster->centre + ((cluster->length - 1) / 2.0f), LS_NUM);
@@ -78,7 +67,17 @@ void cluster_add_cluster(ls_cluster *cluster1, ls_cluster *cluster2){
     cluster_update_length_centre(cluster1);
 }
 
+void cluster_reset(ls_cluster *cluster){
+    cluster->centre = 0.0f;
+    cluster->length = 0;
+
+    cluster_update_left_right(cluster);
+}
+
 ////////// LIGHT SENSOR ARRAY //////////
+gpio_num_t lsPins[LS_NUM] = {LS_0, LS_1, LS_2, LS_3, LS_4, LS_5, LS_6, LS_7, LS_8, LS_9, LS_10, LS_11, LS_12, 
+                            LS_13, LS_14, LS_15, LS_16, LS_17, LS_18, LS_19, LS_20, LS_21, LS_22, LS_23};
+
 void lsarray_init(void){
     for (int i = 0; i < LS_NUM; i++){
         light_sensor* sensor = (light_sensor*) malloc(sizeof(light_sensor));
@@ -86,10 +85,31 @@ void lsarray_init(void){
         sensor->pin = lsPins[i];
         ls_init(sensors[i]);
     }
+
+    cluster_reset(&cluster1);
+    cluster_reset(&cluster2);
+    cluster_reset(&cluster3);
 }
 
 void lsarray_read(void){
     for (int i = 0; i < LS_NUM; i++){
         data[i] = ls_on_white(sensors[i]);
     }
+}
+
+// in real code, doneFillInSensors is always false, so we just assume it will always be false
+void lsarray_calc_clusters(){
+    lsarray_reset_clusters();
+
+    bool cluster1Done = false;
+    bool cluster2Done = false;
+    bool cluster3Done = false;
+
+    ls_cluster cluster4;
+}
+
+void lsarray_reset_clusters(void){
+    cluster_reset(&cluster1);
+    cluster_reset(&cluster2);
+    cluster_reset(&cluster3);
 }

@@ -1,6 +1,9 @@
 #pragma once
 #include "esp_log.h"
 
+// Timers
+#define TIMER_TSOP 1
+
 // Maths
 #define PI 3.14159265358979323846
 #define DEG_RAD 0.017453292519943295
@@ -8,15 +11,15 @@
 
 // Logging
 #define CONF_LOG_LEVEL ESP_LOG_INFO
-#define CONF_BAUD 9600
+#define BAUD 9600
 
 // ADC
 #define ADC_SAMPLES 32
 
 // WiFi
-#define CONF_WIFI_SSID "Deus Vult Robot"
-#define CONF_WIFI_PASS "ClapInts123"
-#define CONF_WIFI_MAXCON 2
+#define WIFI_SSID "Deus Vult Robot"
+#define WIFI_PASS "ClapInts123"
+#define WIFI_MAXCON 2
 
 // Pins
 // Motors and Encoders
@@ -56,3 +59,51 @@
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 300
 #define LS_NUM 24
+
+#define LS_0 0
+#define LS_1 0
+#define LS_2 0
+#define LS_3 0
+#define LS_4 0
+#define LS_5 0
+#define LS_6 0
+#define LS_7 0
+#define LS_8 0
+#define LS_9 0
+#define LS_10 0
+#define LS_11 0
+#define LS_12 0
+#define LS_13 0
+#define LS_14 0
+#define LS_15 0
+#define LS_16 0
+#define LS_17 0
+#define LS_18 0
+#define LS_19 0
+#define LS_20 0
+#define LS_21 0
+#define LS_22 0
+#define LS_23 0
+
+// TSOPs
+// TODO update these pins
+#define TSOP_NUM 24
+#define TSOP_PWR_1 30
+#define TSOP_PWR_2 29
+#define TSOP_PWR_3 28
+
+#define TSOP_0 1
+#define TSOP_1 5
+#define TSOP_2 7
+#define TSOP_3 9
+#define TSOP_4 25
+#define TSOP_5 27
+#define TSOP_6 26
+#define TSOP_7 24
+#define TSOP_8 8
+#define TSOP_9 6
+#define TSOP_10 2
+#define TSOP_11 0
+
+#define TSOP_TIMER_PERIOD 4
+#define TSOP_NO_BALL_ANGLE 420

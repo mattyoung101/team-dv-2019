@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/timers.h"
 #include "defines.h"
 #include "esp_system.h"
 #include "esp_log.h"
@@ -10,10 +11,20 @@
 #include "pid.h"
 #include "motor.h"
 #include "light.h"
+#include "tsop.h"
+#include <str.h>
 
-void main_task(void *pvParameter){
+// note: portTICK_PERIOD_MS is equivalent to 1000 / 100 = 10
+
+void master_task(void *pvParameter){
     // should be the same as xTaskCreate pcName
-    static const char *TAG = "MainTask";
+    static const char *TAG = "MasterTask";
+
+    // Initialise hardware
+    motor_init_pins();
+    ls_init_adc();
+    lsarray_init();
+    tsop_init();
 
     while (true){
         // esp logging uses printf internally, which prints to UART0, which should already be initialised
@@ -25,45 +36,56 @@ void main_task(void *pvParameter){
     }
 }
 
-void sensor_task(void *pvParameter){
-    static const char *TAG = "SensorTask";
+void slave_task(void *pvParameter){
+    //static const char *TAG = "SlaveTask";
     
     while (true){
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
+// can be used by multiple timer instances
+void timer_callback(TimerHandle_t timer){
+    uint32_t timerId = (uint32_t) pvTimerGetTimerID(timer);
+    if (timerId == TIMER_TSOP){
+        tsop_read();
+        lsarray_read();
+        lsarray_calc_clusters();
+        // TODO lsarray_calc_line();
+        // time is automatically reset here
+    } else {
+        ESP_LOGW("TimerCallback", "Unknown timer ID.");
+    }
+}
+
 void app_main(){
-    nvs_flash_init();
-    // set log level for all loggers to the one we specified, TODO only for our loggers?
     esp_log_level_set("*", CONF_LOG_LEVEL);
-    // uart_set_baudrate(UART_NUM_0, CONF_BAUD);
 
-    // run the tasks
-    xTaskCreate(&main_task, "MainTask", 1024, NULL, configMAX_PRIORITIES - 1, NULL);
-    // xTaskCreate(&sensor_task, "SensorTask", 512, NULL, configMAX_PRIORITIES, NULL);
+    // Initialize NVS
+    esp_err_t err = nvs_flash_init();
+    if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+        ESP_LOGI("AppMain", "Reflashing NVS");
+        // NVS partition was truncated and needs to be erased
+        // Retry nvs_flash_init
+        ESP_ERROR_CHECK(nvs_flash_erase());
+        err = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(err);
 
-    pid_config conf = {
-        .kp = 5,
-        .kd = 0,
-        .ki = 69,
-        .absMax = 420
-    };
-    pid_update(&conf, 42.0, 32.0, 33.0);
+    // run the tasks, either master task or slave task should be running but not both
+    // TODO must be pinned to core 1 for float hardware acceleration
+    xTaskCreate(&master_task, "MasterTask", 1024, NULL, configMAX_PRIORITIES, NULL);
+    
+    // tsop tick period is dank, it's in Us so we convert it to ms and convert that into ticks
+    int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
+    TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", (periodUs / 1000) / portTICK_PERIOD_MS, pdTRUE, (void*) TIMER_TSOP, 
+                                timer_callback);
+    xTimerStart(tsopTimer, 0);
+    
+    // FreeRTOS will now have full control over the device and which task runs
+    vTaskStartScheduler();
 
-    // Initialise hardware
-    // TODO do this in the main task???
-    motor_init_pins();
-    ls_init_adc();
-
-    ls_cluster *myCluster = cluster_new(3.0f, 1);
-    ls_cluster *myCluster2 = cluster_new(6.9f, 2);
-    cluster_add_cluster(myCluster, myCluster2);
-
-    /*
-    max - 1 sensor read - small stack size (or big due to buffering?), biggest priority, 
-    max - 2 main task (maths, etc) - big stack size, large priority
-    max - 4 wifi thread
-    max - 6 OTA thread? (make sure to queue update if in game mode, log Rejecting update, game in progress.)
-    */
+    // docs show that if we reach this point something must've gone wrong (insufficient RAM)
+    ESP_LOGE("AppMain", "Illegal state: vTaskStartScheduler returned");
+    abort();
 }

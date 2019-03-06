@@ -27,16 +27,21 @@ typedef struct {
     int16_t rightSensor;
 } ls_cluster;
 
-ls_cluster *cluster_new(float centre, int length);
 void cluster_update_left_right(ls_cluster *cluster);
 void cluster_update_length_centre(ls_cluster *cluster);
+/** Adds two clusters, storing the result in cluster1 **/
 void cluster_add_cluster(ls_cluster *cluster1, ls_cluster *cluster2);
+void cluster_reset(ls_cluster *cluster);
 
-light_sensor* sensors[LS_NUM];
-bool data[LS_NUM];
+static light_sensor *sensors[LS_NUM];
+// TODO rename this
+static bool data[LS_NUM];
 bool filledInData[LS_NUM];
-// TODO do we need to call init on these? shouldn't think so
-ls_cluster cluster1, cluster2, cluster3;
+static ls_cluster cluster1, cluster2, cluster3;
+extern gpio_num_t lsPins[LS_NUM];
 
 void lsarray_init(void);
 void lsarray_read(void);
+void lsarray_calc_clusters();
+void lsarray_fill_in_sensors();
+void lsarray_reset_clusters(void);

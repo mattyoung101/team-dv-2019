@@ -25,16 +25,28 @@ void motor_init_pins(void){
         .timer_num = LEDC_TIMER_0            
     };
     ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
+
+    // Now that we've got the timer running, set up the channel output
+    ledc_channel_config_t ledc_channel = {
+        .channel    = LEDC_CHANNEL_0, // TODO which channel?
+        .duty       = 0,
+        .gpio_num   = 69, // TODO GPIO pin here
+        .speed_mode = LEDC_HIGH_SPEED_MODE,
+        .hpoint     = 0,
+        .timer_sel  = LEDC_TIMER_0
+    };
+    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
+
+    // now the PWM channel is generating signal, but because the duty is set to 0 it shouldn't in theory do anything
 }
 
 void motor_calc(int16_t angle, int16_t direction, int8_t speed){
-    // TODO cast required?
     float radAngle = DEG_RAD * (float) angle;
 
-    pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90) * DEG_RAD) - radAngle);
-    pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90) * DEG_RAD) - radAngle);
-    pwmValues[2] = cosf(((MOTOR_BL_ANGLE + 90) * DEG_RAD) - radAngle);
-    pwmValues[3] = cosf(((MOTOR_BR_ANGLE + 90) * DEG_RAD) - radAngle);
+    pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
+    pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
+    pwmValues[2] = cosf(((MOTOR_BL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
+    pwmValues[3] = cosf(((MOTOR_BR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
 
     flmotor_pwm = speed * pwmValues[0] + direction;
     frmotor_pwm = speed * pwmValues[1] + direction;
