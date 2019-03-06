@@ -16,3 +16,5 @@
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
 int number_comparator_descending(const void *a, const void *b);
+float angleBetween(float angleCounterClockwise, float angleClockwise);
+float midAngleBetween(float angleCounterClockwise, float angleClockwise);

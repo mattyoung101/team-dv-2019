@@ -59,6 +59,8 @@
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 300
 #define LS_NUM 24
+#define LS_NO_LINE_ANGLE 0xBAD
+#define LS_NO_LINE_SIZE 0xBAD
 
 #define LS_0 0
 #define LS_1 0
@@ -106,4 +108,4 @@
 #define TSOP_11 0
 
 #define TSOP_TIMER_PERIOD 4
-#define TSOP_NO_BALL_ANGLE 420
+#define TSOP_NO_BALL_ANGLE 0xBAD

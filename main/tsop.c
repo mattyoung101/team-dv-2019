@@ -50,7 +50,7 @@ void tsop_update_once(void){
 }
 
 // same as TSOPArray.finishRead()
-void tsop_read(void){
+void tsop_process(void){
     for (int i = 0; i < TSOP_NUM; i++){
         tsopValues[i] = 100.0f * (float) tempValues[i] / (float) tsopCounter;
         tempValues[i] = 0;

@@ -11,5 +11,15 @@ float floatMod(float x, float m) {
 }
 
 int number_comparator_descending(const void *a, const void *b){
+    // descending order so b - a
     return (*(int*)b - *(int*)a);
+}
+
+float angleBetween(float angleCounterClockwise, float angleClockwise){
+    return mod(angleClockwise - angleCounterClockwise, 360);
+}
+
+float midAngleBetween(float angleCounterClockwise, float angleClockwise){
+    float ang = angleBetween(angleCounterClockwise, angleClockwise);
+    return fminf(ang, 360 - ang);
 }

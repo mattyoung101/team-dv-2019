@@ -17,7 +17,7 @@ float blmotor_pwm;
 float brmotor_pwm;
 
 /** Initialies motor pin direction **/
-void motor_init_pins(void);
+void motor_init(void);
 /** Calculates PWM values for each motor **/
 void motor_calc(int16_t angle, int16_t direction, int8_t speed);
 /** Handles writing to the motor controller **/

@@ -21,25 +21,30 @@ void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
 
     // Initialise hardware
-    motor_init_pins();
-    ls_init_adc();
-    lsarray_init();
-    tsop_init();
+    motor_init();
 
     while (true){
-        // esp logging uses printf internally, which prints to UART0, which should already be initialised
-        // at this time
         ESP_LOGI(TAG, "Hello info!");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         ESP_LOGW(TAG, "Hello warning!");
         vTaskDelay(1000 / portTICK_PERIOD_MS);
+
+        /*
+        loop will be like:
+        1. check mailbox (xTaskNotify notification bit) and process it
+        */
     }
 }
 
 void slave_task(void *pvParameter){
     //static const char *TAG = "SlaveTask";
+
+    ls_init_adc();
+    lsarray_init();
+    tsop_init();
     
     while (true){
+        tsop_update_once();
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
@@ -47,8 +52,9 @@ void slave_task(void *pvParameter){
 // can be used by multiple timer instances
 void timer_callback(TimerHandle_t timer){
     uint32_t timerId = (uint32_t) pvTimerGetTimerID(timer);
+
     if (timerId == TIMER_TSOP){
-        tsop_read();
+        tsop_process();
         lsarray_read();
         lsarray_calc_clusters();
         // TODO lsarray_calc_line();
@@ -72,9 +78,10 @@ void app_main(){
     }
     ESP_ERROR_CHECK(err);
 
-    // run the tasks, either master task or slave task should be running but not both
-    // TODO must be pinned to core 1 for float hardware acceleration
-    xTaskCreate(&master_task, "MasterTask", 1024, NULL, configMAX_PRIORITIES, NULL);
+    // run the tasks, either master task or slave task should be running - but not both!
+    // we use xTaskCreatePinnedToCore() because its necessary to get hardware accelerated floating point maths
+    // see: https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/freertos-smp.html#floating-point-aritmetic
+    xTaskCreatePinnedToCore(&master_task, "MasterTask", 1024, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     
     // tsop tick period is dank, it's in Us so we convert it to ms and convert that into ticks
     int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
@@ -85,7 +92,7 @@ void app_main(){
     // FreeRTOS will now have full control over the device and which task runs
     vTaskStartScheduler();
 
-    // docs show that if we reach this point something must've gone wrong (insufficient RAM)
+    // FreeRTOS docs say if we reach this point something must've gone wrong (insufficient RAM)
     ESP_LOGE("AppMain", "Illegal state: vTaskStartScheduler returned");
     abort();
 }

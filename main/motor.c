@@ -1,6 +1,6 @@
 #include "motor.h"
 
-void motor_init_pins(void){
+void motor_init(void){
     // error check these gpio sets because if these failed, we're screwed
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_PWM, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN1, GPIO_MODE_OUTPUT));

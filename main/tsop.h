@@ -12,5 +12,5 @@ float tsopStrength;
 
 void tsop_init(void);
 void tsop_update_once(void);
-void tsop_read(void);
+void tsop_process(void);
 void tsop_calc(uint8_t n);
