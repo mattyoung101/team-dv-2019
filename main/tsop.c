@@ -30,9 +30,8 @@ void tsop_init(void){
     }
 }
 
-void tsop_update_once(void){
+void tsop_update(void){
     // Read each sensor once
-    // TODO anything faster than gpio_get_level? in the original it uses digitalReadFast
     tempValues[0] += gpio_get_level(TSOP_0) ^ 1;
     tempValues[1] += gpio_get_level(TSOP_1) ^ 1;
     tempValues[2] += gpio_get_level(TSOP_2) ^ 1;

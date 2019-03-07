@@ -8,6 +8,7 @@ set(COMPONENT_SRCS "main.c"
                    "motor.c"
                    "pid.c"
                    "light.c"
+                   "fsm.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 

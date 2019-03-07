@@ -41,7 +41,6 @@ void lsarray_read(void);
 void lsarray_calc_clusters(void);
 void lsarray_fill_in_sensors(void);
 void lsarray_calc_line(void);
-void lsarray_reset_clusters(void);
 
 static light_sensor *sensors[LS_NUM];
 bool filledInData[LS_NUM];

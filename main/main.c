@@ -13,6 +13,7 @@
 #include "light.h"
 #include "tsop.h"
 #include <str.h>
+#include "fsm.h"
 
 // note: portTICK_PERIOD_MS is equivalent to 1000 / 100 = 10
 
@@ -22,6 +23,9 @@ void master_task(void *pvParameter){
 
     // Initialise hardware
     motor_init();
+
+    state_machine machine;
+    fsm_update(&machine);
 
     while (true){
         ESP_LOGI(TAG, "Hello info!");
@@ -39,13 +43,15 @@ void master_task(void *pvParameter){
 void slave_task(void *pvParameter){
     //static const char *TAG = "SlaveTask";
 
+    // Initialise hardware
     ls_init_adc();
     lsarray_init();
     tsop_init();
     
     while (true){
-        tsop_update_once();
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        tsop_update();
+
+        // send over spi back to other device
     }
 }
 
@@ -55,10 +61,11 @@ void timer_callback(TimerHandle_t timer){
 
     if (timerId == TIMER_TSOP){
         tsop_process();
+        tsop_calc(5); 
+
         lsarray_read();
         lsarray_calc_clusters();
-        // TODO lsarray_calc_line();
-        // time is automatically reset here
+        lsarray_calc_line();
     } else {
         ESP_LOGW("TimerCallback", "Unknown timer ID.");
     }

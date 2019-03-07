@@ -100,9 +100,11 @@ float cluster_get_right_angle(ls_cluster *cluster){
 ////////// LIGHT SENSOR ARRAY //////////
 void lsarray_init(void){
     for (int i = 0; i < LS_NUM; i++){
+        // cheeky malloc to stop it from being destroyed after going out of scope
         light_sensor *sensor = (light_sensor*) malloc(sizeof(light_sensor));
         sensor->pin = lsPins[i];
-        ls_init(sensors[i]);
+        ls_init(sensor);
+        sensors[i] = sensor;
     }
 
     cluster_reset(&cluster1);
@@ -124,6 +126,12 @@ void lsarray_fill_in_sensors(void){
             filledInData[i] = true;
         }
     }
+}
+
+void lsarray_reset_clusters(void){
+    cluster_reset(&cluster1);
+    cluster_reset(&cluster2);
+    cluster_reset(&cluster3);
 }
 
 void lsarray_calc_clusters(void){
@@ -227,12 +235,6 @@ void lsarray_calc_clusters(void){
     numClusters = (uint8_t)(cluster1.length != 0) + (uint8_t)(cluster2.length != 0) + (uint8_t)(cluster3.length != 0);
 }
 
-void lsarray_reset_clusters(void){
-    cluster_reset(&cluster1);
-    cluster_reset(&cluster2);
-    cluster_reset(&cluster3);
-}
-
 void lsarray_calc_line(void){
     if (numClusters == 0){
         lineAngle = LS_NO_LINE_ANGLE;
@@ -242,7 +244,7 @@ void lsarray_calc_line(void){
         float cluster2Angle = cluster_get_angle(&cluster2);
         float cluster3Angle = cluster_get_angle(&cluster3);
 
-        // TODO refactor this, my lord
+        // TODO refactor this, good lord
         if (numClusters == 1){
             lineAngle = cluster1Angle;
             lineSize = 1.0f - cosf(DEG_RAD * (angleBetween(cluster_get_left_angle(&cluster1), cluster_get_right_angle(&cluster1) / 2.0f)));
