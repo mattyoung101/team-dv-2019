@@ -2,6 +2,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
+#include "esp_log.h"
 
 // Based on/inspired by:
 // https://github.com/libgdx/gdx-ai/blob/master/gdx-ai/src/com/badlogic/gdx/ai/fsm/DefaultStateMachine.java
@@ -16,7 +17,7 @@ struct fsm_state {
     fsm_func enter;
     fsm_func exit;
     fsm_func update;
-    char name[];
+    char *name;
 };
 
 struct state_machine {
@@ -24,9 +25,8 @@ struct state_machine {
     fsm_state *previousState;
 };
 
-// TODO enum of all state fsm_states
-
 void fsm_update(state_machine *fsm);
 void fsm_change_state(state_machine *fsm, fsm_state *newState);
 void fsm_revert_state(state_machine *fsm);
-bool fsm_in_state(state_machine *fsm, char name[]);
+bool fsm_in_state(state_machine *fsm, char *name);
+char *fsm_get_current_state_name(state_machine *fsm);

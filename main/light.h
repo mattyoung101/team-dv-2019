@@ -42,8 +42,6 @@ void lsarray_calc_clusters(void);
 void lsarray_fill_in_sensors(void);
 void lsarray_calc_line(void);
 
-static light_sensor *sensors[LS_NUM];
-bool filledInData[LS_NUM];
 uint8_t numClusters;
 float lineAngle;
 float lineSize;

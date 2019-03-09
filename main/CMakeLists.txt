@@ -9,6 +9,8 @@ set(COMPONENT_SRCS "main.c"
                    "pid.c"
                    "light.c"
                    "fsm.c"
+                   "states.c"
+                   "cam.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 

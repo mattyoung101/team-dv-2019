@@ -8,6 +8,8 @@ static uint16_t tsopCounter;
 static uint16_t tempValues[TSOP_NUM];
 static uint16_t tsopIndexes[TSOP_NUM];
 
+// This file contains the code that reads and processes the TSOPs
+
 void tsop_init(void){
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT));

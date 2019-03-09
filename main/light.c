@@ -4,11 +4,15 @@ static bool lsData[LS_NUM];
 static gpio_num_t lsPins[LS_NUM] = {LS_0, LS_1, LS_2, LS_3, LS_4, LS_5, LS_6, LS_7, LS_8, LS_9, LS_10, LS_11, LS_12, 
                             LS_13, LS_14, LS_15, LS_16, LS_17, LS_18, LS_19, LS_20, LS_21, LS_22, LS_23};
 static ls_cluster cluster1, cluster2, cluster3;
+static light_sensor *sensors[LS_NUM];
+static bool filledInData[LS_NUM];
+
+// This file contains the code that reads and processes the light sensors
 
 ////////// LIGHT SENSOR //////////
 void ls_init_adc(void){
     // Teensy ADC is 10 bit
-    adc1_config_width(ADC_WIDTH_BIT_12);
+    adc1_config_width(ADC_WIDTH_BIT_10);
     // TODO what does this do? (copied from examples) + verify which bus we're using
     adc1_config_channel_atten(ADC_CHANNEL_6, ADC_ATTEN_DB_0); // channel 6, atten_db_0
 }
@@ -97,11 +101,13 @@ float cluster_get_right_angle(ls_cluster *cluster){
     return cluster->rightSensor / (float) LS_NUM * 360.0f;
 }
 
+// TODO update to latest LJStand code: http://bit.do/eKtCX
+
 ////////// LIGHT SENSOR ARRAY //////////
 void lsarray_init(void){
     for (int i = 0; i < LS_NUM; i++){
         // cheeky malloc to stop it from being destroyed after going out of scope
-        light_sensor *sensor = (light_sensor*) malloc(sizeof(light_sensor));
+        light_sensor *sensor = malloc(sizeof(light_sensor));
         sensor->pin = lsPins[i];
         ls_init(sensor);
         sensors[i] = sensor;
@@ -143,8 +149,8 @@ void lsarray_calc_clusters(void){
 
     ls_cluster cluster4;
 
-    // note: in practice, doneFillInSensors is always false, so we just assume it will always be false
-
+    // port note: in practice, doneFillInSensors is always false, so we just assume it will always be false
+    // TODO also refactor this wtf
     for (int i = 0; i < LS_NUM; i++) {
         if (cluster1Done) {
             if (cluster2Done) {

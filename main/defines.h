@@ -11,7 +11,11 @@
 
 // Logging
 #define CONF_LOG_LEVEL ESP_LOG_INFO
-#define BAUD 9600
+
+// AutoMode (code that automatically starts attack/defence tasks based on NVS)
+#define AUTOMODE_ILLEGAL 254
+#define AUTOMODE_SLAVE 0
+#define AUTOMODE_MASTER 1
 
 // ADC
 #define ADC_SAMPLES 32
@@ -20,6 +24,21 @@
 #define WIFI_SSID "Deus Vult Robot"
 #define WIFI_PASS "ClapInts123"
 #define WIFI_MAXCON 2
+
+// Camera
+#define CAM_DATA_LEN 8
+#define SERIAL_BUF_LEN 64
+#define CAM_BEGIN_BYTE 69
+#define CAM_END_BYTE 42
+#define CAM_FRAME_WIDTH 100
+#define CAM_FRAME_HEIGHT 100
+#define CAM_OFFSET_X 0
+#define CAM_OFFSET_Y 0
+#define CAM_NO_VALUE 0xBAD
+
+// Goals
+#define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
+#define HALFWAY_DISTANCE 90
 
 // Pins
 // Motors and Encoders
