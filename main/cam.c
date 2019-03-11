@@ -1,7 +1,5 @@
 #include "cam.h"
 
-static uint8_t buffer[CAM_DATA_LEN - 2];
-
 void cam_init(void){
     uart_config_t uart_config = {
         .baud_rate = 115200,
@@ -30,16 +28,19 @@ void cam_update(void){
     uart_flush_input(UART_NUM_1);
 
     if (byte == CAM_BEGIN_BYTE){
-        memset(buffer, 0, SERIAL_BUF_LEN);
-
         // begin, bfound, bx, by, yfound, yx, yy, end
+        
+        // temporary buffer on the stack, disposed after this method exits
+        // shouldn't overflow stack as its only 6 bytes
+        uint8_t *buffer = alloca((CAM_DATA_LEN - 2) * sizeof(uint8_t));
 
         // wait indefinitely for the camera buffer to fill up, 
         // shouldn't get stuck since if we read the start byte the camera must be sending to us
         // we've already read the first byte and we don't need the end byte, so only read 6 bytes
-        // TODO will this cast even work? should do
-        uart_read_bytes(UART_NUM_1, (uint8_t*) &buffer, CAM_DATA_LEN - 2, portMAX_DELAY);
+        uart_read_bytes(UART_NUM_1, buffer, CAM_DATA_LEN - 2, portMAX_DELAY);
 
+        // now we can read straight from the alloca'd region because the "[]" operator is just syntactic sugar
+        // for *(buffer + i)
         goalBlue.exists = buffer[0];
         goalBlue.x = buffer[1] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
         goalBlue.y = buffer[2] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;

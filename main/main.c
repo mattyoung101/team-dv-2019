@@ -15,13 +15,12 @@
 #include <str.h>
 #include "fsm.h"
 #include "cam.h"
+#include "states.h"
 
 // note: portTICK_PERIOD_MS is equivalent to 1000 / 100 = 10
 // This file is the main entry point of the robot that creates FreeRTOS tasks which update everything else
 
-void test_enter(state_machine *fsm){}
-void test_exit(state_machine *fsm){}
-void test_update(state_machine *fsm){}
+static uint8_t mode = AUTOMODE_ILLEGAL;
 
 void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
@@ -60,17 +59,15 @@ void slave_task(void *pvParameter){
     while (true){
         tsop_update();
 
-        // send over i2c back to master
+        // send over i2c back to master (separate thread????)
     }
 }
 
 // can be used by multiple timer instances
 void timer_callback(TimerHandle_t timer){
-    // TODO make sure that we are not in fact the master here, if we are, return
-
     uint32_t timerId = (uint32_t) pvTimerGetTimerID(timer);
 
-    if (timerId == TIMER_TSOP){
+    if (timerId == TIMER_TSOP && mode == AUTOMODE_SLAVE){
         // read sensors
         tsop_process();
         tsop_calc(5); 
@@ -81,7 +78,7 @@ void timer_callback(TimerHandle_t timer){
 
         // transmit back to master
     } else {
-        ESP_LOGW("TimerCallback", "Unknown timer ID.");
+        ESP_LOGW("TimerCallback", "Unknown timer ID given mode (id: %d, mode: %d)", timerId, mode);
     }
 }
 
@@ -102,7 +99,16 @@ void app_main(){
     // AutoMode: automatically assign to slave/master depending on a value set in NVS
     nvs_handle storageHandle;
     ESP_ERROR_CHECK(nvs_open("RobotSettings", NVS_READWRITE, &storageHandle));
-    uint8_t mode = AUTOMODE_ILLEGAL;
+
+    // we may wish to write out Master or Slave to NVS on first boot
+    #ifdef NVS_WRITE_MASTER
+        ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_MASTER));
+        ESP_ERROR_CHECK(nvs_commit(storageHandle));
+    #elif NVS_WRITE_SLAVE
+        ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_SLAVE));
+        ESP_ERROR_CHECK(nvs_commit(storageHandle));
+    #endif
+
     err = nvs_get_u8(storageHandle, "Mode", &mode);
 
     if (err == ESP_ERR_NVS_NOT_FOUND){
@@ -114,22 +120,21 @@ void app_main(){
     }
     nvs_close(storageHandle);
 
-    // run the tasks, either master task or slave task should be running - but not both!
     // we use xTaskCreatePinnedToCore() because its necessary to get hardware accelerated floating point maths
     // see: https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/freertos-smp.html#floating-point-aritmetic
+    // also according to a forum post, going against the FreeRTOS norm, stack size is in fact in bytes, NOT words!
+    // source: https://esp32.com/viewtopic.php?t=900#p3879
+    // therefore we use a 4K stack (remember we have like 512K RAM)
     if (mode == AUTOMODE_MASTER){
-        xTaskCreatePinnedToCore(&master_task, "MasterTask", 1024, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
-    } else if (mode == AUTOMODE_SLAVE){
-        xTaskCreatePinnedToCore(&slave_task, "SlaveTask", 1024, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
+        xTaskCreatePinnedToCore(master_task, "MasterTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+    } else {
+        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
         
         // TSOP timer, goes off on the slave when its time to read
         int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
         TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", (periodUs / 1000) / portTICK_PERIOD_MS, pdTRUE, 
                                     (void*) TIMER_TSOP, timer_callback);
         xTimerStart(tsopTimer, 0);
-    } else {
-        ESP_LOGE("AutoMode", "Illegal state: %d is neither master nor slave, tasks not started!", mode);
-        abort();
     }
     
     // FreeRTOS will now have full control over the device and which task runs

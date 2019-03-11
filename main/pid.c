@@ -1,6 +1,6 @@
 #include "pid.h"
 
-float pid_update(pid_config *conf, float input, float setpoint, float modulus){
+float pid_update(pid_config_t *conf, float input, float setpoint, float modulus){
     float derivative;
     float error = setpoint - input;
 

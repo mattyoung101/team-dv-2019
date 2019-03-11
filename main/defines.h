@@ -1,6 +1,24 @@
 #pragma once
 #include "esp_log.h"
 
+// Uncomment to write either Master or Slave to NVS flash so that the device can be identified as either
+// #define NVS_WRITE_MASTER
+// #define NVS_WRITE_SLAVE
+
+// PIDs
+#define FORWARD_KP 10
+#define FORWARD_KI 0
+#define FORWARD_KD 0.1
+#define FORWARD_MAX 255
+
+#define SIDE_KP 5
+#define SIDE_KI 0
+#define SIDE_KD 0.2
+#define SIDE_MAX 255
+
+// Defence
+#define DEFEND_DISTANCE 30
+
 // Timers
 #define TIMER_TSOP 1
 

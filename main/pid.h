@@ -5,14 +5,14 @@
 // Ported from PID.cpp 
 
 typedef struct {
-    float ki;
     float kp;
+    float ki;
     float kd;
     float absMax;
-} pid_config;
+} pid_config_t;
 
 int64_t lastTime;
 float integral;
 float lastInput;
 
-float pid_update(pid_config* conf, float input, float setpoint, float modulus);
+float pid_update(pid_config_t* conf, float input, float setpoint, float modulus);

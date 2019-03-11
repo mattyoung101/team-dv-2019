@@ -7,6 +7,7 @@
 #include <math.h>
 #include "utils.h"
 #include <string.h>
+#include <alloca.h>
 
 typedef struct {
     /** if false: the values of x, y, angle and length are undefined **/
