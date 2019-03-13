@@ -1,5 +1,11 @@
 #include "motor.h"
 
+static float pwmValues[4];
+static float flmotor_pwm;
+static float frmotor_pwm;
+static float blmotor_pwm;
+static float brmotor_pwm;
+
 void motor_init(void){
     // error check these gpio sets because if these failed, we're screwed
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_PWM, GPIO_MODE_OUTPUT));
@@ -19,7 +25,7 @@ void motor_init(void){
     // Setup PWM (LEDC) timer using 8 bit resolution (we only need 0-255 speed) and same frequency as Teensy 3.5
     // for backwards compatibility and using high speed mode for fast hardware switching of duty values
     ledc_timer_config_t ledc_timer = {
-        .duty_resolution = LEDC_TIMER_8_BIT, 
+        .duty_resolution = LEDC_TIMER_8_BIT, // TODO increase this so we can get more fine tuned control of motors 
         .freq_hz = 488,                      
         .speed_mode = LEDC_HIGH_SPEED_MODE,  
         .timer_num = LEDC_TIMER_0            
@@ -28,9 +34,9 @@ void motor_init(void){
 
     // Now that we've got the timer running, set up the channel output
     ledc_channel_config_t ledc_channel = {
-        .channel    = LEDC_CHANNEL_0, // TODO which channel?
+        .channel    = LEDC_CHANNEL_0,
         .duty       = 0,
-        .gpio_num   = 69, // TODO GPIO pin here
+        .gpio_num   = 69, // TODO GPIO pin here - need multiple buses?
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .hpoint     = 0,
         .timer_sel  = LEDC_TIMER_0
@@ -39,6 +45,12 @@ void motor_init(void){
 
     // now the PWM channel is generating signal, but because the duty is set to 0 it shouldn't in theory do anything
 }
+
+/*
+TODO NOTES:
+    - we need the four channels of PWM I think in order to get the 4 motor controller pins to do PWM
+    - need to add the constant MOTOR_FL_REVERSED
+*/
 
 void motor_calc(int16_t angle, int16_t direction, int8_t speed){
     float radAngle = DEG_RAD * (float) angle;
@@ -111,4 +123,11 @@ void motor_move(bool brake){
     motor_write_controller(frmotor_pwm, MOTOR_FR_IN1, MOTOR_FR_IN2, MOTOR_FR_PWM, MOTOR_FR_REVERSED, brake);
     motor_write_controller(blmotor_pwm, MOTOR_BL_IN1, MOTOR_BL_IN2, MOTOR_BL_PWM, MOTOR_BL_REVERSED, brake);
     motor_write_controller(brmotor_pwm, MOTOR_BR_IN1, MOTOR_BR_IN2, MOTOR_BR_PWM, MOTOR_BR_REVERSED, brake);
+}
+
+void motor_run_pwm(uint8_t pwm){
+    motor_write_controller(pwm, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+    motor_write_controller(pwm, MOTOR_FR_IN1, MOTOR_FR_IN2, MOTOR_FR_PWM, MOTOR_FR_REVERSED, false);
+    motor_write_controller(pwm, MOTOR_BL_IN1, MOTOR_BL_IN2, MOTOR_BL_PWM, MOTOR_BL_REVERSED, false);
+    motor_write_controller(pwm, MOTOR_BR_IN1, MOTOR_BR_IN2, MOTOR_BR_PWM, MOTOR_BR_REVERSED, false);
 }

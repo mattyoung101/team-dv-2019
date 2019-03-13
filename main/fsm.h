@@ -6,6 +6,7 @@
 
 // Based on/inspired by:
 // https://github.com/libgdx/gdx-ai/blob/master/gdx-ai/src/com/badlogic/gdx/ai/fsm/DefaultStateMachine.java
+// TODO add message passing like in libGDX
 
 typedef struct fsm_state_t fsm_state_t;
 typedef struct state_machine state_machine;

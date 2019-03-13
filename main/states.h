@@ -4,6 +4,7 @@
 #include "pid.h"
 #include "utils.h"
 #include "defines.h"
+#include "esp_log.h"
 
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
 typedef struct {
@@ -29,6 +30,11 @@ void state_nothing_update(state_machine *fsm){}
 // Centre: moves the robot to the centre of the field. Only update.
 void state_centre_update(state_machine *fsm);
 extern fsm_state_t centreState;
+
+// Pursue ball: basically an orbit
+void state_pursue_enter(state_machine *fsm);
+void state_pursue_update(state_machine *fsm);
+extern fsm_state_t pursueState;
 
 /*
 States are:

@@ -11,8 +11,4 @@ typedef struct {
     float absMax;
 } pid_config_t;
 
-int64_t lastTime;
-float integral;
-float lastInput;
-
 float pid_update(pid_config_t* conf, float input, float setpoint, float modulus);

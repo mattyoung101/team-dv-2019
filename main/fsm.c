@@ -7,7 +7,7 @@ void fsm_update(state_machine *fsm){
 }
 
 void fsm_change_state(state_machine *fsm, fsm_state_t *newState){
-    ESP_LOGD("FSM", "Switching states to %s", newState->name);
+    ESP_LOGD("FSM", "Switching states from %s to %s", fsm->currentState->name, newState->name);
 
     fsm->previousState = fsm->currentState;
     fsm->currentState->exit(fsm);
@@ -17,7 +17,7 @@ void fsm_change_state(state_machine *fsm, fsm_state_t *newState){
 }
 
 void fsm_revert_state(state_machine *fsm){
-    ESP_LOGD("FSM", "Reverting to state (%s)", fsm->previousState->name);
+    ESP_LOGD("FSM", "Reverting to state from %s to %s", fsm->currentState->name, fsm->previousState->name);
     fsm_change_state(fsm, fsm->previousState);
 }
 

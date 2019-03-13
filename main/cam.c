@@ -1,5 +1,7 @@
 #include "cam.h"
 
+// This file implements communication with the OpenMV M7 using a custom protocol over UART
+
 void cam_init(void){
     uart_config_t uart_config = {
         .baud_rate = 115200,

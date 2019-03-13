@@ -28,7 +28,7 @@
 #define RAD_DEG 57.29577951308232
 
 // Logging
-#define CONF_LOG_LEVEL ESP_LOG_INFO
+#define CONF_LOG_LEVEL ESP_LOG_DEBUG
 
 // AutoMode (code that automatically starts attack/defence tasks based on NVS)
 #define AUTOMODE_ILLEGAL 254

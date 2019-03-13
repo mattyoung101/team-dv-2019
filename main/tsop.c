@@ -98,5 +98,5 @@ void tsop_calc(uint8_t n){
         tsopAngle = mod(atan2f(y, x) * RAD_DEG, 360);
     }
 
-    tsopStrength = sqrt(x * x + y * y);
+    tsopStrength = sqrtf(x * x + y * y);
 }
