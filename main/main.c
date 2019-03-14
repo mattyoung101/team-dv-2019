@@ -122,7 +122,7 @@ void app_main(){
     nvs_handle storageHandle;
     ESP_ERROR_CHECK(nvs_open("RobotSettings", NVS_READWRITE, &storageHandle));
 
-    // we may wish to write out Master or Slave to NVS on first boot
+    // if set, write out Master or Slave to NVS on first boot
     #ifdef NVS_WRITE_MASTER
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_MASTER));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));

@@ -50,4 +50,8 @@ The ones used by Bend It Like Beckham:
 - looking for ball
 - see ball
 - have ball
+
+Might be worth looking into a table that defines a list of variables to be true to transition between states
+eg centre would automatically transition if ball is visible
+Wouldn't work because you need like an evaluation function though
 */

@@ -38,3 +38,8 @@ void state_centre_update(state_machine *fsm){
         robotState.direction = 0;
     }
 }
+
+// Pursue
+void state_pursue_update(state_machine *fsm){
+
+}

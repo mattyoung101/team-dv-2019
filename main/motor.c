@@ -6,8 +6,9 @@ static float frmotor_pwm;
 static float blmotor_pwm;
 static float brmotor_pwm;
 
+// TODO change this to use MCPWM
 void motor_init(void){
-    // error check these gpio sets because if these failed, we're screwed
+    // error check these gpio sets because if these failed, we're screwed - we can't move
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_PWM, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN2, GPIO_MODE_OUTPUT));
@@ -22,8 +23,8 @@ void motor_init(void){
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BR_IN2, GPIO_MODE_OUTPUT));
 
     // Teensy 3.5 frequency: 488.28 Hz, see https://www.pjrc.com/teensy/td_pulse.html#frequency
-    // Setup PWM (LEDC) timer using 8 bit resolution (we only need 0-255 speed) and same frequency as Teensy 3.5
-    // for backwards compatibility and using high speed mode for fast hardware switching of duty values
+    // Setup PWM (LEDC) timer using 8 bit resolution and same frequency as Teensy 3.5 for backwards compatibility 
+    // and using high speed mode for fast hardware switching of duty values
     ledc_timer_config_t ledc_timer = {
         .duty_resolution = LEDC_TIMER_8_BIT, // TODO increase this so we can get more fine tuned control of motors 
         .freq_hz = 488,                      
@@ -36,7 +37,7 @@ void motor_init(void){
     ledc_channel_config_t ledc_channel = {
         .channel    = LEDC_CHANNEL_0,
         .duty       = 0,
-        .gpio_num   = 69, // TODO GPIO pin here - need multiple buses?
+        .gpio_num   = 69, // TODO GPIO pin here - need multiple channels?
         .speed_mode = LEDC_HIGH_SPEED_MODE,
         .hpoint     = 0,
         .timer_sel  = LEDC_TIMER_0
@@ -47,9 +48,8 @@ void motor_init(void){
 }
 
 /*
-TODO NOTES:
+NOTES for thursday:
     - we need the four channels of PWM I think in order to get the 4 motor controller pins to do PWM
-    - need to add the constant MOTOR_FL_REVERSED
 */
 
 void motor_calc(int16_t angle, int16_t direction, int8_t speed){
@@ -76,14 +76,7 @@ void motor_calc(int16_t angle, int16_t direction, int8_t speed){
 }
 
 void motor_write_controller(int8_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
-    bool reversed, bool brake){
-        /*
-         * note that while technically all these calls to gpio_XYZ can return an error,
-         * we don't run ESP_ERROR_CHECK on them because quite frankly we don't care
-         * and it's not worth bringing down the entire device because some GPIO port stopped working
-         * if the motors don't move it doesn't matter, but if the motors don't init correctly, it DOES matter
-         */   
-
+                            bool reversed, bool brake){
         // set PWM value using LEDC
         ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255));
         ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
