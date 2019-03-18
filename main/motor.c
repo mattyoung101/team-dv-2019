@@ -8,43 +8,41 @@ static float brmotor_pwm;
 
 // TODO change this to use MCPWM
 void motor_init(void){
-    // error check these gpio sets because if these failed, we're screwed - we can't move
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_PWM, GPIO_MODE_OUTPUT));
+    /**
+     * Ok, so here's the deal: we have three ways to do PWM: LEDC, MCPWM and Sigma Delta and the best is one MCPWM
+     * since it's specifically designed for this task.
+     * HOWEVER: it's designed for H-bridges like the L298 which just have 2 pins, but our motor controllers
+     * have 3 pins.
+     * So what we do instead is a hybrid approach: use MCPWM on all the PWM pins and just regular old
+     * GPIO on the IN1 and IN2 pins
+     */
+
+    // Setup pins
+    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, MOTOR_FL_PWM));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN2, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FR_PWM, GPIO_MODE_OUTPUT));
+
+    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, MOTOR_FR_PWM));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FR_IN1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FR_IN2, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BL_PWM, GPIO_MODE_OUTPUT));
+
+    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, MOTOR_BL_PWM));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BL_IN1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BL_IN2, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BR_PWM, GPIO_MODE_OUTPUT));
+
+    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1B, MOTOR_BR_PWM));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BR_IN1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BR_IN2, GPIO_MODE_OUTPUT));
 
-    // Teensy 3.5 frequency: 488.28 Hz, see https://www.pjrc.com/teensy/td_pulse.html#frequency
-    // Setup PWM (LEDC) timer using 8 bit resolution and same frequency as Teensy 3.5 for backwards compatibility 
-    // and using high speed mode for fast hardware switching of duty values
-    ledc_timer_config_t ledc_timer = {
-        .duty_resolution = LEDC_TIMER_8_BIT, // TODO increase this so we can get more fine tuned control of motors 
-        .freq_hz = 488,                      
-        .speed_mode = LEDC_HIGH_SPEED_MODE,  
-        .timer_num = LEDC_TIMER_0            
+    // Configure MCPWM timer
+    mcpwm_config_t config = {
+        .frequency = 488.28, // Teensy 3.5 runs on 488.28 Hz
+        .cmpr_a = 0.0f,
+        .cmpr_b = 0.0f,
+        .counter_mode = MCPWM_UP_COUNTER,
+        .duty_mode = MCPWM_DUTY_MODE_0
     };
-    ESP_ERROR_CHECK(ledc_timer_config(&ledc_timer));
-
-    // Now that we've got the timer running, set up the channel output
-    ledc_channel_config_t ledc_channel = {
-        .channel    = LEDC_CHANNEL_0,
-        .duty       = 0,
-        .gpio_num   = 69, // TODO GPIO pin here - need multiple channels?
-        .speed_mode = LEDC_HIGH_SPEED_MODE,
-        .hpoint     = 0,
-        .timer_sel  = LEDC_TIMER_0
-    };
-    ESP_ERROR_CHECK(ledc_channel_config(&ledc_channel));
-
-    // now the PWM channel is generating signal, but because the duty is set to 0 it shouldn't in theory do anything
+    ESP_ERROR_CHECK(mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &config));
 }
 
 /*
@@ -77,9 +75,12 @@ void motor_calc(int16_t angle, int16_t direction, int8_t speed){
 
 void motor_write_controller(int8_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
                             bool reversed, bool brake){
-        // set PWM value using LEDC
-        ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255));
-        ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+        // ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255));
+        // ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
+        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, constrain(speed, (int8_t) 0, (int8_t) 255));
+        mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
+        
+        // TODO figure out the above do we need a set duty high thing
         
         // TODO refactor this section
         if (speed > 0){

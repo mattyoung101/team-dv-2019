@@ -7,6 +7,7 @@
 #include "defines.h"
 #include "utils.h"
 #include "esp_err.h"
+#include "driver/mcpwm.h"
 
 // Ported from Move.cpp
 

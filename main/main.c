@@ -16,6 +16,7 @@
 #include "fsm.h"
 #include "cam.h"
 #include "states.h"
+#include "soc/efuse_reg.h"
 
 // This file is the main entry point of the robot that creates FreeRTOS tasks which update everything else
 
@@ -23,10 +24,10 @@ static uint8_t mode = AUTOMODE_ILLEGAL;
 
 void useless_task(void *pvParameter){
     static const char *TAG = "UselessTask";
-
+    
     while (true){
-        ESP_LOGI(TAG, "Useless");
-        vTaskDelay(100 / portTICK_PERIOD_MS);
+        ESP_LOGI(TAG, "Useless on core %d, stack: %d", xPortGetCoreID(), uxTaskGetStackHighWaterMark(NULL));
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -40,14 +41,16 @@ void master_task(void *pvParameter){
     // Initialise software controllers
     // state_machine machine;
 
-    ESP_LOGD(TAG, "Master hardware init OK");
-    fflush(stdout);
+    /* Set the GPIO as a push/pull output */
+    gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
+
+    ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
-        ESP_LOGI(TAG, "Hello info!");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
-        ESP_LOGW(TAG, "Hello warning!");
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        gpio_set_level(GPIO_NUM_2, 0);
+        vTaskDelay(pdMS_TO_TICKS(100));
+        gpio_set_level(GPIO_NUM_2, 1);
+        vTaskDelay(pdMS_TO_TICKS(100));
         
         // communicate with slave here, might be done in separate task
 
@@ -96,14 +99,7 @@ void timer_callback(TimerHandle_t timer){
 }
 
 void app_main(){
-    esp_log_level_set("*", CONF_LOG_LEVEL);
-
-    for (int i = 0; i < 64; i++){
-        ESP_LOGE("AppMain", "Why does this not show up?");
-        ESP_EARLY_LOGE("AppMain", "Maybe this will work instead?");
-        printf("or maybe this?\n");
-    }
-    fflush(stdout);
+    esp_log_level_set("*", ESP_LOG_VERBOSE);
 
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
@@ -116,8 +112,6 @@ void app_main(){
     }
     ESP_ERROR_CHECK(err);
 
-    ESP_LOGD("AutoMode", "Reading/writing storage now");
-
     // AutoMode: automatically assign to slave/master depending on a value set in NVS
     nvs_handle storageHandle;
     ESP_ERROR_CHECK(nvs_open("RobotSettings", NVS_READWRITE, &storageHandle));
@@ -126,26 +120,29 @@ void app_main(){
     #ifdef NVS_WRITE_MASTER
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_MASTER));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
-        ESP_LOGI("AutoMode", "Successfully wrote Master to NVS.");
+        ESP_LOGE("AutoMode", "Successfully wrote Master to NVS.\n");
     #elif NVS_WRITE_SLAVE
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_SLAVE));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
-        ESP_LOGI("AutoMode", "Successfully wrote Slave to NVS.");
+        ESP_LOGE("AutoMode", "Successfully wrote Slave to NVS.\n");
+    #else
+        ESP_LOGI("AutoMode", "No read/write performed");
     #endif
 
     err = nvs_get_u8(storageHandle, "Mode", &mode);
     nvs_close(storageHandle);
 
     if (err == ESP_ERR_NVS_NOT_FOUND){
-        ESP_LOGE("AutoMode", "Key not found! Please identify this device, see main.c for help. Aborting!");
+        ESP_LOGE("AutoMode", "Key not found! Please identify this device, see main.c for help. Cannot continue.");
         abort();
     } else if (err != ESP_OK) {
-        ESP_LOGE("AutoMode", "Unexpected error reading key: %s. Aborting!", esp_err_to_name(err));
+        ESP_LOGE("AutoMode", "Unexpected error reading key: %s. Cannot continue.", esp_err_to_name(err));
         abort();
     }
-    ESP_LOGD("AutoMode", "AutoMode completed successfully.");
+    ESP_LOGI("AutoMode", "AutoMode completed successfully.");
 
-    ESP_LOGD("AppMain", "Starting tasks...");
+    ESP_LOGI("AppMain", "Starting tasks...");
+    fflush(stdout);
 
     // we use xTaskCreatePinnedToCore() because its necessary to get hardware accelerated floating point maths
     // see: https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/freertos-smp.html#floating-point-aritmetic
@@ -153,14 +150,16 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     // therefore we use a 4K stack (remember we have like 512K RAM)
     if (mode == AUTOMODE_MASTER){
+        ESP_LOGI("AppMain", "Running as master");
         xTaskCreatePinnedToCore(master_task, "MasterTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
         xTaskCreatePinnedToCore(useless_task, "UselessTask", 2048, NULL, configMAX_PRIORITIES - 2, NULL, APP_CPU_NUM);
     } else {
+        ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
         
         // TSOP timer, goes off on the slave when its time to read
         int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
-        TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", (periodUs / 1000) / portTICK_PERIOD_MS, pdTRUE, 
+        TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", pdMS_TO_TICKS(periodUs / 1000), pdTRUE, 
                                     (void*) TIMER_TSOP, timer_callback);
         xTimerStart(tsopTimer, 0);
     }

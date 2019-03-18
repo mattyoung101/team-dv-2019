@@ -3,6 +3,8 @@
         "str.h": "c"
     },
     "cSpell.words": [
-        "lsarray"
+        "gpio",
+        "lsarray",
+        "mcpwm"
     ]
 }
