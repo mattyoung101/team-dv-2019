@@ -42,15 +42,13 @@ void motor_init(void){
         .counter_mode = MCPWM_UP_COUNTER,
         .duty_mode = MCPWM_DUTY_MODE_0
     };
+
+    // we only use 0A, 0B, 1A, 1B = 2 timers
     ESP_ERROR_CHECK(mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_0, &config));
+    ESP_ERROR_CHECK(mcpwm_init(MCPWM_UNIT_0, MCPWM_TIMER_1, &config));
 }
 
-/*
-NOTES for thursday:
-    - we need the four channels of PWM I think in order to get the 4 motor controller pins to do PWM
-*/
-
-void motor_calc(int16_t angle, int16_t direction, int8_t speed){
+void motor_calc(int16_t angle, int16_t direction, int16_t speed){
     float radAngle = DEG_RAD * (float) angle;
 
     pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
@@ -65,7 +63,8 @@ void motor_calc(int16_t angle, int16_t direction, int8_t speed){
 
     float maxSpeed = fmaxf(
         fmaxf(fabsf(flmotor_pwm), fabsf(frmotor_pwm)), 
-        fmaxf(fabsf(blmotor_pwm), fabsf(brmotor_pwm)));
+        fmaxf(fabsf(blmotor_pwm), fabsf(brmotor_pwm))
+        );
 
     flmotor_pwm = speed == 0 ? flmotor_pwm : (flmotor_pwm / maxSpeed) * speed;
     frmotor_pwm = speed == 0 ? frmotor_pwm : (frmotor_pwm / maxSpeed) * speed;
@@ -73,14 +72,42 @@ void motor_calc(int16_t angle, int16_t direction, int8_t speed){
     brmotor_pwm = speed == 0 ? brmotor_pwm : (brmotor_pwm / maxSpeed) * speed;
 }
 
-void motor_write_controller(int8_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
+void motor_write_controller(int16_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
                             bool reversed, bool brake){
-        // ledc_set_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0, constrain(speed, (int8_t) 0, (int8_t) 255));
-        // ledc_update_duty(LEDC_HIGH_SPEED_MODE, LEDC_CHANNEL_0);
-        mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, constrain(speed, (int8_t) 0, (int8_t) 255));
-        mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
-        
-        // TODO figure out the above do we need a set duty high thing
+        // constrained speed shorthand
+        int16_t s = constrain(abs(speed), (int16_t) 0, (int16_t) 255);
+
+        // write to the right MCPWM pin
+        switch (pwmPin){
+            case MOTOR_FL_PWM:
+                // front left, 0A
+                mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, s);
+                mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
+                break;
+            case MOTOR_FR_PWM:
+                // front right, 0B
+                mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, s);
+                mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
+                break;
+            case MOTOR_BL_PWM:
+                // back left, 1A
+                mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, s);
+                mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
+                break;
+            case MOTOR_BR_PWM:
+                // back right, 1B
+                mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B);
+                mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, s);
+                mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
+                break;
+            default:
+                // boi what are you on, tf is this pin
+                ESP_LOGE("Motor", "Illegal PWM pin: %d", pwmPin);
+                return;
+        }
         
         // TODO refactor this section
         if (speed > 0){

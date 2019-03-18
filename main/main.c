@@ -22,43 +22,23 @@
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 
-void useless_task(void *pvParameter){
-    static const char *TAG = "UselessTask";
-    
-    while (true){
-        ESP_LOGI(TAG, "Useless on core %d, stack: %d", xPortGetCoreID(), uxTaskGetStackHighWaterMark(NULL));
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
-}
-
 void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
 
     // Initialise hardware
-    // motor_init();
+    motor_init();
     // cam_init();
 
     // Initialise software controllers
     // state_machine machine;
 
-    /* Set the GPIO as a push/pull output */
-    gpio_set_direction(GPIO_NUM_2, GPIO_MODE_OUTPUT);
-
     ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
-        gpio_set_level(GPIO_NUM_2, 0);
-        vTaskDelay(pdMS_TO_TICKS(100));
-        gpio_set_level(GPIO_NUM_2, 1);
-        vTaskDelay(pdMS_TO_TICKS(100));
-        
-        // communicate with slave here, might be done in separate task
-
-        // read sensors
-        // cam_update();
-
-        // // update the FSM and other controllers
-        // fsm_update(&machine);
+        motor_write_controller(128, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        motor_write_controller(64, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -152,7 +132,6 @@ void app_main(){
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
         xTaskCreatePinnedToCore(master_task, "MasterTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-        xTaskCreatePinnedToCore(useless_task, "UselessTask", 2048, NULL, configMAX_PRIORITIES - 2, NULL, APP_CPU_NUM);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
