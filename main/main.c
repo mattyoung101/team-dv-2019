@@ -22,6 +22,8 @@
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 
+// Task which runs on the master. Receives sensor data from slave and handles complex routines
+// like moving, finite state machines, Bluetooth, etc
 void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
 
@@ -35,13 +37,19 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
+        ESP_LOGI("MasterTask", "Running at 128");
         motor_write_controller(128, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
         vTaskDelay(pdMS_TO_TICKS(1000));
-        motor_write_controller(64, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+        ESP_LOGI("MasterTask", "Running at -32");
+        motor_write_controller(-32, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        ESP_LOGI("MasterTask", "Stopping");
+        motor_write_controller(0, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, true);
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
+// Task which runs on the slave. Reads and calculates sensor data, then sends to master.
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
@@ -56,10 +64,12 @@ void slave_task(void *pvParameter){
         tsop_update();
 
         // send over i2c back to master (separate thread????)
+        // if separate thread, let's use a queue which will receive data and then send it over i2c with a high priority
+        // example: https://freertos.org/tutorial/solution2.html
     }
 }
 
-// can be used by multiple timer instances
+// Callback for all timers. Should only run on the slave.
 void timer_callback(TimerHandle_t timer){
     uint32_t timerId = (uint32_t) pvTimerGetTimerID(timer);
 
@@ -75,6 +85,22 @@ void timer_callback(TimerHandle_t timer){
         // transmit back to master
     } else {
         ESP_LOGW("TimerCallback", "Unknown timer ID given mode (id: %d, mode: %d)", timerId, mode);
+    }
+}
+
+// Handles both HTTP, WebSocket and OTA updates. Bluetooth still runs on the master task.
+void network_task(void *pvParameter){
+    static const char *TAG = "NetworkTask";
+    // we'll need to allocate lots of strings, so use a differnet function: network_task_handle_ws
+    // because if we use alloca in the while true loop, it'll never be freed
+    // however if we use a separate function it'll be freed when the function returns
+    
+    // init websockets and wifi here
+
+    ESP_LOGI(TAG, "Networking init OK");
+    while (true){
+        // serve websockets, in this case just block forever
+        vTaskDelay(portMAX_DELAY);
     }
 }
 
@@ -128,10 +154,15 @@ void app_main(){
     // see: https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/freertos-smp.html#floating-point-aritmetic
     // also according to a forum post, going against the FreeRTOS norm, stack size is in fact in bytes, NOT words!
     // source: https://esp32.com/viewtopic.php?t=900#p3879
-    // therefore we use a 4K stack (remember we have like 512K RAM)
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
         xTaskCreatePinnedToCore(master_task, "MasterTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        #ifdef WEBSOCKET_ENABLED
+            ESP_LOGI("AppMain", "Running networking");
+            // controlling the robot is much more important than sending/receiving miscellaneous data
+            // but the webserver requires a bigger stack size
+            xTaskCreatePinnedToCore(network_task, "NetworkTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL, PRO_CPU_NUM);
+        #endif
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  

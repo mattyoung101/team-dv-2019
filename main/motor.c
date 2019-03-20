@@ -81,30 +81,34 @@ void motor_write_controller(int16_t speed, gpio_num_t inOnePin, gpio_num_t inTwo
         switch (pwmPin){
             case MOTOR_FL_PWM:
                 // front left, 0A
+                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_0, OPR_A (front left)");
                 mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A);
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
                 break;
             case MOTOR_FR_PWM:
                 // front right, 0B
+                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_0, OPR_B (front right)");
                 mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B);
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
                 break;
             case MOTOR_BL_PWM:
                 // back left, 1A
+                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_1, OPR_A (back left)");
                 mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A);
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
                 break;
             case MOTOR_BR_PWM:
                 // back right, 1B
+                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_1, OPR_B (back right)");
                 mcpwm_set_signal_low(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B);
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
                 break;
             default:
-                // boi what are you on, tf is this pin
+                // should only happen if something's really gone wrong
                 ESP_LOGE("Motor", "Illegal PWM pin: %d", pwmPin);
                 return;
         }

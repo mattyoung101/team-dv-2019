@@ -6,13 +6,14 @@ static pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MA
 static pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
 
 fsm_state_t centreState = {&state_nothing_enter, &state_nothing_exit, &state_centre_update, "Centre"};
+fsm_state_t pursueState = {&state_nothing_enter, &state_nothing_enter, &state_pursue_update, "Pursue"};
 
 // Centre
 void state_centre_update(state_machine *fsm){
     // if ball is visible, pursue it
     if (robotState.ballAngle != TSOP_NO_BALL_ANGLE){
         ESP_LOGI("CentreState", "Changing to pursue: ball found (angle %d)", robotState.ballAngle);
-        fsm_change_state(&fsm, &pursueState);
+        // fsm_change_state(fsm, &pursueState);
         return;
     }
 

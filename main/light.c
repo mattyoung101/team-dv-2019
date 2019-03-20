@@ -1,7 +1,7 @@
 #include "light.h"
 
 static bool lsData[LS_NUM];
-static gpio_num_t lsPins[LS_NUM] = {LS_0, LS_1, LS_2, LS_3, LS_4, LS_5, LS_6, LS_7, LS_8, LS_9, LS_10, LS_11, LS_12, 
+static const gpio_num_t lsPins[LS_NUM] = {LS_0, LS_1, LS_2, LS_3, LS_4, LS_5, LS_6, LS_7, LS_8, LS_9, LS_10, LS_11, LS_12, 
                             LS_13, LS_14, LS_15, LS_16, LS_17, LS_18, LS_19, LS_20, LS_21, LS_22, LS_23};
 static ls_cluster cluster1, cluster2, cluster3;
 static light_sensor *sensors[LS_NUM];

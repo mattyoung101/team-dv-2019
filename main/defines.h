@@ -5,6 +5,9 @@
 // #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
+// Websocket
+// #define WEBSOCKET_ENABLED
+
 // PIDs
 #define FORWARD_KP 10
 #define FORWARD_KI 0
