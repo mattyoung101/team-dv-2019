@@ -37,15 +37,15 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
-        ESP_LOGI("MasterTask", "Running at 128");
-        motor_write_controller(128, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        ESP_LOGI("MasterTask", "Running at -32");
-        motor_write_controller(-32, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        ESP_LOGI("MasterTask", "Stopping");
-        motor_write_controller(0, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, true);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        printf("BACKWARDS\n");
+        // motor_write_controller(-20, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+        motor_run_pwm(-20.0);
+        vTaskDelay(pdMS_TO_TICKS(2500));
+
+        printf("FORWARDS\n");
+        // motor_write_controller(20, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
+        motor_run_pwm(20.0);
+        vTaskDelay(pdMS_TO_TICKS(2500));
     }
 }
 

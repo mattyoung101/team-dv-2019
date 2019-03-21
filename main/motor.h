@@ -14,10 +14,10 @@
 /** Initialies motor pin direction **/
 void motor_init(void);
 /** Calculates PWM values for each motor **/
-void motor_calc(int16_t angle, int16_t direction, int16_t speed);
+void motor_calc(int16_t angle, int16_t direction, float speed);
 /** Handles writing to the motor controller **/
-void motor_write_controller(int16_t speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, bool reversed, bool brake);
+void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, bool reversed, bool brake);
 /** Writes to each controller to move all motors **/
 void motor_move(bool brake);
 /** Writes the given PWM to all controllers **/
-void motor_run_pwm(uint8_t pwm);
+void motor_run_pwm(float pwm);
