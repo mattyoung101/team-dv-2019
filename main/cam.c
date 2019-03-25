@@ -15,21 +15,21 @@ void cam_init(void){
     // Configure UART parameters
     ESP_ERROR_CHECK(uart_param_config(UART_NUM_1, &uart_config));
 
-    // Set UART pins(TX: IO16 (UART2 default), RX: IO17 (UART2 default), RTS: IO18, CTS: IO19)
     // TODO figure out pins
     //ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, 18, 19));
 
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, SERIAL_BUF_LEN * 2, SERIAL_BUF_LEN * 2, 8, NULL, 0));
+
+    ESP_LOGI("Cam", "Camera init OK");
 }
 
 void cam_update(void){
     uint8_t byte;
     // wait only one tick for a byte to come through UART, cam_read() is called every tick so we'll get it eventually
     uart_read_bytes(UART_NUM_1, &byte, 1, 1);
-    // we've read the byte we need, so start from scratch again
-    uart_flush_input(UART_NUM_1);
 
     if (byte == CAM_BEGIN_BYTE){
+        ESP_LOGD("Cam", "Received cam begin byte");
         // begin, bfound, bx, by, yfound, yx, yy, end
         
         // temporary buffer on the stack, disposed after this method exits

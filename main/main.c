@@ -29,21 +29,15 @@ void master_task(void *pvParameter){
 
     // Initialise hardware
     motor_init();
-    // cam_init();
-
-    // Initialise software controllers
-    // state_machine machine;
 
     ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
         printf("BACKWARDS\n");
-        // motor_write_controller(-20, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
         motor_run_pwm(-20.0);
         vTaskDelay(pdMS_TO_TICKS(2500));
 
         printf("FORWARDS\n");
-        // motor_write_controller(20, MOTOR_FL_IN1, MOTOR_FL_IN2, MOTOR_FL_PWM, MOTOR_FL_REVERSED, false);
         motor_run_pwm(20.0);
         vTaskDelay(pdMS_TO_TICKS(2500));
     }
@@ -91,7 +85,7 @@ void timer_callback(TimerHandle_t timer){
 // Handles both HTTP, WebSocket and OTA updates. Bluetooth still runs on the master task.
 void network_task(void *pvParameter){
     static const char *TAG = "NetworkTask";
-    // we'll need to allocate lots of strings, so use a differnet function: network_task_handle_ws
+    // we'll need to allocate lots of strings, so use a different function: network_task_handle_ws
     // because if we use alloca in the while true loop, it'll never be freed
     // however if we use a separate function it'll be freed when the function returns
     
@@ -105,14 +99,13 @@ void network_task(void *pvParameter){
 }
 
 void app_main(){
-    esp_log_level_set("*", ESP_LOG_VERBOSE);
+    esp_log_level_set("*", ESP_LOG_INFO);
 
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
         ESP_LOGI("AppMain", "Reflashing NVS");
         // NVS partition was truncated and needs to be erased
-        // Retry nvs_flash_init
         ESP_ERROR_CHECK(nvs_flash_erase());
         err = nvs_flash_init();
     }

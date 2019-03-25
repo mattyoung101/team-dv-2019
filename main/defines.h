@@ -8,6 +8,15 @@
 // Websocket
 // #define WEBSOCKET_ENABLED
 
+// I2C
+#define I2C_ESP_SLAVE_ADDR 23
+#define I2C_TIMEOUT 250 // ms
+#define I2C_ACK_MODE 0x1 // 0x0 to disable ack
+#define I2C_BEGIN_BYTE 0xB
+
+// Music
+#define MUSIC_BPM 100
+
 // PIDs
 #define FORWARD_KP 10
 #define FORWARD_KI 0
@@ -49,8 +58,8 @@
 // Camera
 #define CAM_DATA_LEN 8
 #define SERIAL_BUF_LEN 64
-#define CAM_BEGIN_BYTE 69
-#define CAM_END_BYTE 42
+#define CAM_BEGIN_BYTE 0xB
+#define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 100
 #define CAM_FRAME_HEIGHT 100
 #define CAM_OFFSET_X 0

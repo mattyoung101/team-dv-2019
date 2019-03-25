@@ -53,7 +53,6 @@ void motor_init(void){
     ESP_LOGI("Motor", "Motor init OK");
 }
 
-// TODO WORK WITH 0 to 100 (PERCENTAGE) SPEED!!!!
 void motor_calc(int16_t angle, int16_t direction, float speed){
     float radAngle = DEG_RAD * (float) angle;
 
@@ -87,25 +86,25 @@ void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPi
         switch (pwmPin){
             case MOTOR_FL_PWM:
                 // front left, 0A
-                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_0, OPR_A (front left), speed: %f", s);
+                ESP_LOGD("Motor", "Writing to UNIT_0, TIMER_0, OPR_A (front left), speed: %f", s);
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
                 break;
             case MOTOR_FR_PWM:
                 // front right, 0B
-                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_0, OPR_B (front right)");
+                ESP_LOGD("Motor", "Writing to UNIT_0, TIMER_0, OPR_B (front right)");
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
                 break;
             case MOTOR_BL_PWM:
                 // back left, 1A
-                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_1, OPR_A (back left)");
+                ESP_LOGD("Motor", "Writing to UNIT_0, TIMER_1, OPR_A (back left)");
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_A, MCPWM_DUTY_MODE_0);
                 break;
             case MOTOR_BR_PWM:
                 // back right, 1B
-                ESP_LOGI("Motor", "Writing to UNIT_0, TIMER_1, OPR_B (back right)");
+                ESP_LOGD("Motor", "Writing to UNIT_0, TIMER_1, OPR_B (back right)");
                 mcpwm_set_duty(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, s);
                 mcpwm_set_duty_type(MCPWM_UNIT_0, MCPWM_TIMER_1, MCPWM_OPR_B, MCPWM_DUTY_MODE_0);
                 break;
@@ -121,29 +120,29 @@ void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPi
         
         // TODO refactor this section
         if (speed > 0){
-            ESP_LOGI("Motor", "Speed is > 0");
+            ESP_LOGD("Motor", "Speed is > 0");
             if (reversed){
-                ESP_LOGI("Motor", "Reversed: 1, 0");
+                ESP_LOGD("Motor", "Reversed: 1, 0");
                 gpio_set_level(inOnePin, 1);
                 gpio_set_level(inTwoPin, 0);
             } else {
-                ESP_LOGI("Motor", "Not revered, 0, 1");
+                ESP_LOGD("Motor", "Not revered, 0, 1");
                 gpio_set_level(inOnePin, 0);
                 gpio_set_level(inTwoPin, 1);
             }
         } else if (speed < 0){
-            ESP_LOGI("Motor", "Speed is < 0");
+            ESP_LOGD("Motor", "Speed is < 0");
             if (reversed){
-                ESP_LOGI("Motor", "Reversed, 0, 1");
+                ESP_LOGD("Motor", "Reversed, 0, 1");
                 gpio_set_level(inOnePin, 0);
                 gpio_set_level(inTwoPin, 1);
             } else {
-                ESP_LOGI("Motor", "Not revered, 1, 0");
+                ESP_LOGD("Motor", "Not revered, 1, 0");
                 gpio_set_level(inOnePin, 1);
                 gpio_set_level(inTwoPin, 0);
             }
         } else {
-            ESP_LOGI("Motor", "Speed IS zero");
+            ESP_LOGD("Motor", "Speed IS zero");
             if (brake){
                 gpio_set_level(inOnePin, 0);
                 gpio_set_level(inTwoPin, 0);
