@@ -1,8 +1,12 @@
 #include "comms_i2c.h"
 
+SemaphoreHandle_t rdSem;
+
 static void comms_i2c_receive_task(void *pvParameters){
-    uint8_t* buf = malloc(9);
     static const char *TAG = "I2CReceiveTask";
+    uint8_t *buf = malloc(9);
+    rdSem = xSemaphoreCreateBinary();
+
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
     while (true){
@@ -12,16 +16,24 @@ static void comms_i2c_receive_task(void *pvParameters){
         size_t count = i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
 
         if (buf[0] == I2C_BEGIN_BYTE){
-            // the buffer is valid (we have the begin byte), so process it
-            ESP_LOGD(TAG, "Received %d bytes successfully", count);
-            receivedData.tsopAngle = UNPACK_16(buf[1], buf[2]);
-            receivedData.tsopStrength = UNPACK_16(buf[3], buf[4]);
-            receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
-            receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
-            ESP_LOGI(TAG, "Got: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
-                    receivedData.lineAngle, receivedData.lineSize);
+            ESP_LOGI(TAG, "Received %d bytes successfully", count);
+
+            // acquire semaphore: stop other threads from changing data while we modify it
+            if (xSemaphoreTake(rdSem, pdMS_TO_TICKS(32))){
+                receivedData.tsopAngle = UNPACK_16(buf[1], buf[2]);
+                receivedData.tsopStrength = UNPACK_16(buf[3], buf[4]);
+                receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
+                receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
+            
+                ESP_LOGD(TAG, "Got: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
+                        receivedData.lineAngle, receivedData.lineSize);    
+                // unlock the semaphore, other tasks can use the new data now
+                xSemaphoreGive(rdSem);
+            } else {
+                ESP_LOGE(TAG, "Failed to acquire semaphore, unable to write new data!");
+            }
         } else {
-            ESP_LOGW(TAG, "Invalid buffer, first byte is: %d", buf[0]);
+            ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %d, expected: %d", buf[0], I2C_BEGIN_BYTE);
         }
     }
 }
@@ -52,10 +64,10 @@ void comms_i2c_init_slave(){
         .slave.slave_addr = I2C_ESP_SLAVE_ADDR
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
-    // we use a 32 * packet size (9) buffer size since apparently just 9 is too small
+    // min size is 100 bytes, so we use a 32 * 9 byte buffer
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 288, 288, 0));
     // we don't need to pin this task (no need to access FPU), so the scheduler will put it on whichever core is doing 
-    // the least work (at least I think it will)
+    // the least amount of work (at least I think it will)
     xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");

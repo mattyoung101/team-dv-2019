@@ -31,7 +31,6 @@ void master_task(void *pvParameter){
     // Initialise hardware
     motor_init();
     comms_i2c_init_slave();
-
     ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
@@ -52,11 +51,9 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     comms_i2c_init_master();
-
     ESP_LOGI(TAG, "Slave hardware init OK");
     
     while (true){
-        // ESP_LOGI(TAG, "Sending some stuff");
         comms_i2c_send(1234, 4321, 1111, 2222);
         // vTaskDelay(pdMS_TO_TICKS(1000));
     }
@@ -68,14 +65,14 @@ void timer_callback(TimerHandle_t timer){
 
     if (timerId == TIMER_TSOP && mode == AUTOMODE_SLAVE){
         // read sensors
-        tsop_process();
-        tsop_calc(5); 
+        // tsop_process();
+        // tsop_calc(5); 
 
-        lsarray_read();
-        lsarray_calc_clusters();
-        lsarray_calc_line();
+        // lsarray_read();
+        // lsarray_calc_clusters();
+        // lsarray_calc_line();
 
-        // transmit back to master
+        // transmit back to master?
     } else {
         ESP_LOGW("TimerCallback", "Unknown timer ID given mode (id: %d, mode: %d)", timerId, mode);
     }
@@ -84,9 +81,6 @@ void timer_callback(TimerHandle_t timer){
 // Handles both HTTP, WebSocket and OTA updates. Bluetooth still runs on the master task.
 void network_task(void *pvParameter){
     static const char *TAG = "NetworkTask";
-    // we'll need to allocate lots of strings, so use a different function: network_task_handle_ws
-    // because if we use alloca in the while true loop, it'll never be freed
-    // however if we use a separate function it'll be freed when the function returns
     
     // init websockets and wifi here
 

@@ -13,11 +13,9 @@ static uint16_t tsopIndexes[TSOP_NUM];
 void tsop_init(void){
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_3, GPIO_MODE_OUTPUT));
 
     ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_1, 1));
-    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_2, 1));
-    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_3, 1));
+    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_2, 1))
 
     for (uint8_t i = 0; i < TSOP_NUM; i++) {
         ESP_ERROR_CHECK(gpio_set_direction(TSOPPins[i], GPIO_MODE_INPUT));

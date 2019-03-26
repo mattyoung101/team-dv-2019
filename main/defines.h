@@ -138,7 +138,7 @@
 
 // TSOPs
 // TODO update these pins
-#define TSOP_NUM 24
+#define TSOP_NUM 18
 #define TSOP_PWR_1 30
 #define TSOP_PWR_2 29
 #define TSOP_PWR_3 28

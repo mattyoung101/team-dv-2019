@@ -16,6 +16,8 @@ typedef struct {
 } i2c_data_t;
 
 i2c_data_t receivedData;
+// received data semaphore
+extern SemaphoreHandle_t rdSem;
 
 /** Real life slave. Sends sensor data to the master. AUTOMODE_SLAVE. **/
 void comms_i2c_init_master();

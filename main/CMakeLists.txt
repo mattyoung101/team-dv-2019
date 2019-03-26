@@ -13,6 +13,7 @@ set(COMPONENT_SRCS "main.c"
                    "cam.c"
                    "comms_i2c.c"
                    "music.c"
+                   "mplexer.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 

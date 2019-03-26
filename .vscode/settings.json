@@ -5,6 +5,7 @@
     "cSpell.words": [
         "gpio",
         "lsarray",
-        "mcpwm"
+        "mcpwm",
+        "mplexer"
     ]
 }
