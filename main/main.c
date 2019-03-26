@@ -17,6 +17,7 @@
 #include "cam.h"
 #include "states.h"
 #include "soc/efuse_reg.h"
+#include "comms_i2c.h"
 
 // This file is the main entry point of the robot that creates FreeRTOS tasks which update everything else
 
@@ -29,6 +30,7 @@ void master_task(void *pvParameter){
 
     // Initialise hardware
     motor_init();
+    comms_i2c_init_slave();
 
     ESP_LOGI(TAG, "Master hardware init OK");
 
@@ -48,18 +50,13 @@ void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
     // Initialise hardware
-    ls_init_adc();
-    lsarray_init();
-    tsop_init();
+    comms_i2c_init_master();
 
     ESP_LOGD(TAG, "Slave hardware init OK");
     
     while (true){
-        tsop_update();
-
-        // send over i2c back to master (separate thread????)
-        // if separate thread, let's use a queue which will receive data and then send it over i2c with a high priority
-        // example: https://freertos.org/tutorial/solution2.html
+        comms_i2c_send(1234, 4321, 1111, 2222);
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 

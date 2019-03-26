@@ -5,6 +5,7 @@
 #include <math.h>
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
+
 #define ARRAYSHIFTDOWN(a, lower, upper){          \
     if (upper == (sizeof(a)/sizeof(a[0])) - 1){   \
         for (int q = upper - 1; q >= lower; q--){ \
@@ -12,6 +13,13 @@
     } else {                                      \
         for (int q = upper; q >= lower; q--){     \
             *(a + q + 1) = *(a + q); }}}
+
+/** first 8 bits of unsigned 16 bit int **/
+#define HIGH_BYTE_16(num) ((((uint16_t) num) >> 8) & 0xF)
+/** second 8 bits of unsigned 16 bit int **/
+#define LOW_BYTE_16(num)  (((uint16_t) num) & 0xFF)
+/** unpack two 8 bit integers into a 16 bit integer **/
+#define UNPACK_16(a, b) ((uint16_t) ((((uint8_t) a) << 8) | ((uint8_t) b)))
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);

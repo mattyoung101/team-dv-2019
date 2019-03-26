@@ -28,6 +28,8 @@ void cam_update(void){
     // wait only one tick for a byte to come through UART, cam_read() is called every tick so we'll get it eventually
     uart_read_bytes(UART_NUM_1, &byte, 1, 1);
 
+    // TODO why don't we just read 8 bytes into the buffer and check if buffer[0] is CAM_BEIGN_BYTE?
+
     if (byte == CAM_BEGIN_BYTE){
         ESP_LOGD("Cam", "Received cam begin byte");
         // begin, bfound, bx, by, yfound, yx, yy, end

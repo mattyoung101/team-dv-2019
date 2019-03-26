@@ -2,13 +2,20 @@
 #include "driver/i2c.h"
 #include "defines.h"
 #include "alloca.h"
+#include "utils.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
+#include "string.h"
 
 typedef struct {
     uint16_t tsopAngle;
     uint16_t tsopStrength;
     uint16_t lineAngle;
     uint16_t lineSize;
-} data_packet_t;
+} i2c_data_t;
+
+i2c_data_t receivedData;
 
 /** Real life slave. Sends sensor data to the master. AUTOMODE_MASTER. **/
 void comms_i2c_init_master();

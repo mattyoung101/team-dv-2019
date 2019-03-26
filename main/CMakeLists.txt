@@ -11,6 +11,8 @@ set(COMPONENT_SRCS "main.c"
                    "fsm.c"
                    "states.c"
                    "cam.c"
+                   "comms_i2c.c"
+                   "music.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS ".")
 
