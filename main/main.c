@@ -35,13 +35,14 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Master hardware init OK");
 
     while (true){
-        printf("BACKWARDS\n");
-        motor_run_pwm(-20.0);
-        vTaskDelay(pdMS_TO_TICKS(2500));
+        // printf("BACKWARDS\n");
+        // motor_run_pwm(-20.0);
+        // vTaskDelay(pdMS_TO_TICKS(2500));
 
-        printf("FORWARDS\n");
-        motor_run_pwm(20.0);
-        vTaskDelay(pdMS_TO_TICKS(2500));
+        // printf("FORWARDS\n");
+        // motor_run_pwm(20.0);
+        // vTaskDelay(pdMS_TO_TICKS(2500));
+        vTaskDelay(portMAX_DELAY);
     }
 }
 
@@ -52,11 +53,12 @@ void slave_task(void *pvParameter){
     // Initialise hardware
     comms_i2c_init_master();
 
-    ESP_LOGD(TAG, "Slave hardware init OK");
+    ESP_LOGI(TAG, "Slave hardware init OK");
     
     while (true){
+        // ESP_LOGI(TAG, "Sending some stuff");
         comms_i2c_send(1234, 4321, 1111, 2222);
-        vTaskDelay(pdMS_TO_TICKS(1000));
+        // vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -117,12 +119,10 @@ void app_main(){
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_MASTER));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
         ESP_LOGE("AutoMode", "Successfully wrote Master to NVS.\n");
-    #elif NVS_WRITE_SLAVE
+    #elif defined NVS_WRITE_SLAVE
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_SLAVE));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
         ESP_LOGE("AutoMode", "Successfully wrote Slave to NVS.\n");
-    #else
-        ESP_LOGI("AutoMode", "No read/write performed");
     #endif
 
     err = nvs_get_u8(storageHandle, "Mode", &mode);
@@ -135,9 +135,6 @@ void app_main(){
         ESP_LOGE("AutoMode", "Unexpected error reading key: %s. Cannot continue.", esp_err_to_name(err));
         abort();
     }
-    ESP_LOGI("AutoMode", "AutoMode completed successfully.");
-
-    ESP_LOGI("AppMain", "Starting tasks...");
     fflush(stdout);
 
     // we use xTaskCreatePinnedToCore() because its necessary to get hardware accelerated floating point maths
@@ -151,16 +148,17 @@ void app_main(){
             ESP_LOGI("AppMain", "Running networking");
             // controlling the robot is much more important than sending/receiving miscellaneous data
             // but the webserver requires a bigger stack size
-            xTaskCreatePinnedToCore(network_task, "NetworkTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL, PRO_CPU_NUM);
+            xTaskCreatePinnedToCore(network_task, "NetworkTask", 8192, NULL, configMAX_PRIORITIES - 4, NULL, PRO_CPU_NUM);
         #endif
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
         
         // TSOP timer, goes off on the slave when its time to read
-        int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
-        TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", pdMS_TO_TICKS(periodUs / 1000), pdTRUE, 
-                                    (void*) TIMER_TSOP, timer_callback);
-        xTimerStart(tsopTimer, 0);
+        // TODO this aborts the device
+        // int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
+        // TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", pdMS_TO_TICKS(periodUs / 1000), pdTRUE, 
+        //                             (void*) TIMER_TSOP, timer_callback);
+        // xTimerStart(tsopTimer, 0);
     }
 }
