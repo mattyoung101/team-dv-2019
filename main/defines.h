@@ -75,7 +75,7 @@
 #define MOTOR_FL_PWM 12
 #define MOTOR_FL_IN1 4
 #define MOTOR_FL_IN2 5
-#define MOTOR_FL_ANGLE 315
+#define MOTOR_FL_ANGLE 300
 #define MOTOR_FL_REVERSED false
 #define ENC_FL_IN1 1
 #define ENC_FL_IN2 0
@@ -83,7 +83,7 @@
 #define MOTOR_FR_PWM 13
 #define MOTOR_FR_IN1 18
 #define MOTOR_FR_IN2 19
-#define MOTOR_FR_ANGLE 45
+#define MOTOR_FR_ANGLE 60
 #define MOTOR_FR_REVERSED false
 #define ENC_FR_IN1 3
 #define ENC_FR_IN2 2
@@ -92,15 +92,15 @@
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
-#define MOTOR_BL_REVERSED true
+#define MOTOR_BL_REVERSED false
 #define ENC_BL_IN1 5
 #define ENC_BL_IN2 4
 
 #define MOTOR_BR_PWM 15
 #define MOTOR_BR_IN1 27
 #define MOTOR_BR_IN2 32
-#define MOTOR_BR_ANGLE 130
-#define MOTOR_BR_REVERSED true
+#define MOTOR_BR_ANGLE 135
+#define MOTOR_BR_REVERSED false
 #define ENC_BR_IN1 7
 #define ENC_BR_IN2 6
 

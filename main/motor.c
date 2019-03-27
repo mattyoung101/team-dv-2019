@@ -1,12 +1,11 @@
 #include "motor.h"
 
-static float pwmValues[4];
+// static float pwmValues[4];
 static float flmotor_speed;
 static float frmotor_speed;
 static float blmotor_speed;
 static float brmotor_speed;
 
-// TODO change this to use MCPWM
 void motor_init(void){
     /**
      * Ok, so here's the deal: we have three ways to do PWM: LEDC, MCPWM and Sigma Delta and the best is one MCPWM
@@ -54,27 +53,28 @@ void motor_init(void){
 }
 
 void motor_calc(int16_t angle, int16_t direction, float speed){
-    float radAngle = DEG_RAD * (float) angle;
+    angle = floatMod(450 - angle, 360.0f);
 
-    pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
-    pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
-    pwmValues[2] = cosf(((MOTOR_BL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
-    pwmValues[3] = cosf(((MOTOR_BR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
+    float sinAngle = sinf(DEG_RAD * angle);
+    float cosAngle = cosf(DEG_RAD * angle);
 
-    flmotor_speed = speed * pwmValues[0] + direction;
-    frmotor_speed = speed * pwmValues[1] + direction;
-    blmotor_speed = speed * pwmValues[2] + direction;
-    brmotor_speed = speed * pwmValues[3] + direction;
+    float alpha = DEG_RAD * MOTOR_FR_ANGLE;
+    float beta = DEG_RAD * (180 - MOTOR_BR_ANGLE);
 
-    float maxSpeed = fmaxf(
-        fmaxf(fabsf(flmotor_speed), fabsf(frmotor_speed)), 
-        fmaxf(fabsf(blmotor_speed), fabsf(brmotor_speed))
-        );
+    frmotor_speed = (-cosAngle * (sinf(alpha) + sinf(beta)) + cosf(alpha) * sinAngle + cosf(beta) * 
+                    (sinAngle + 2 * direction * sinf(alpha)) + direction * powf(sinf(beta), 2.0) / 
+                    (2.0 * (sinf(alpha) + sinf(beta)) * (cosf(alpha) + cosf(beta))));
+    brmotor_speed = ((direction - frmotor_speed) * (sinf(alpha) + sinf(beta)) + sinAngle) / (sinf(alpha) + sinf(beta));
+    blmotor_speed = direction - frmotor_speed;
+    flmotor_speed = direction - brmotor_speed;
 
-    flmotor_speed = speed == 0 ? flmotor_speed : (flmotor_speed / maxSpeed) * speed;
-    frmotor_speed = speed == 0 ? frmotor_speed : (frmotor_speed / maxSpeed) * speed;
-    blmotor_speed = speed == 0 ? blmotor_speed : (blmotor_speed / maxSpeed) * speed;
-    brmotor_speed = speed == 0 ? brmotor_speed : (brmotor_speed / maxSpeed) * speed;
+    float ratio = speed / fmaxf(fabsf(frmotor_speed), fmaxf(fabsf(brmotor_speed), fmaxf(fabsf(blmotor_speed), 
+                fabsf(flmotor_speed))));
+
+    frmotor_speed *= ratio;
+    brmotor_speed *= ratio;
+    blmotor_speed *= ratio;
+    flmotor_speed *= ratio;
 }
 
 void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
