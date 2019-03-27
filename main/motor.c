@@ -1,6 +1,6 @@
 #include "motor.h"
 
-static float pwmValues[4];
+// static float pwmValues[4];
 static float flmotor_speed;
 static float frmotor_speed;
 static float blmotor_speed;
@@ -54,27 +54,25 @@ void motor_init(void){
 }
 
 void motor_calc(int16_t angle, int16_t direction, float speed){
-    float radAngle = DEG_RAD * (float) angle;
+    angle = floatMod(450 - angle, 360.0f);
 
-    pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
-    pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
-    pwmValues[2] = cosf(((MOTOR_BL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
-    pwmValues[3] = cosf(((MOTOR_BR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
+    float sinAngle = sinf(DEG_RAD * angle);
+    float cosAngle = cosf(DEG_RAD * angle);
 
-    flmotor_speed = speed * pwmValues[0] + direction;
-    frmotor_speed = speed * pwmValues[1] + direction;
-    blmotor_speed = speed * pwmValues[2] + direction;
-    brmotor_speed = speed * pwmValues[3] + direction;
+    int alpha = DEG_RAD * MOTOR_FR_ANGLE;
+    int beta = DEG_RAD * (180 - MOTOR_BR_ANGLE);
 
-    float maxSpeed = fmaxf(
-        fmaxf(fabsf(flmotor_speed), fabsf(frmotor_speed)), 
-        fmaxf(fabsf(blmotor_speed), fabsf(brmotor_speed))
-        );
+    frmotor_speed = (-cosAngle * (sin(alpha) + sin(beta)) + cos(alpha) * sinAngle + cos(beta) * (sinAngle + 2 * direction * sin(alpha)) + direction * pow(sin(beta), 2) / (2 * (sin(alpha) + sin(beta)) * (cos(alpha) + cos(beta))));
+    brmotor_speed = ((direction - frmotor_speed) * (sin(alpha) + sin(beta)) + sinAngle) / (sin(alpha) + sin(beta));
+    blmotor_speed = direction - frmotor_speed;
+    flmotor_speed = direction - brmotor_speed;
 
-    flmotor_speed = speed == 0 ? flmotor_speed : (flmotor_speed / maxSpeed) * speed;
-    frmotor_speed = speed == 0 ? frmotor_speed : (frmotor_speed / maxSpeed) * speed;
-    blmotor_speed = speed == 0 ? blmotor_speed : (blmotor_speed / maxSpeed) * speed;
-    brmotor_speed = speed == 0 ? brmotor_speed : (brmotor_speed / maxSpeed) * speed;
+    float ratio = speed / max(abs(frmotor_speed), max(abs(brmotor_speed), max(abs(blmotor_speed), abs(flmotor_speed))));
+
+    frmotor_speed *= ratio;
+    brmotor_speed *= ratio;
+    blmotor_speed *= ratio;
+    flmotor_speed *= ratio;
 }
 
 void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
