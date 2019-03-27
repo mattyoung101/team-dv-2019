@@ -9,7 +9,7 @@ fsm_state_t centreState = {&state_nothing_enter, &state_nothing_exit, &state_cen
 fsm_state_t pursueState = {&state_nothing_enter, &state_nothing_enter, &state_pursue_update, "Pursue"};
 
 // Centre
-void state_centre_update(state_machine *fsm){
+void state_centre_update(state_machine_t *fsm){
     // if ball is visible, pursue it
     if (robotState.ballAngle != TSOP_NO_BALL_ANGLE){
         ESP_LOGI("CentreState", "Changing to pursue: ball found (angle %d)", robotState.ballAngle);
@@ -41,6 +41,6 @@ void state_centre_update(state_machine *fsm){
 }
 
 // Pursue
-void state_pursue_update(state_machine *fsm){
+void state_pursue_update(state_machine_t *fsm){
 
 }

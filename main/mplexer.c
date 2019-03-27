@@ -39,6 +39,8 @@ uint8_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin, uint32_t level){
 }
 
 gpio_num_t mplexer_ir_resolve(uint8_t num){
+    // TODO this won't work since it doesn't even go through the bloody multiplexer in the first place
+    // and calling it the way we want to mplexer_4bit_read(mplexer_ir_resolve()) will break shit
     if (num == 4){
         return 27;
     } else if (num == 5){

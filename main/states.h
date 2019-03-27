@@ -23,17 +23,17 @@ typedef struct {
 robot_state_t robotState;
 
 // Generic do nothing states (used for example if no "enter" method is needed on a state)
-void state_nothing_enter(state_machine *fsm){}
-void state_nothing_exit(state_machine *fsm){}
-void state_nothing_update(state_machine *fsm){}
+void state_nothing_enter(state_machine_t *fsm){}
+void state_nothing_exit(state_machine_t *fsm){}
+void state_nothing_update(state_machine_t *fsm){}
 
 // Centre: moves the robot to the centre of the field. Only update.
-void state_centre_update(state_machine *fsm);
+void state_centre_update(state_machine_t *fsm);
 extern fsm_state_t centreState;
 
 // Pursue ball: basically an orbit
-void state_pursue_enter(state_machine *fsm);
-void state_pursue_update(state_machine *fsm);
+void state_pursue_enter(state_machine_t *fsm);
+void state_pursue_update(state_machine_t *fsm);
 extern fsm_state_t pursueState;
 
 /*

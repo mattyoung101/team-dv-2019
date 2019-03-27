@@ -18,10 +18,10 @@
 #include "states.h"
 #include "soc/efuse_reg.h"
 #include "comms_i2c.h"
-
-// This file is the main entry point of the robot that creates FreeRTOS tasks which update everything else
+#include "esp_timer.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
+static esp_timer_handle_t tsopTimer;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
@@ -32,6 +32,9 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     ESP_LOGI(TAG, "Master hardware init OK");
+
+    // Initialise software controllers
+    state_machine_t stateMachine;
 
     while (true){
         // printf("BACKWARDS\n");
@@ -54,28 +57,17 @@ void slave_task(void *pvParameter){
     ESP_LOGI(TAG, "Slave hardware init OK");
     
     while (true){
-        comms_i2c_send(1234, 4321, 1111, 2222);
-        // vTaskDelay(pdMS_TO_TICKS(1000));
+        // tsop_process();
+        // tsop_calc(5);
+        // comms_i2c_send(tsopAngle, tsopStrength, lineAngle, lineSize);
+        comms_i2c_send(1234, 4321, 1010, 64321);
     }
 }
 
-// Callback for all timers. Should only run on the slave.
-void timer_callback(TimerHandle_t timer){
-    uint32_t timerId = (uint32_t) pvTimerGetTimerID(timer);
-
-    if (timerId == TIMER_TSOP && mode == AUTOMODE_SLAVE){
-        // read sensors
-        // tsop_process();
-        // tsop_calc(5); 
-
-        // lsarray_read();
-        // lsarray_calc_clusters();
-        // lsarray_calc_line();
-
-        // transmit back to master?
-    } else {
-        ESP_LOGW("TimerCallback", "Unknown timer ID given mode (id: %d, mode: %d)", timerId, mode);
-    }
+// Called when the TSOP timer goes off
+void tsop_timer_callback(void *args){
+    ESP_LOGI("TSOPTimer", "Going off");
+    tsop_update();
 }
 
 // Handles both HTTP, WebSocket and OTA updates. Bluetooth still runs on the master task.
@@ -92,8 +84,6 @@ void network_task(void *pvParameter){
 }
 
 void app_main(){
-    esp_log_level_set("*", ESP_LOG_INFO);
-
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {
@@ -117,6 +107,8 @@ void app_main(){
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_SLAVE));
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
         ESP_LOGE("AutoMode", "Successfully wrote Slave to NVS.\n");
+    #else
+        ESP_LOGI("AutoMode", "No read/write performed");
     #endif
 
     err = nvs_get_u8(storageHandle, "Mode", &mode);
@@ -137,22 +129,23 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
-        xTaskCreatePinnedToCore(master_task, "MasterTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        xTaskCreatePinnedToCore(master_task, "MasterTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
         #ifdef WEBSOCKET_ENABLED
             ESP_LOGI("AppMain", "Running networking");
-            // controlling the robot is much more important than sending/receiving miscellaneous data
-            // but the webserver requires a bigger stack size
-            xTaskCreatePinnedToCore(network_task, "NetworkTask", 8192, NULL, configMAX_PRIORITIES - 4, NULL, PRO_CPU_NUM);
+            xTaskCreate(network_task, "NetworkTask", 8192, NULL, configMAX_PRIORITIES - 4, NULL);
         #endif
     } else {
         ESP_LOGI("AppMain", "Running as slave");
-        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 4096, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
-        
-        // TSOP timer, goes off on the slave when its time to read
-        // TODO this aborts the device
-        // int32_t periodUs = 833 * TSOP_TIMER_PERIOD;
-        // TimerHandle_t tsopTimer = xTimerCreate("TSOPTimer", pdMS_TO_TICKS(periodUs / 1000), pdTRUE, 
-        //                             (void*) TIMER_TSOP, timer_callback);
-        // xTimerStart(tsopTimer, 0);
+
+        // Start TSOP timer
+        esp_timer_create_args_t args = {
+            .callback = &tsop_timer_callback,
+            .name = "TSOPTimer",
+            .arg = NULL
+        };
+        ESP_ERROR_CHECK(esp_timer_create(&args, &tsopTimer));
+        ESP_ERROR_CHECK(esp_timer_start_periodic(tsopTimer, 833 * TSOP_TIMER_PERIOD));
+
+        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
     }
 }

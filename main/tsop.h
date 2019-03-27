@@ -4,6 +4,7 @@
 #include <math.h>
 #include "defines.h"
 #include "utils.h"
+#include "mplexer.h"
 
 uint16_t tsopValues[TSOP_NUM];
 uint16_t tsopSortedValues[TSOP_NUM];

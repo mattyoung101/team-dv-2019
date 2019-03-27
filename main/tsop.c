@@ -7,15 +7,16 @@ static float scaledCos[TSOP_NUM];
 static uint16_t tsopCounter;
 static uint16_t tempValues[TSOP_NUM];
 static uint16_t tsopIndexes[TSOP_NUM];
-
-// This file contains the code that reads and processes the TSOPs
+static mplexer_4bit_t tsopMux = {
+    // TODO pins
+};
 
 void tsop_init(void){
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT));
 
     ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_1, 1));
-    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_2, 1))
+    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_2, 1));
 
     for (uint8_t i = 0; i < TSOP_NUM; i++) {
         ESP_ERROR_CHECK(gpio_set_direction(TSOPPins[i], GPIO_MODE_INPUT));
@@ -28,6 +29,8 @@ void tsop_init(void){
         scaledCos[i] = cosf(angle);
         scaledSin[i] = sinf(angle);
     }
+
+    mplexer_4bit_init(&tsopMux);
 }
 
 void tsop_update(void){

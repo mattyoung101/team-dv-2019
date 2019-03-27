@@ -30,7 +30,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 // unlock the semaphore, other tasks can use the new data now
                 xSemaphoreGive(rdSem);
             } else {
-                ESP_LOGE(TAG, "Failed to acquire semaphore, unable to write new data!");
+                ESP_LOGW(TAG, "Failed to acquire semaphore in time, unable to write new data!");
             }
         } else {
             ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %d, expected: %d", buf[0], I2C_BEGIN_BYTE);
