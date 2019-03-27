@@ -20,10 +20,6 @@
 #define LOW_BYTE_16(num)  (((uint16_t) num) & 0xFF)
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((((uint8_t) a) << 8) | ((uint8_t) b)))
-#define max(a,b) \
-    ({ __typeof__ (a) _a = (a); \
-    __typeof__ (b) _b = (b); \
-    _a > _b ? _a : _b; })
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
