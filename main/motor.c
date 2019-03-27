@@ -6,7 +6,6 @@ static float frmotor_speed;
 static float blmotor_speed;
 static float brmotor_speed;
 
-// TODO change this to use MCPWM
 void motor_init(void){
     /**
      * Ok, so here's the deal: we have three ways to do PWM: LEDC, MCPWM and Sigma Delta and the best is one MCPWM
@@ -59,15 +58,18 @@ void motor_calc(int16_t angle, int16_t direction, float speed){
     float sinAngle = sinf(DEG_RAD * angle);
     float cosAngle = cosf(DEG_RAD * angle);
 
-    int alpha = DEG_RAD * MOTOR_FR_ANGLE;
-    int beta = DEG_RAD * (180 - MOTOR_BR_ANGLE);
+    float alpha = DEG_RAD * MOTOR_FR_ANGLE;
+    float beta = DEG_RAD * (180 - MOTOR_BR_ANGLE);
 
-    frmotor_speed = (-cosAngle * (sin(alpha) + sin(beta)) + cos(alpha) * sinAngle + cos(beta) * (sinAngle + 2 * direction * sin(alpha)) + direction * pow(sin(beta), 2) / (2 * (sin(alpha) + sin(beta)) * (cos(alpha) + cos(beta))));
-    brmotor_speed = ((direction - frmotor_speed) * (sin(alpha) + sin(beta)) + sinAngle) / (sin(alpha) + sin(beta));
+    frmotor_speed = (-cosAngle * (sinf(alpha) + sinf(beta)) + cosf(alpha) * sinAngle + cosf(beta) * 
+                    (sinAngle + 2 * direction * sinf(alpha)) + direction * powf(sinf(beta), 2.0) / 
+                    (2.0 * (sinf(alpha) + sinf(beta)) * (cosf(alpha) + cosf(beta))));
+    brmotor_speed = ((direction - frmotor_speed) * (sinf(alpha) + sinf(beta)) + sinAngle) / (sinf(alpha) + sinf(beta));
     blmotor_speed = direction - frmotor_speed;
     flmotor_speed = direction - brmotor_speed;
 
-    float ratio = speed / max(abs(frmotor_speed), max(abs(brmotor_speed), max(abs(blmotor_speed), abs(flmotor_speed))));
+    float ratio = speed / fmaxf(fabsf(frmotor_speed), fmaxf(fabsf(brmotor_speed), fmaxf(fabsf(blmotor_speed), 
+                fabsf(flmotor_speed))));
 
     frmotor_speed *= ratio;
     brmotor_speed *= ratio;
