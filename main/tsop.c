@@ -8,7 +8,7 @@ static uint16_t tsopIndexes[TSOP_NUM];
 static mplexer_4bit_t tsopMux = {
     TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_OUT
 };
-// Index = TSOP number, value = multiplexer pin. If 255 it's unconnected.
+// Index = TSOP number, Value = multiplexer pin. If 255 it's unconnected.
 static const gpio_num_t irTable[] = {8, 0, 1, 2, 255, 255, 7, 6, 5, 4, 3, 15, 14, 13, 12, 11, 10, 9};
 
 void tsop_init(void){
@@ -30,7 +30,7 @@ void tsop_init(void){
     }
 }
 
-void tsop_update(void){
+void tsop_update(void *args){
     for (int i = 0; i < TSOP_NUM; i++){
         if (i == 4){
             tempValues[i] += gpio_get_level(TSOP_4) ^ 1;
@@ -52,10 +52,9 @@ void tsop_process(void){
         tsopSortedValues[i] = 0;
         tsopIndexes[i] = 0;
     }
-
     tsopCounter = 0;
 
-    // TODO replace this with a call to qsort()
+    // quicksort this?
     for (int i = 0; i < TSOP_NUM; i++) {
         for (int j = 0; j < TSOP_NUM; j++) {
             if (tsopValues[i] > tsopSortedValues[j]) {
@@ -75,13 +74,6 @@ void tsop_process(void){
     }
 }
 
-void tsop_dump(void){
-    ESP_LOGI("TSOP", "Values: %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d",
-        tempValues[0], tempValues[1], tempValues[2], tempValues[3], tempValues[4], tempValues[5], tempValues[6], 
-        tempValues[7], tempValues[8], tempValues[9], tempValues[10], tempValues[11], tempValues[12], tempValues[13], 
-        tempValues[14], tempValues[15], tempValues[16], tempValues[17]);
-}
-
 void tsop_calc(uint8_t n){
     int16_t x = 0;
     int16_t y = 0;
@@ -94,11 +86,18 @@ void tsop_calc(uint8_t n){
 
     if (x == 0 && y == 0) {
         // When vectors sum to (0, 0), we're in trouble. We've got some dodgy data
-        ESP_LOGI("TSOP", "No ball bucko");
+        ESP_LOGV("TSOP", "No ball found");
         tsopAngle = (float) TSOP_NO_BALL_ANGLE;
     } else {
         tsopAngle = mod(atan2f(y, x) * RAD_DEG, 360);
     }
 
     tsopStrength = sqrtf(x * x + y * y);
+}
+
+void tsop_dump(void){
+    ESP_LOGI("TSOP", "Values: %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d",
+        tempValues[0], tempValues[1], tempValues[2], tempValues[3], tempValues[4], tempValues[5], tempValues[6], 
+        tempValues[7], tempValues[8], tempValues[9], tempValues[10], tempValues[11], tempValues[12], tempValues[13], 
+        tempValues[14], tempValues[15], tempValues[16], tempValues[17]);
 }

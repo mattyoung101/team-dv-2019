@@ -14,7 +14,7 @@ static void comms_i2c_receive_task(void *pvParameters){
         memset(buf, 0, 9);
 
         // wait indefinitely for our bytes to come in
-        size_t count = i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
+        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
 
         if (buf[0] == I2C_BEGIN_BYTE){
             // acquire semaphore: stop other threads from changing data while we modify it
@@ -24,12 +24,12 @@ static void comms_i2c_receive_task(void *pvParameters){
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
             
-                ESP_LOGD(TAG, "Received: [%d, %d, %d, %d]", receivedData.tsopAngle, receivedData.tsopStrength, 
+                ESP_LOGD(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
                         receivedData.lineAngle, receivedData.lineSize);    
                 // unlock the semaphore, other tasks can use the new data now
                 xSemaphoreGive(rdSem);
             } else {
-                ESP_LOGW(TAG, "Failed to acquire semaphore in time, unable to write new data!");
+                ESP_LOGW(TAG, "Failed to acquire semaphore in time!");
             }
         } else {
             ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %d, expected: %d", buf[0], I2C_BEGIN_BYTE);

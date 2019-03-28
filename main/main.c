@@ -61,7 +61,7 @@ void slave_task(void *pvParameter){
     
     while (true){
         for (int i = 0; i < 255; i++){
-            tsop_update();
+            tsop_update(NULL);
         }
         // tsop_dump();
         tsop_process();
@@ -129,7 +129,7 @@ void app_main(){
 
         // Start TSOP timer
         esp_timer_create_args_t args = {
-            .callback = &tsop_timer_callback,
+            .callback = &tsop_update,
             .name = "TSOPTimer",
             .arg = NULL
         };

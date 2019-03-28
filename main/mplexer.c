@@ -35,22 +35,3 @@ uint8_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin){
     
     return gpio_get_level(plexer->out);
 }
-
-// gpio_num_t mplexer_ir_resolve(uint8_t num){
-//     // TODO this won't work since it doesn't even go through the bloody multiplexer in the first place
-//     // and calling it the way we want to mplexer_4bit_read(mplexer_ir_resolve()) will break shit
-//     if (num == 4){
-//         return 27;
-//     } else if (num == 5){
-//         return 26;
-//     } else {
-//         // convert dumb table of plexer->tsop to tsop->plexer
-//         for (int i = 0; i < TSOP_NUM - 2; i++){
-//             if (irTable[i] == num){
-//                 return i;
-//             }
-//         }
-//         ESP_LOGE("Multiplexer", "Invalid/unmapped TSOP number: %d", num);
-//         return -1;
-//     }
-// }
