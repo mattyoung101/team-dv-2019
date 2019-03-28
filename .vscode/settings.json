@@ -3,9 +3,11 @@
         "str.h": "c"
     },
     "cSpell.words": [
+        "SSID",
         "gpio",
         "lsarray",
         "mcpwm",
-        "mplexer"
+        "mplexer",
+        "wifi"
     ]
 }

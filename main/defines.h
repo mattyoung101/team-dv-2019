@@ -5,6 +5,10 @@
 // #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
+// You will need to uncomment both of these
+// #define NVS_WRITE_ROBOTNUM
+// #define NVS_ROBOTNUM 0 // 0 or 1, 0 = wifi host, 1 = wifi client
+
 // Websocket
 // #define WEBSOCKET_ENABLED
 
@@ -51,9 +55,11 @@
 #define ADC_SAMPLES 32
 
 // WiFi
-#define WIFI_SSID "Deus Vult Robot"
+#define WIFI_SSID "DVRobot%d"
 #define WIFI_PASS "ClapInts123"
-#define WIFI_MAXCON 2
+#define WIFI_MAXCON 3 // 1 for other robot, 2 for websockets 
+#define SOCK_ADDR "192.168.0.165"
+#define SOCK_PORT 12323
 
 // Camera
 #define CAM_DATA_LEN 8

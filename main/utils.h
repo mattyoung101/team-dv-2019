@@ -3,6 +3,9 @@
 #include "defines.h"
 #include <stdint.h>
 #include <math.h>
+#include "nvs_flash.h"
+#include "esp_err.h"
+#include "esp_log.h"
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 

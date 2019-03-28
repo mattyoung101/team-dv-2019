@@ -19,6 +19,7 @@
 #include "soc/efuse_reg.h"
 #include "comms_i2c.h"
 #include "esp_timer.h"
+#include "comms_wifi.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 static esp_timer_handle_t tsopTimer;
@@ -70,19 +71,6 @@ void tsop_timer_callback(void *args){
     tsop_update();
 }
 
-// Handles both HTTP, WebSocket and OTA updates. Bluetooth still runs on the master task.
-void network_task(void *pvParameter){
-    static const char *TAG = "NetworkTask";
-    
-    // init websockets and wifi here
-
-    ESP_LOGI(TAG, "Networking init OK");
-    while (true){
-        // serve websockets, in this case just block forever
-        vTaskDelay(portMAX_DELAY);
-    }
-}
-
 void app_main(){
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
@@ -130,10 +118,6 @@ void app_main(){
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
         xTaskCreatePinnedToCore(master_task, "MasterTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-        #ifdef WEBSOCKET_ENABLED
-            ESP_LOGI("AppMain", "Running networking");
-            xTaskCreate(network_task, "NetworkTask", 8192, NULL, configMAX_PRIORITIES - 4, NULL);
-        #endif
     } else {
         ESP_LOGI("AppMain", "Running as slave");
 
