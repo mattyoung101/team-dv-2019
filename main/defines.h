@@ -55,7 +55,7 @@
 #define ADC_SAMPLES 32
 
 // WiFi
-#define WIFI_SSID "DVRobot%d"
+#define WIFI_SSID "DVRobotLink"
 #define WIFI_PASS "ClapInts123"
 #define WIFI_MAXCON 3 // 1 for other robot, 2 for websockets 
 #define SOCK_ADDR "192.168.0.165"
@@ -143,24 +143,18 @@
 #define LS_23 0
 
 // TSOPs
-// TODO update these pins
 #define TSOP_NUM 18
-#define TSOP_PWR_1 30
-#define TSOP_PWR_2 29
-#define TSOP_PWR_3 28
+#define TSOP_PWR_1 32
+#define TSOP_PWR_2 33
 
-#define TSOP_0 1
-#define TSOP_1 5
-#define TSOP_2 7
-#define TSOP_3 9
-#define TSOP_4 25
-#define TSOP_5 27
-#define TSOP_6 26
-#define TSOP_7 24
-#define TSOP_8 8
-#define TSOP_9 6
-#define TSOP_10 2
-#define TSOP_11 0
+#define TSOP_MUX_S0 16
+#define TSOP_MUX_S1 17
+#define TSOP_MUX_S2 18
+#define TSOP_MUX_S3 19
+#define TSOP_MUX_OUT 35
+#define TSOP_4 27
+#define TSOP_5 26
+
 
 #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD

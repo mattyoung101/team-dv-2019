@@ -32,6 +32,7 @@ void master_task(void *pvParameter){
     // Initialise hardware
     motor_init();
     comms_i2c_init_slave();
+    comms_wifi_init_host();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
@@ -45,7 +46,7 @@ void master_task(void *pvParameter){
         // printf("FORWARDS\n");
         // motor_run_pwm(20.0);
         // vTaskDelay(pdMS_TO_TICKS(2500));
-        vTaskDelay(portMAX_DELAY);
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
 
@@ -55,20 +56,25 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     comms_i2c_init_master();
+    tsop_init();
     ESP_LOGI(TAG, "Slave hardware init OK");
     
     while (true){
-        // tsop_process();
-        // tsop_calc(5);
-        // comms_i2c_send(tsopAngle, tsopStrength, lineAngle, lineSize);
+        for (int i = 0; i < 255; i++){
+            tsop_update();
+        }
+        // tsop_dump();
+        tsop_process();
+        tsop_calc(5);
+
+        ESP_LOGI(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
         comms_i2c_send(1234, 4321, 1010, 64321);
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
 // Called when the TSOP timer goes off
 void tsop_timer_callback(void *args){
-    ESP_LOGI("TSOPTimer", "Going off");
-    tsop_update();
 }
 
 void app_main(){

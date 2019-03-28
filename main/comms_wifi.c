@@ -2,6 +2,26 @@
 
 static EventGroupHandle_t wifi_event_group;
 
+static int send_packet(int socket, int32_t *txBuf, const char *TAG){
+    int err = send(socket, txBuf, sizeof(txBuf), 0);
+    if (err < 0){
+        ESP_LOGE(TAG, "Unable to send data: error %s", strerror(errno));
+        return -1;
+    }
+    return 0;
+}
+
+static int receive_packet(int socket, int32_t *rxBuf, const char *TAG){
+    int len = recv(socket, rxBuf, sizeof(rxBuf), 0);
+    if (len < 0){
+        ESP_LOGE(TAG, "Unable to receive data: error %s", strerror(errno));
+        return -1;
+    }
+
+    ESP_LOGI(TAG, "Received %d bytes successfully", len);
+    return len;
+}
+
 static void socket_server(void *pvParameter){
     static const char *TAG = "SocketServer";
     int32_t txBuf[WIFI_BUF_SIZE];
@@ -80,26 +100,6 @@ static void socket_server(void *pvParameter){
 
     ESP_LOGE(TAG, "Error occurred, destroying task");
     vTaskDelete(NULL);
-}
-
-static int send_packet(int socket, int32_t *txBuf, const char *TAG){
-    int err = send(socket, txBuf, sizeof(txBuf), 0);
-    if (err < 0){
-        ESP_LOGE(TAG, "Unable to send data: error %s", strerror(errno));
-        return -1;
-    }
-    return 0;
-}
-
-static int receive_packet(int socket, int32_t *rxBuf, const char *TAG){
-    int len = recv(socket, rxBuf, sizeof(rxBuf), 0);
-    if (len < 0){
-        ESP_LOGE(TAG, "Unable to receive data: error %s", strerror(errno));
-        return -1;
-    }
-
-    ESP_LOGI(TAG, "Received %d bytes successfully", len);
-    return len;
 }
 
 static void socket_client(void *pvParameter){
@@ -237,7 +237,7 @@ void comms_wifi_init_host(){
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_LOGI("CommsWiFi_H", "WiFi AP init OK");
 
-    xTaskCreate(socket_server, "SocketServerTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL);
+    // xTaskCreate(socket_server, "SocketServerTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL);
 }
 
 void comms_wifi_init_client(){

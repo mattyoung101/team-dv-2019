@@ -15,3 +15,4 @@ void tsop_init(void);
 void tsop_update(void);
 void tsop_process(void);
 void tsop_calc(uint8_t n);
+void tsop_dump(void);

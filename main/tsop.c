@@ -1,53 +1,46 @@
 #include "tsop.h"
 
-static const gpio_num_t TSOPPins[TSOP_NUM] = {TSOP_0, TSOP_1, TSOP_2, TSOP_3, TSOP_4, TSOP_5, TSOP_6, TSOP_7, TSOP_8, TSOP_9, 
-                                TSOP_10, TSOP_11};
 static float scaledSin[TSOP_NUM];
 static float scaledCos[TSOP_NUM];
 static uint16_t tsopCounter;
 static uint16_t tempValues[TSOP_NUM];
 static uint16_t tsopIndexes[TSOP_NUM];
 static mplexer_4bit_t tsopMux = {
-    // TODO pins
+    TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_OUT
 };
+// Index = TSOP number, value = multiplexer pin. If 255 it's unconnected.
+static const gpio_num_t irTable[] = {8, 0, 1, 2, 255, 255, 7, 6, 5, 4, 3, 15, 14, 13, 12, 11, 10, 9};
 
 void tsop_init(void){
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT));
     ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT));
-
     ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_1, 1));
     ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_2, 1));
 
-    for (uint8_t i = 0; i < TSOP_NUM; i++) {
-        ESP_ERROR_CHECK(gpio_set_direction(TSOPPins[i], GPIO_MODE_INPUT));
-    }
+    ESP_ERROR_CHECK(gpio_set_direction(TSOP_4, GPIO_MODE_INPUT));
+    ESP_ERROR_CHECK(gpio_set_direction(TSOP_5, GPIO_MODE_INPUT));
 
-    // TODO precalculate the scaled table
+    mplexer_4bit_init(&tsopMux);
+
     for (int i = 0; i < TSOP_NUM; i++){
         float angle = (i * (360 / TSOP_NUM)) * DEG_RAD;
 
         scaledCos[i] = cosf(angle);
         scaledSin[i] = sinf(angle);
     }
-
-    mplexer_4bit_init(&tsopMux);
 }
 
 void tsop_update(void){
-    // Read each sensor once
-    tempValues[0] += gpio_get_level(TSOP_0) ^ 1;
-    tempValues[1] += gpio_get_level(TSOP_1) ^ 1;
-    tempValues[2] += gpio_get_level(TSOP_2) ^ 1;
-    tempValues[3] += gpio_get_level(TSOP_3) ^ 1;
-    tempValues[4] += gpio_get_level(TSOP_4) ^ 1;
-    tempValues[5] += gpio_get_level(TSOP_5) ^ 1;
-    tempValues[6] += gpio_get_level(TSOP_6) ^ 1;
-    tempValues[7] += gpio_get_level(TSOP_7) ^ 1;
-    tempValues[8] += gpio_get_level(TSOP_8) ^ 1;
-    tempValues[9] += gpio_get_level(TSOP_9) ^ 1;
-    tempValues[10] += gpio_get_level(TSOP_10) ^ 1;
-    tempValues[11] += gpio_get_level(TSOP_11) ^ 1;
-
+    for (int i = 0; i < TSOP_NUM; i++){
+        if (i == 4){
+            tempValues[i] += gpio_get_level(TSOP_4) ^ 1;
+        } else if (i == 5){
+            tempValues[i] += gpio_get_level(TSOP_5) ^ 1;
+        } else {
+            tempValues[i] += mplexer_4bit_read(&tsopMux, irTable[i]) ^ 1;
+        }
+    }
+    
     tsopCounter++;
 }
 
@@ -82,6 +75,13 @@ void tsop_process(void){
     }
 }
 
+void tsop_dump(void){
+    ESP_LOGI("TSOP", "Values: %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d",
+        tempValues[0], tempValues[1], tempValues[2], tempValues[3], tempValues[4], tempValues[5], tempValues[6], 
+        tempValues[7], tempValues[8], tempValues[9], tempValues[10], tempValues[11], tempValues[12], tempValues[13], 
+        tempValues[14], tempValues[15], tempValues[16], tempValues[17]);
+}
+
 void tsop_calc(uint8_t n){
     int16_t x = 0;
     int16_t y = 0;
@@ -94,7 +94,8 @@ void tsop_calc(uint8_t n){
 
     if (x == 0 && y == 0) {
         // When vectors sum to (0, 0), we're in trouble. We've got some dodgy data
-        tsopAngle = TSOP_NO_BALL_ANGLE;
+        ESP_LOGI("TSOP", "No ball bucko");
+        tsopAngle = (float) TSOP_NO_BALL_ANGLE;
     } else {
         tsopAngle = mod(atan2f(y, x) * RAD_DEG, 360);
     }

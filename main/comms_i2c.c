@@ -6,6 +6,7 @@ static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
     uint8_t *buf = malloc(9);
     rdSem = xSemaphoreCreateBinary();
+    xSemaphoreGive(rdSem);
 
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
@@ -16,16 +17,14 @@ static void comms_i2c_receive_task(void *pvParameters){
         size_t count = i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
 
         if (buf[0] == I2C_BEGIN_BYTE){
-            ESP_LOGI(TAG, "Received %d bytes successfully", count);
-
             // acquire semaphore: stop other threads from changing data while we modify it
-            if (xSemaphoreTake(rdSem, pdMS_TO_TICKS(32))){
+            if (xSemaphoreTake(rdSem, pdMS_TO_TICKS(25))){
                 receivedData.tsopAngle = UNPACK_16(buf[1], buf[2]);
                 receivedData.tsopStrength = UNPACK_16(buf[3], buf[4]);
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
             
-                ESP_LOGD(TAG, "Got: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
+                ESP_LOGD(TAG, "Received: [%d, %d, %d, %d]", receivedData.tsopAngle, receivedData.tsopStrength, 
                         receivedData.lineAngle, receivedData.lineSize);    
                 // unlock the semaphore, other tasks can use the new data now
                 xSemaphoreGive(rdSem);
@@ -78,7 +77,7 @@ void comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngl
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ESP_SLAVE_ADDR << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
 
-    ESP_LOGD("CommsI2C_M", "Sending: %d, %d, %d, %d", tsopAngle, tsopStrength, lineAngle, lineSize);
+    ESP_LOGV("CommsI2C_M", "Sending: %d, %d, %d, %d", tsopAngle, tsopStrength, lineAngle, lineSize);
     
     // temp 9 byte buffer on the stack to expand out 4 16 bit integers into 8 8 bit integers + 1 start byte
     uint8_t* buf = alloca(9);
