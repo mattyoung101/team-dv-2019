@@ -9,9 +9,12 @@ static void comms_i2c_receive_task(void *pvParameters){
     xSemaphoreGive(rdSem);
 
     ESP_LOGI(TAG, "Slave I2C task init OK");
+    esp_task_wdt_add(NULL);
 
     while (true){
         memset(buf, 0, 9);
+
+        esp_task_wdt_reset();
 
         // wait indefinitely for our bytes to come in
         i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
@@ -24,7 +27,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
             
-                ESP_LOGD(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
+                ESP_LOGV(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
                         receivedData.lineAngle, receivedData.lineSize);    
                 // unlock the semaphore, other tasks can use the new data now
                 xSemaphoreGive(rdSem);
@@ -34,6 +37,8 @@ static void comms_i2c_receive_task(void *pvParameters){
         } else {
             ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %d, expected: %d", buf[0], I2C_BEGIN_BYTE);
         }
+
+        esp_task_wdt_reset();
     }
 }
 

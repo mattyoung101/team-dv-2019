@@ -9,4 +9,4 @@ typedef struct {
 /** Initialises the pins on the multiplexer **/
 void mplexer_4bit_init(mplexer_4bit_t *config);
 /** Reads the Nth pin of a 4 bit multiplexer **/
-uint8_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin);
+uint32_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin);

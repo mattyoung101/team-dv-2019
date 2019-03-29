@@ -5,6 +5,8 @@
     "cSpell.words": [
         "SSID",
         "TSOPs",
+        "WMSG",
+        "WTYPE",
         "gpio",
         "lsarray",
         "mcpwm",

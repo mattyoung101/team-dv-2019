@@ -14,8 +14,13 @@
 #include <lwip/netdb.h>
 #include "defines.h"
 
+// Quick note about the watchdog timer: while most other tasks are watched, the WiFi isn't because its intended
+// to block for long periods of time (and this is OK by design since its a thread - hopefully!)
+
+// Handles robot to robot communication over wifi using a TCP client and server
+
 #define WIFI_CONNECTED_BIT BIT0
-#define WIFI_BUF_SIZE 64
+#define WIFI_BUF_SIZE 32
 
 typedef enum {
     /** One device is notifying the device of a thing, response not required **/
@@ -34,8 +39,6 @@ typedef enum {
     WMSG_GOODBYE,
     WMSG_PING,
 } wifi_message_t;
-
-// Handles robot to robot communication over wifi
 
 /** Initialises the TCPIP stack as the host (i.e. makes an access point and starts the host thread) **/
 void comms_wifi_init_host();

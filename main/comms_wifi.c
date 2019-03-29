@@ -5,7 +5,7 @@ static EventGroupHandle_t wifi_event_group;
 static int send_packet(int socket, int32_t *txBuf, const char *TAG){
     int err = send(socket, txBuf, sizeof(txBuf), 0);
     if (err < 0){
-        ESP_LOGE(TAG, "Unable to send data: error %s", strerror(errno));
+        ESP_LOGE(TAG, "Unable to send data: %s", strerror(errno));
         return -1;
     }
     return 0;
@@ -14,7 +14,7 @@ static int send_packet(int socket, int32_t *txBuf, const char *TAG){
 static int receive_packet(int socket, int32_t *rxBuf, const char *TAG){
     int len = recv(socket, rxBuf, sizeof(rxBuf), 0);
     if (len < 0){
-        ESP_LOGE(TAG, "Unable to receive data: error %s", strerror(errno));
+        ESP_LOGE(TAG, "Unable to receive data: %s", strerror(errno));
         return -1;
     }
 
@@ -30,28 +30,28 @@ static void socket_server(void *pvParameter){
 
     while (true){
         struct sockaddr_in destAddr;
-        destAddr.sin_addr.s_addr = inet_addr(INADDR_ANY);
+        destAddr.sin_addr.s_addr = htonl(INADDR_ANY);
         destAddr.sin_family = AF_INET;
         destAddr.sin_port = htons(SOCK_PORT);
         inet_ntoa_r(destAddr.sin_addr, addr_str, sizeof(addr_str) - 1);
 
         int listenSock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
         if (listenSock < 0){
-            ESP_LOGE(TAG, "Unable to create socket: error %s", strerror(errno));
+            ESP_LOGE(TAG, "Unable to create socket: %s", strerror(errno));
             break;
         }
         ESP_LOGI(TAG, "Socket created successfully");
 
         int err = bind(listenSock, (struct sockaddr *)&destAddr, sizeof(destAddr));
         if (err != 0){
-            ESP_LOGE(TAG, "Unable to bind socket: error %s", strerror(errno));
+            ESP_LOGE(TAG, "Unable to bind socket: %s", strerror(errno));
             break;
         }
         ESP_LOGI(TAG, "Socket bound successfully");
         
         err = listen(listenSock, 1);
         if (err != 0){
-            ESP_LOGE(TAG, "Unable to listen: error %s", strerror(errno));
+            ESP_LOGE(TAG, "Unable to listen: %s", strerror(errno));
             break;
         }
         ESP_LOGI(TAG, "Socket listening");
@@ -60,7 +60,7 @@ static void socket_server(void *pvParameter){
         uint addrLen = sizeof(sourceAddr);
         int sock = accept(listenSock, (struct sockaddr *)&sourceAddr, &addrLen);
         if (sock < 0){
-            ESP_LOGE(TAG, "Unable to accept connection: error %s", strerror(errno));
+            ESP_LOGE(TAG, "Unable to accept connection: %s", strerror(errno));
             break;
         }
         ESP_LOGI(TAG, "Accepted client");
@@ -68,14 +68,15 @@ static void socket_server(void *pvParameter){
         while (true){
             int len = recv(sock, rxBuf, sizeof(rxBuf), 0);
             if (len < 0){
-                ESP_LOGE(TAG, "Unable to receive transmission, error %s", strerror(errno));
+                ESP_LOGE(TAG, "Unable to receive transmission, %s", strerror(errno));
                 break;
             } else if (len == 0){
                 ESP_LOGW(TAG, "Connection closed (client off for damage)");
                 // switch to defence then restart the server
                 break;
             } else {
-                ESP_LOGI(TAG, "Data received successfully, data %d %d", rxBuf[0], rxBuf[1]);
+                inet_ntoa_r(((struct sockaddr_in *)&sourceAddr)->sin_addr.s_addr, addr_str, sizeof(addr_str) - 1);
+                ESP_LOGI(TAG, "Data received from %s: %d %d", addr_str, rxBuf[0], rxBuf[1]);
                 
                 // just respond with notify ok for now
                 memset(txBuf, 0, sizeof(txBuf));
@@ -94,6 +95,8 @@ static void socket_server(void *pvParameter){
             ESP_LOGW(TAG, "Socket failure, restarting server...");
             shutdown(sock, 0);
             close(sock);
+            shutdown(listenSock, 0);
+            close(listenSock);
             // don't we need to close the listen socket here as well? docs don't do it...
         }
     }
@@ -122,14 +125,14 @@ static void socket_client(void *pvParameter){
 
         int sock = socket(AF_INET, SOCK_STREAM, IPPROTO_IP);
         if (sock < 0){
-            ESP_LOGE(TAG, "Unable to create socket: error %s", strerror(errno));
+            ESP_LOGE(TAG, "Unable to create socket: %s", strerror(errno));
             break;
         }
         ESP_LOGI(TAG, "Socket created");
 
         int err = connect(sock, (struct sockaddr *)&destAddr, sizeof(destAddr));
         if (err != 0) {
-            ESP_LOGE(TAG, "Socket unable to connect: error %s", strerror(errno));
+            ESP_LOGE(TAG, "Socket unable to connect: %s", strerror(errno));
             // we could keep retrying this connection, but at this point, the host's network should be up
             // so we should be able to connect, this means something else has happened
             break;
@@ -181,7 +184,7 @@ static esp_err_t event_handler_host(void *ctx, system_event_t *event){
             ESP_LOGI(TAG, "Station: "MACSTR" disconnected, AID=%d",
                     MAC2STR(event->event_info.sta_disconnected.mac),
                     event->event_info.sta_disconnected.aid);
-            // client must be off for damage - socket code should detect this
+            // client must be off for damage - socket code should detect this otherwise switch to defence
             break;
         default:
             break;
@@ -202,7 +205,7 @@ static esp_err_t event_handler_client(void *ctx, system_event_t *event){
             xEventGroupSetBits(wifi_event_group, WIFI_CONNECTED_BIT);
             break;
         case SYSTEM_EVENT_STA_DISCONNECTED:
-            // connection dropped, host is off for damage - socket will handle this
+            // connection dropped, host is off for damage - socket will handle this otherwise switch to defence
             ESP_LOGI(TAG, "Disconnected from AP, retrying...");
             esp_wifi_connect();
             xEventGroupClearBits(wifi_event_group, WIFI_CONNECTED_BIT);
@@ -229,7 +232,7 @@ void comms_wifi_init_host(){
             .ssid_len = strlen(WIFI_SSID),
             .password = WIFI_PASS,
             .max_connection = WIFI_MAXCON,
-            .authmode = WIFI_AUTH_WPA_WPA2_PSK
+            .authmode = WIFI_AUTH_WPA2_PSK
         },
     };
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
@@ -237,7 +240,7 @@ void comms_wifi_init_host(){
     ESP_ERROR_CHECK(esp_wifi_start());
     ESP_LOGI("CommsWiFi_H", "WiFi AP init OK");
 
-    // xTaskCreate(socket_server, "SocketServerTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL);
+    xTaskCreate(socket_server, "SocketServerTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL);
 }
 
 void comms_wifi_init_client(){
@@ -247,18 +250,19 @@ void comms_wifi_init_client(){
 
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK(esp_wifi_init(&cfg));
+    ESP_ERROR_CHECK(esp_wifi_set_storage(WIFI_STORAGE_FLASH));
+
     wifi_config_t wifi_config = {
         .sta = {
             .ssid = WIFI_SSID,
             .password = WIFI_PASS
         },
     };
-
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_STA));
     ESP_ERROR_CHECK(esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
 
     ESP_LOGI("CommsWifi_C", "WiFi station init OK");
 
-    xTaskCreate(socket_client, "SocketClientTask", 8192, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(socket_client, "SocketClientTask", 8192, NULL, configMAX_PRIORITIES - 2, NULL);
 }

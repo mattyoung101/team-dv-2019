@@ -2,28 +2,32 @@
 
 static float scaledSin[TSOP_NUM];
 static float scaledCos[TSOP_NUM];
+
 static uint16_t tsopCounter;
 static uint16_t tempValues[TSOP_NUM];
 static uint16_t tsopIndexes[TSOP_NUM];
+
 static mplexer_4bit_t tsopMux = {
     TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_OUT
 };
-// Index = TSOP number, Value = multiplexer pin. If 255 it's unconnected.
+// Index = TSOP number, Value = multiplexer pin
+// TSOP 4 & 5 are unconnected so they are represented by 255
 static const gpio_num_t irTable[] = {8, 0, 1, 2, 255, 255, 7, 6, 5, 4, 3, 15, 14, 13, 12, 11, 10, 9};
+static const char *TAG = "TSOP";
 
 void tsop_init(void){
-    ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_1, 1));
-    ESP_ERROR_CHECK(gpio_set_level(TSOP_PWR_2, 1));
+    gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT);
+    gpio_set_level(TSOP_PWR_1, 1);
+    gpio_set_level(TSOP_PWR_2, 1);
 
-    ESP_ERROR_CHECK(gpio_set_direction(TSOP_4, GPIO_MODE_INPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(TSOP_5, GPIO_MODE_INPUT));
+    gpio_set_direction(TSOP_4, GPIO_MODE_INPUT);
+    gpio_set_direction(TSOP_5, GPIO_MODE_INPUT);
 
     mplexer_4bit_init(&tsopMux);
 
     for (int i = 0; i < TSOP_NUM; i++){
-        float angle = (i * (360 / TSOP_NUM)) * DEG_RAD;
+        float angle = (i * (360.0 / (float) TSOP_NUM)) * DEG_RAD;
 
         scaledCos[i] = cosf(angle);
         scaledSin[i] = sinf(angle);
@@ -33,14 +37,17 @@ void tsop_init(void){
 void tsop_update(void *args){
     for (int i = 0; i < TSOP_NUM; i++){
         if (i == 4){
+            ESP_LOGD(TAG, "Reading TSOP 4 from GPIO");
             tempValues[i] += gpio_get_level(TSOP_4) ^ 1;
         } else if (i == 5){
+            ESP_LOGD(TAG, "Reading TSOP 5 from GPIO");
             tempValues[i] += gpio_get_level(TSOP_5) ^ 1;
         } else {
+            ESP_LOGD(TAG, "Reading TSOP %d from mux", i);
             tempValues[i] += mplexer_4bit_read(&tsopMux, irTable[i]) ^ 1;
         }
     }
-    
+    printf("===== NEW READ =====\n");
     tsopCounter++;
 }
 
@@ -86,7 +93,7 @@ void tsop_calc(uint8_t n){
 
     if (x == 0 && y == 0) {
         // When vectors sum to (0, 0), we're in trouble. We've got some dodgy data
-        ESP_LOGV("TSOP", "No ball found");
+        ESP_LOGV(TAG, "No ball found");
         tsopAngle = (float) TSOP_NO_BALL_ANGLE;
     } else {
         tsopAngle = mod(atan2f(y, x) * RAD_DEG, 360);
@@ -96,8 +103,9 @@ void tsop_calc(uint8_t n){
 }
 
 void tsop_dump(void){
-    ESP_LOGI("TSOP", "Values: %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d",
+    ESP_LOGD(TAG, "Values: %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d | Updated %d times "
+        "(target %d)",
         tempValues[0], tempValues[1], tempValues[2], tempValues[3], tempValues[4], tempValues[5], tempValues[6], 
         tempValues[7], tempValues[8], tempValues[9], tempValues[10], tempValues[11], tempValues[12], tempValues[13], 
-        tempValues[14], tempValues[15], tempValues[16], tempValues[17]);
+        tempValues[14], tempValues[15], tempValues[16], tempValues[17], tsopCounter, TSOP_TARGET_READS);
 }

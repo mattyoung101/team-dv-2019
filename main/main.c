@@ -20,6 +20,7 @@
 #include "comms_i2c.h"
 #include "esp_timer.h"
 #include "comms_wifi.h"
+#include "esp_task_wdt.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 static esp_timer_handle_t tsopTimer;
@@ -38,6 +39,8 @@ void master_task(void *pvParameter){
     // Initialise software controllers
     state_machine_t stateMachine;
 
+    esp_task_wdt_add(NULL);
+
     while (true){
         // printf("BACKWARDS\n");
         // motor_run_pwm(-20.0);
@@ -46,6 +49,7 @@ void master_task(void *pvParameter){
         // printf("FORWARDS\n");
         // motor_run_pwm(20.0);
         // vTaskDelay(pdMS_TO_TICKS(2500));
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }
@@ -58,23 +62,23 @@ void slave_task(void *pvParameter){
     comms_i2c_init_master();
     tsop_init();
     ESP_LOGI(TAG, "Slave hardware init OK");
+
+    esp_task_wdt_add(NULL);
     
     while (true){
-        for (int i = 0; i < 255; i++){
+        for (int i = 0; i < TSOP_TARGET_READS; i++){
             tsop_update(NULL);
         }
-        // tsop_dump();
+        tsop_dump();
         tsop_process();
         tsop_calc(5);
 
-        ESP_LOGI(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
+        // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
         comms_i2c_send(1234, 4321, 1010, 64321);
+
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(100));
     }
-}
-
-// Called when the TSOP timer goes off
-void tsop_timer_callback(void *args){
 }
 
 void app_main(){
@@ -126,15 +130,15 @@ void app_main(){
         xTaskCreatePinnedToCore(master_task, "MasterTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
-
-        // Start TSOP timer
-        esp_timer_create_args_t args = {
-            .callback = &tsop_update,
-            .name = "TSOPTimer",
-            .arg = NULL
-        };
-        ESP_ERROR_CHECK(esp_timer_create(&args, &tsopTimer));
-        ESP_ERROR_CHECK(esp_timer_start_periodic(tsopTimer, 833 * TSOP_TIMER_PERIOD));
+        ESP_LOGI("AppMain", "Time between TSOP reads: %d us", TSOP_READ_PERIOD_US);
+        // // note: read seems takes 34 us
+        // esp_timer_create_args_t args = {
+        //     .callback = &tsop_update,
+        //     .name = "TSOPTimer",
+        //     .arg = NULL
+        // };
+        // ESP_ERROR_CHECK(esp_timer_create(&args, &tsopTimer));
+        // ESP_ERROR_CHECK(esp_timer_start_periodic(tsopTimer, TSOP_READ_PERIOD_US));
 
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
     }

@@ -7,6 +7,9 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "string.h"
+#include "esp_task_wdt.h"
+
+// Handles slave to master communication over I2C
 
 typedef struct {
     uint16_t tsopAngle;
@@ -15,8 +18,9 @@ typedef struct {
     uint16_t lineSize;
 } i2c_data_t;
 
+/** data received over I2C **/
 i2c_data_t receivedData;
-// received data semaphore
+/** received data semaphore for the variable receivedData **/
 extern SemaphoreHandle_t rdSem;
 
 /** Real life slave. Sends sensor data to the master. AUTOMODE_SLAVE. **/

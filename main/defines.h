@@ -60,6 +60,7 @@
 #define WIFI_MAXCON 3 // 1 for other robot, 2 for websockets 
 #define SOCK_ADDR "192.168.0.165"
 #define SOCK_PORT 12323
+#define WS_PORT 14323
 
 // Camera
 #define CAM_DATA_LEN 8
@@ -155,6 +156,7 @@
 #define TSOP_4 27
 #define TSOP_5 26
 
-
-#define TSOP_TIMER_PERIOD 4
+#define TSOP_TARGET_READS 24
+#define TSOP_READ_PERIOD_US (((portTICK_PERIOD_MS * 1000) / TSOP_TARGET_READS))
+// #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD
