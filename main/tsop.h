@@ -8,15 +8,6 @@
 #include "esp_timer.h"
 #include <inttypes.h>
 
-struct xvec3 {float x,y,z;};
-static struct xvec3 XV3(float x, float y, float z){
-    struct xvec3 v;
-    v.x = x;
-    v.y = y;
-    v.z = z;
-    return v;
-}
-
 uint16_t tsopValues[TSOP_NUM];
 uint16_t tsopSortedValues[TSOP_NUM];
 float tsopAngle;
@@ -26,9 +17,7 @@ float tsopStrength;
 void tsop_init(void);
 /** Reads all the TSOP values into the temp array **/
 void tsop_update(void *args);
-/** Sorts and processes the temp array **/
-void tsop_process(void);
 /** Calculates tsopAngle and tsopStrength for the best n values **/
-void tsop_calc(uint8_t n);
+void tsop_calc();
 /** Dumps the temp array to UART **/
 void tsop_dump(void);

@@ -145,6 +145,7 @@
 
 // TSOPs
 #define TSOP_NUM 18
+#define TSOP_BEST 5
 #define TSOP_PWR_1 32
 #define TSOP_PWR_2 33
 

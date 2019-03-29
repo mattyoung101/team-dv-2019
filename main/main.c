@@ -70,8 +70,7 @@ void slave_task(void *pvParameter){
             tsop_update(NULL);
         }
         tsop_dump();
-        tsop_process();
-        tsop_calc(5);
+        tsop_calc();
 
         // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
         comms_i2c_send(1234, 4321, 1010, 64321);
