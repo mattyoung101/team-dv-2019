@@ -19,7 +19,7 @@ typedef struct {
 } i2c_data_t;
 
 /** data received over I2C **/
-i2c_data_t receivedData;
+extern i2c_data_t receivedData;
 /** received data semaphore for the variable receivedData **/
 extern SemaphoreHandle_t rdSem;
 

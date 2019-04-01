@@ -1,10 +1,10 @@
 #include "motor.h"
 
-static float pwmValues[4];
-static float flmotor_speed;
-static float frmotor_speed;
-static float blmotor_speed;
-static float brmotor_speed;
+static float pwmValues[4] = {0};
+static float flmotor_speed = 0;
+static float frmotor_speed = 0;
+static float blmotor_speed = 0;
+static float brmotor_speed = 0;
 static const char *TAG = "Motor";
 
 /*

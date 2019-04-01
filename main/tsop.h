@@ -8,17 +8,6 @@
 #include "esp_timer.h"
 #include <inttypes.h>
 
-struct xvec3 {float x,y,z;};
-static struct xvec3 XV3(float x, float y, float z){
-    struct xvec3 v;
-    v.x = x;
-    v.y = y;
-    v.z = z;
-    return v;
-}
-
-uint16_t tsopValues[TSOP_NUM];
-uint16_t tsopSortedValues[TSOP_NUM];
 float tsopAngle;
 float tsopStrength;
 

@@ -24,9 +24,9 @@ static int receive_packet(int socket, int32_t *rxBuf, const char *TAG){
 
 static void socket_server(void *pvParameter){
     static const char *TAG = "SocketServer";
-    int32_t txBuf[WIFI_BUF_SIZE];
-    int32_t rxBuf[WIFI_BUF_SIZE];
-    char addr_str[128];
+    int32_t txBuf[WIFI_BUF_SIZE] = {0};
+    int32_t rxBuf[WIFI_BUF_SIZE] = {0};
+    char addr_str[128] = {0};
 
     while (true){
         struct sockaddr_in destAddr;
@@ -107,9 +107,9 @@ static void socket_server(void *pvParameter){
 
 static void socket_client(void *pvParameter){
     static const char *TAG = "SocketClient";
-    int32_t txBuf[WIFI_BUF_SIZE];
-    int32_t rxBuf[WIFI_BUF_SIZE];
-    char addr_str[128];
+    int32_t txBuf[WIFI_BUF_SIZE] = {0};
+    int32_t rxBuf[WIFI_BUF_SIZE] = {0};
+    char addr_str[128] = {0};
 
     // attempt to establish connection and block until we can
     // once connected, run comms with our host

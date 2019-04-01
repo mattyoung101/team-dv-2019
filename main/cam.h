@@ -18,10 +18,10 @@ typedef struct {
     int16_t length;
 } cam_goal;
 
-cam_goal goalBlue;
-cam_goal goalYellow;
-int16_t robotX;
-int16_t robotY;
+cam_goal goalBlue = {0};
+cam_goal goalYellow = {0};
+int16_t robotX = 0;
+int16_t robotY = 0;
 
 void cam_init(void);
 void cam_update(void);

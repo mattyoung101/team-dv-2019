@@ -1,6 +1,7 @@
 #include "comms_i2c.h"
 
-SemaphoreHandle_t rdSem;
+SemaphoreHandle_t rdSem = NULL;
+extern i2c_data_t receivedData = {0};
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";

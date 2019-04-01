@@ -1,11 +1,13 @@
 #include "tsop.h"
 
-static float scaledSin[TSOP_NUM];
-static float scaledCos[TSOP_NUM];
+static float scaledSin[TSOP_NUM] = {0};
+static float scaledCos[TSOP_NUM] = {0};
 
-static uint16_t tsopCounter;
-static uint16_t tempValues[TSOP_NUM];
-static uint16_t tsopIndexes[TSOP_NUM];
+static uint16_t tsopCounter = 0;
+static uint16_t tempValues[TSOP_NUM] = {0};
+static uint16_t tsopValues[TSOP_NUM] = {0};
+static uint16_t tsopIndexes[TSOP_NUM] = {0};
+static uint16_t tsopSortedValues[TSOP_NUM] = {0};
 
 static mplexer_4bit_t tsopMux = {
     TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_OUT
