@@ -23,6 +23,7 @@
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
+#define sq(x) (x * x)
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);

@@ -1,10 +1,10 @@
 #include "comms_i2c.h"
 
-SemaphoreHandle_t rdSem;
+SemaphoreHandle_t rdSem = NULL;
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
-    uint8_t *buf = malloc(9);
+    uint8_t *buf = calloc(9, sizeof(uint8_t));
     rdSem = xSemaphoreCreateBinary();
     xSemaphoreGive(rdSem);
 

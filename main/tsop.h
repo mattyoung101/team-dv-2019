@@ -8,8 +8,6 @@
 #include "esp_timer.h"
 #include <inttypes.h>
 
-uint16_t tsopValues[TSOP_NUM];
-uint16_t tsopSortedValues[TSOP_NUM];
 float tsopAngle;
 float tsopStrength;
 

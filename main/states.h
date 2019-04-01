@@ -20,7 +20,7 @@ typedef struct {
     int16_t direction;
 } robot_state_t;
 
-robot_state_t robotState;
+robot_state_t robotState = {0};
 
 // Generic do nothing states (used for example if no "enter" method is needed on a state)
 void state_nothing_enter(state_machine_t *fsm){}

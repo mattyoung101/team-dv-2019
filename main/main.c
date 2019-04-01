@@ -23,7 +23,7 @@
 #include "esp_task_wdt.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
-static esp_timer_handle_t tsopTimer;
+static esp_timer_handle_t tsopTimer = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
@@ -37,7 +37,7 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
-    state_machine_t stateMachine;
+    state_machine_t stateMachine = {0};
 
     esp_task_wdt_add(NULL);
 

@@ -1,6 +1,6 @@
 #include "motor.h"
 
-static float pwmValues[4];
+static float pwmValues[4] = {0};
 static float flmotor_speed;
 static float frmotor_speed;
 static float blmotor_speed;

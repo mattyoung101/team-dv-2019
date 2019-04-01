@@ -6,7 +6,7 @@
 
 static uint16_t tsopCounter;
 // in polar form, so x = mag, y = theta
-static hmm_vec2 readings[TSOP_NUM];
+static hmm_vec2 readings[TSOP_NUM] = {0};
 
 static mplexer_4bit_t tsopMux = {
     TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_OUT
@@ -19,7 +19,8 @@ static const char *TAG = "TSOP";
 
 static void tsop_reset(){
     for (int i = 0; i < TSOP_NUM; i++){
-        readings[i] = HMM_Vec2(0.0f, (i * (360.0f / (float) TSOP_NUM)) * DEG_RAD);
+        readings[i].X = 0.0f;
+        readings[i].Y = i * (360.0f / (float) TSOP_NUM) * DEG_RAD;
     }
 }
 
@@ -93,7 +94,7 @@ void tsop_calc(){
     // convert back to polar
     float sumX = sum.X;
     float sumY = sum.Y;
-    sum.X = sqrtf(powf(sumX, 2) + powf(sumY, 2));
+    sum.X = sqrtf(sq(sumX) + sq(sumY));
     sum.Y = atan2f(sumY, sumX);
 
     tsopStrength = sum.X;
@@ -103,7 +104,7 @@ void tsop_calc(){
 }
 
 void tsop_dump(void){
-    // FIXME needs to be changed
+    // FIXME needs to be changed for new library, print magnitude?
     // ESP_LOGD(TAG, "Values: %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d  %d | Updated %d times "
     //     "(target %d)",
     //     readings[0], readings[1], readings[2], readings[3], readings[4], readings[5], readings[6], 
