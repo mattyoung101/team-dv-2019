@@ -1,8 +1,13 @@
 {
     "files.associations": {
-        "str.h": "c"
+        "str.h": "c",
+        "bno055_wrapper.h": "c"
     },
     "cSpell.words": [
+        "LOGD",
+        "LOGI",
+        "LOGV",
+        "LOGW",
         "SSID",
         "TSOPs",
         "WMSG",

@@ -39,17 +39,13 @@ void tsop_init(void){
 void tsop_update(void *args){
     for (int i = 0; i < TSOP_NUM; i++){
         if (i == 4){
-            ESP_LOGD(TAG, "Reading TSOP 4 from GPIO");
             tempValues[i] += gpio_get_level(TSOP_4) ^ 1;
         } else if (i == 5){
-            ESP_LOGD(TAG, "Reading TSOP 5 from GPIO");
             tempValues[i] += gpio_get_level(TSOP_5) ^ 1;
         } else {
-            ESP_LOGD(TAG, "Reading TSOP %d from mux", i);
             tempValues[i] += mplexer_4bit_read(&tsopMux, irTable[i]) ^ 1;
         }
     }
-    printf("===== NEW READ =====\n");
     tsopCounter++;
 }
 

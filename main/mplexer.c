@@ -24,11 +24,11 @@ uint32_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin){
     ESP_LOGD("Multiplexer", "Pin: %d, Binary: %d, %d, %d, %d", pin, binary[0], binary[1], binary[2], binary[3]);
 
     // tell the multiplexer we want to access the pin we selected by writing out the binary
-    // en must be low in order for it do stuff
-    gpio_set_level(plexer->s0, binary[0]);
-    gpio_set_level(plexer->s1, binary[1]);
-    gpio_set_level(plexer->s2, binary[2]);
-    gpio_set_level(plexer->s3, binary[3]);
+    // reverse order is required as discovered by Ethan (thanks!)
+    gpio_set_level(plexer->s0, binary[3]);
+    gpio_set_level(plexer->s1, binary[2]);
+    gpio_set_level(plexer->s2, binary[1]);
+    gpio_set_level(plexer->s3, binary[0]);
     
     return gpio_get_level(plexer->out);
 }

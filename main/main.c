@@ -21,9 +21,18 @@
 #include "esp_timer.h"
 #include "comms_wifi.h"
 #include "esp_task_wdt.h"
+#include "bno055.h"
+#include "bno055_wrapper.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 static esp_timer_handle_t tsopTimer;
+
+static struct bno055_t bno = {
+    .bus_write = bno_i2c_write,
+    .bus_read = bno_i2c_read,
+    .delay_msec = bno_delay,
+    .dev_addr = BNO055_I2C_ADDR2
+};
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
@@ -37,7 +46,7 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
-    state_machine_t stateMachine;
+    // state_machine_t stateMachine;
 
     esp_task_wdt_add(NULL);
 
@@ -57,27 +66,52 @@ void master_task(void *pvParameter){
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
+    u8 rev_id, bl_rev_id, chip_id;
+    s8 temp_raw;
+    float temp;
 
     // Initialise hardware
-    comms_i2c_init_master();
+    comms_i2c_init_master(I2C_NUM_0); // master<->slave comms 
+    comms_i2c_init_master(I2C_NUM_1); // sensor bus
+    vTaskDelay(pdMS_TO_TICKS(100));
     tsop_init();
+
+    u8 bno_err = bno055_init(&bno);
+    if (bno_err != BNO055_SUCCESS){
+        ESP_LOGE("BNO055", "Init failed! Error %d (%s)", bno_err, esp_err_to_name(bno_err));
+        TASK_HALT;
+    }
+    bno055_set_power_mode(BNO055_POWER_MODE_NORMAL);
+    bno055_set_operation_mode(BNO055_OPERATION_MODE_NDOF);
+    bno055_read_gyro_rev_id(&rev_id);
+    bno055_read_bl_rev_id(&bl_rev_id);
+    bno055_read_chip_id(&chip_id);
+
+    bno055_set_temp_unit(BNO055_TEMP_UNIT_CELSIUS);
+    bno055_set_euler_unit(BNO055_EULER_UNIT_DEG);
+    bno055_set_accel_unit(BNO055_ACCEL_UNIT_MSQ);
+
+    ESP_LOGI("BNO055", "Init OK, chip ID: %d, bootloader ID: %d, gyro rev ID: %d", rev_id, bl_rev_id, chip_id);
     ESP_LOGI(TAG, "Slave hardware init OK");
 
     esp_task_wdt_add(NULL);
     
     while (true){
-        for (int i = 0; i < TSOP_TARGET_READS; i++){
-            tsop_update(NULL);
-        }
-        tsop_dump();
-        tsop_process();
-        tsop_calc(5);
+        // for (int i = 0; i < TSOP_TARGET_READS; i++){
+        //     tsop_update(NULL);
+        // }
+        // tsop_dump();
+        // tsop_process();
+        // tsop_calc(5);
 
-        // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
+        bno055_read_temp_data(&temp_raw);
+        bno055_convert_float_temp_celsius(&temp);
+
+        ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f, temperature: %f", tsopAngle, tsopStrength, temp);
         comms_i2c_send(1234, 4321, 1010, 64321);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 

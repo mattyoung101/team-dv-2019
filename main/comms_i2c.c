@@ -1,7 +1,7 @@
 #include "comms_i2c.h"
 
 SemaphoreHandle_t rdSem = NULL;
-extern i2c_data_t receivedData = {0};
+i2c_data_t receivedData = {0};
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
@@ -17,8 +17,8 @@ static void comms_i2c_receive_task(void *pvParameters){
 
         esp_task_wdt_reset();
 
-        // wait indefinitely for our bytes to come in
-        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
+        // wait a long time for our bytes to come in
+        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, 2048);
 
         if (buf[0] == I2C_BEGIN_BYTE){
             // acquire semaphore: stop other threads from changing data while we modify it
@@ -43,19 +43,22 @@ static void comms_i2c_receive_task(void *pvParameters){
     }
 }
 
-void comms_i2c_init_master(){
+void comms_i2c_init_master(i2c_port_t port){
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = 21,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 500000 // 0.5 MHz, max is 1 MHz, unit is Hz
+        .master.clk_speed = 500000, // 0.5 MHz, max is 1 MHz, unit is Hz
     };
-    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 0, 0, 0));
+    ESP_ERROR_CHECK(i2c_param_config(port, &conf));
+    ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
 
-    ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave)");
+    // default = 64000, this is a hack to make the BNO work with its clock stretching
+    i2c_set_timeout(I2C_NUM_1, 640000);
+
+    ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
 
 void comms_i2c_init_slave(){
@@ -78,6 +81,7 @@ void comms_i2c_init_slave(){
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
+// TODO make an I2C struct
 void comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize){
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));

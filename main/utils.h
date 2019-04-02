@@ -23,6 +23,8 @@
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
 /** unpack two 8 bit integers into a 16 bit integer **/
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
+/** halt in case of irrecoverable error **/
+#define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY)); } while(0);
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
