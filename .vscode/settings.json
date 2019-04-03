@@ -1,7 +1,10 @@
 {
     "files.associations": {
         "str.h": "c",
-        "bno055_wrapper.h": "c"
+        "bno055_wrapper.h": "c",
+        "efuse_reg.h": "c",
+        "uart.h": "c",
+        "inv_mpu.h": "c"
     },
     "cSpell.words": [
         "LOGD",
@@ -16,6 +19,8 @@
         "lsarray",
         "mcpwm",
         "mplexer",
-        "wifi"
-    ]
+        "wifi",
+        "GYRO"
+    ],
+    "C_Cpp.errorSquiggles": "Enabled"
 }

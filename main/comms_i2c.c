@@ -5,20 +5,20 @@ i2c_data_t receivedData = {0};
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
-    uint8_t *buf = malloc(9);
+    uint8_t *buf = calloc(9, sizeof(uint8_t));
     rdSem = xSemaphoreCreateBinary();
     xSemaphoreGive(rdSem);
 
-    ESP_LOGI(TAG, "Slave I2C task init OK");
     esp_task_wdt_add(NULL);
+    ESP_LOGI(TAG, "Slave I2C task init OK");
 
     while (true){
         memset(buf, 0, 9);
 
         esp_task_wdt_reset();
 
-        // wait a long time for our bytes to come in
-        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, 2048);
+        // wait slightly shorter than the task watchdog timeout for us to get some data
+        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, pdMS_TO_TICKS(4096));
 
         if (buf[0] == I2C_BEGIN_BYTE){
             // acquire semaphore: stop other threads from changing data while we modify it
@@ -28,7 +28,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
             
-                ESP_LOGV(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
+                ESP_LOGD(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
                         receivedData.lineAngle, receivedData.lineSize);    
                 // unlock the semaphore, other tasks can use the new data now
                 xSemaphoreGive(rdSem);
@@ -36,7 +36,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 ESP_LOGW(TAG, "Failed to acquire semaphore in time!");
             }
         } else {
-            ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %d, expected: %d", buf[0], I2C_BEGIN_BYTE);
+            ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %X, expected: %X", buf[0], I2C_BEGIN_BYTE);
         }
 
         esp_task_wdt_reset();
@@ -50,13 +50,10 @@ void comms_i2c_init_master(i2c_port_t port){
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 500000, // 0.5 MHz, max is 1 MHz, unit is Hz
+        .master.clk_speed = 100000, // 0.5 MHz, max is 1 MHz, unit is Hz
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
-
-    // default = 64000, this is a hack to make the BNO work with its clock stretching
-    i2c_set_timeout(I2C_NUM_1, 640000);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }

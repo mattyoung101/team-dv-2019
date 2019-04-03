@@ -15,10 +15,8 @@ set(COMPONENT_SRCS "main.c"
                    "music.c"
                    "mplexer.c"
                    "comms_wifi.c"
-                   "bno055.c"
-                   "bno055_wrapper.c"
                    )
-set(COMPONENT_ADD_INCLUDEDIRS ".")
+set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")
 
 register_component()

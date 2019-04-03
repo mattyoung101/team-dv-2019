@@ -21,7 +21,7 @@ uint32_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin){
         }
     }
 
-    ESP_LOGD("Multiplexer", "Pin: %d, Binary: %d, %d, %d, %d", pin, binary[0], binary[1], binary[2], binary[3]);
+    ESP_LOGV("Multiplexer", "Pin: %d, Binary: %d, %d, %d, %d", pin, binary[0], binary[1], binary[2], binary[3]);
 
     // tell the multiplexer we want to access the pin we selected by writing out the binary
     // reverse order is required as discovered by Ethan (thanks!)

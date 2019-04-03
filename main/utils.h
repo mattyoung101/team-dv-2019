@@ -6,6 +6,7 @@
 #include "nvs_flash.h"
 #include "esp_err.h"
 #include "esp_log.h"
+#include "driver/i2c.h"
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 
@@ -32,3 +33,4 @@ int number_comparator_descending(const void *a, const void *b);
 float angleBetween(float angleCounterClockwise, float angleClockwise);
 float midAngleBetween(float angleCounterClockwise, float angleClockwise);
 int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
+void i2c_scanner();
