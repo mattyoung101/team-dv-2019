@@ -26,6 +26,12 @@
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
 /** halt in case of irrecoverable error **/
 #define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY)); } while(0);
+#define I2C_ERR_CHECK(err) do { if (err != ESP_OK){ \
+        ESP_LOGE(TAG, "Read/write failed! Error: %s. Attempting bus reset.", esp_err_to_name(err)); \
+        i2c_reset_tx_fifo(I2C_NUM_0); \
+        i2c_reset_rx_fifo(I2C_NUM_0); \
+        return 1; \
+    } } while (0); \
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);

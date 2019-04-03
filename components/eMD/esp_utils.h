@@ -8,6 +8,7 @@
 #include <string.h>
 #include "defines.h"
 #include "rom/ets_sys.h"
+#include "utils.h"
 
 int esp_get_clock_ms(unsigned long *count);
 int esp_delay_ms(unsigned long num_ms);

@@ -16,15 +16,8 @@ int esp_delay_ms(unsigned long num_ms){
     return 0;
 }
 
-#define I2C_ERR_CHECK(err) do { if (err != ESP_OK){ \
-        ESP_LOGE(TAG, "Read/write failed! Error: %s. Attempting bus reset.", esp_err_to_name(err)); \
-        i2c_reset_tx_fifo(I2C_NUM_0); \
-        i2c_reset_rx_fifo(I2C_NUM_0); \
-        return 1; \
-    } } while (0); \
-
 int esp_i2c_write(unsigned char slave_addr, unsigned char reg_addr, unsigned char length, unsigned char *data){
-    ESP_LOGD(TAG, "Writing to 0x%X reg addr 0x%X length %d data[0]=0x%X", slave_addr, reg_addr, length, data[0]);
+    ESP_LOGV(TAG, "Writing to 0x%X reg addr 0x%X length %d data[0]=0x%X", slave_addr, reg_addr, length, data[0]);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -38,12 +31,12 @@ int esp_i2c_write(unsigned char slave_addr, unsigned char reg_addr, unsigned cha
     i2c_cmd_link_delete(cmd);
 
     I2C_ERR_CHECK(err);
-    ESP_LOGI(TAG, "Write succeeded!");
+    ESP_LOGV(TAG, "Write succeeded!");
     return 0;
 }
 
 int esp_i2c_read(unsigned char slave_addr, unsigned char reg_addr, unsigned char length, unsigned char * data){
-    ESP_LOGD(TAG, "Reading from 0x%X reg addr 0x%X length %d", slave_addr, reg_addr, length);
+    ESP_LOGV(TAG, "Reading from 0x%X reg addr 0x%X length %d", slave_addr, reg_addr, length);
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     i2c_master_start(cmd);
@@ -64,7 +57,7 @@ int esp_i2c_read(unsigned char slave_addr, unsigned char reg_addr, unsigned char
     i2c_cmd_link_delete(cmd);
 
     I2C_ERR_CHECK(ret);
-    ESP_LOGI(TAG, "Read successful");
+    ESP_LOGV(TAG, "Read successful");
 
     return 0;
 }
