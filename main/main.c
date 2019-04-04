@@ -35,6 +35,7 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     comms_wifi_init_host();
+    cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
@@ -43,8 +44,15 @@ void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
+        // if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //     ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
+        //     xSemaphoreGive(goalDataSem);
+        // } else {
+        //     ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
+        // }
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
@@ -54,10 +62,9 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
-    ESP_LOGI("Bus", "Waiting");
+    ESP_LOGI("I2C Bus", "Waiting");
     vTaskDelay(pdMS_TO_TICKS(2048));
     tsop_init();
-
     i2c_scanner();
     simu_init();
 
@@ -66,7 +73,7 @@ void slave_task(void *pvParameter){
 
     vec3d_t vec = {0};
     
-    while (true){
+    while (true) {
         // for (int i = 0; i < TSOP_TARGET_READS; i++){
         //     tsop_update(NULL);
         // }
@@ -76,13 +83,12 @@ void slave_task(void *pvParameter){
 
         vec = simu_read_gyro();
         ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
-        vTaskDelay(pdMS_TO_TICKS(100));
 
         // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
         comms_i2c_send(1234, 4321, 1010, 64321);
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 

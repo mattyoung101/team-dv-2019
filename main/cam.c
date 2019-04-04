@@ -2,70 +2,84 @@
 
 // This file implements communication with the OpenMV M7 using a custom protocol over UART
 
+SemaphoreHandle_t goalDataSem = NULL;
+cam_goal goalBlue = {0};
+cam_goal goalYellow = {0};
+int16_t robotX = 0;
+int16_t robotY = 0;
+
+static void cam_receive_task(void *pvParameter){
+    static const char *TAG = "CamReceiveTask";
+    goalDataSem = xSemaphoreCreateBinary();
+    xSemaphoreGive(goalDataSem);
+    
+    uint8_t *buffer = calloc(CAM_BUF_SIZE, sizeof(uint8_t));
+    esp_task_wdt_add(NULL);
+
+    while (true){
+        memset(buffer, 0, CAM_BUF_SIZE);
+        esp_task_wdt_reset();
+
+        // wait slightly shorter than the watchdog timer for our bytes to come in
+        ESP_LOGI(TAG, "Reading");
+        uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096));
+
+        ESP_LOG_BUFFER_HEX(TAG, buffer, CAM_BUF_SIZE);
+
+        if (buffer[0] == CAM_BEGIN_BYTE){
+            if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+                // first byte is begin byte so skip that
+                goalBlue.exists = buffer[1];
+                goalBlue.x = buffer[2] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
+                goalBlue.y = buffer[3] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;
+
+                goalYellow.exists = buffer[4];
+                goalYellow.x = buffer[5] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
+                goalYellow.y = buffer[6] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;
+
+                ESP_LOGD(TAG, "Read successfully, calculating...");
+                cam_calc();
+                xSemaphoreGive(goalDataSem);
+            } else {
+                ESP_LOGW(TAG, "Unable to acquire semaphore in time!");
+            }
+        } else {
+            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, expected: 0x%X", buffer[0], CAM_BEGIN_BYTE);
+            uart_flush_input(UART_NUM_2);
+        }
+
+        esp_task_wdt_reset();
+        // uart_flush_input(UART_NUM_2);
+    }
+}
+
+static const char *TAG = "Camera";
+
 void cam_init(void){
     uart_config_t uart_config = {
         .baud_rate = 115200,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
-        .flow_ctrl = UART_HW_FLOWCTRL_CTS_RTS,
-        .rx_flow_ctrl_thresh = 122,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
     };
 
     // Configure UART parameters
-    ESP_ERROR_CHECK(uart_param_config(UART_NUM_1, &uart_config));
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uart_config));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, CAM_UART_TX, CAM_UART_RX, -1, -1));
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
 
-    // TODO figure out pins
-    //ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, 18, 19));
+    xTaskCreate(cam_receive_task, "CamReceiveTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
 
-    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_1, SERIAL_BUF_LEN * 2, SERIAL_BUF_LEN * 2, 8, NULL, 0));
-
-    ESP_LOGI("Cam", "Camera init OK");
-}
-
-void cam_update(void){
-    uint8_t byte;
-    // wait only one tick for a byte to come through UART, cam_read() is called every tick so we'll get it eventually
-    uart_read_bytes(UART_NUM_1, &byte, 1, 1);
-
-    // TODO why don't we just read 8 bytes into the buffer and check if buffer[0] is CAM_BEIGN_BYTE?
-
-    if (byte == CAM_BEGIN_BYTE){
-        ESP_LOGD("Cam", "Received cam begin byte");
-        // begin, bfound, bx, by, yfound, yx, yy, end
-        
-        // temporary buffer on the stack, disposed after this method exits
-        // shouldn't overflow stack as its only 6 bytes
-        uint8_t *buffer = alloca((CAM_DATA_LEN - 2) * sizeof(uint8_t));
-
-        // wait indefinitely for the camera buffer to fill up, 
-        // shouldn't get stuck since if we read the start byte the camera must be sending to us
-        // we've already read the first byte and we don't need the end byte, so only read 6 bytes
-        uart_read_bytes(UART_NUM_1, buffer, CAM_DATA_LEN - 2, portMAX_DELAY);
-
-        // now we can read straight from the alloca'd region because the "[]" operator is just syntactic sugar
-        // for *(buffer + i)
-        goalBlue.exists = buffer[0];
-        goalBlue.x = buffer[1] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
-        goalBlue.y = buffer[2] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;
-
-        goalYellow.exists = buffer[3];
-        goalYellow.x = buffer[4] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
-        goalYellow.y = buffer[5] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;
-
-        // discard the rest of the internal buffer
-        uart_flush_input(UART_NUM_1);
-        
-        cam_calc();
-    }
+    ESP_LOGI(TAG, "Camera init OK");
 }
 
 void cam_calc(void){
     goalBlue.angle = mod(450 - roundf(RAD_DEG * atan2f(goalBlue.y, goalBlue.x)), 360);
-    goalBlue.length = sqrtf(powf(goalBlue.x, 2) + powf(goalBlue.y, 2));
+    goalBlue.length = sqrtf(sq(goalBlue.x) + sq(goalBlue.y));
 
     goalYellow.angle = mod(450 - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360);
-    goalYellow.length = sqrtf(powf(goalYellow.x, 2) + powf(goalYellow.y, 2));
+    goalYellow.length = sqrtf(sq(goalYellow.x) + sq(goalYellow.y));
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;

@@ -18,6 +18,8 @@
         for (int q = upper; q >= lower; q--){     \
             *(a + q + 1) = *(a + q); }}}
 
+
+#define sq(x) (x * x)
 /** first 8 bits of unsigned 16 bit int **/
 #define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xF))
 /** second 8 bits of unsigned 16 bit int **/
@@ -31,7 +33,7 @@
         i2c_reset_tx_fifo(I2C_NUM_0); \
         i2c_reset_rx_fifo(I2C_NUM_0); \
         return 1; \
-    } } while (0); \
+    } } while (0);
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
