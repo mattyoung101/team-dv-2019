@@ -1,6 +1,7 @@
 #include "comms_i2c.h"
 
 SemaphoreHandle_t rdSem = NULL;
+i2c_data_t receivedData = {0};
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
@@ -8,20 +9,19 @@ static void comms_i2c_receive_task(void *pvParameters){
     rdSem = xSemaphoreCreateBinary();
     xSemaphoreGive(rdSem);
 
-    ESP_LOGI(TAG, "Slave I2C task init OK");
     esp_task_wdt_add(NULL);
+    ESP_LOGI(TAG, "Slave I2C task init OK");
 
     while (true){
         memset(buf, 0, 9);
 
         esp_task_wdt_reset();
 
-        // wait indefinitely for our bytes to come in
-        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, portMAX_DELAY);
+        // wait slightly shorter than the task watchdog timeout for us to get some data
+        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, pdMS_TO_TICKS(4096));
 
         if (buf[0] == I2C_BEGIN_BYTE){
-            // acquire semaphore: stop other threads from changing data while we modify it
-            if (xSemaphoreTake(rdSem, pdMS_TO_TICKS(25))){
+            if (xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 receivedData.tsopAngle = UNPACK_16(buf[1], buf[2]);
                 receivedData.tsopStrength = UNPACK_16(buf[3], buf[4]);
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
@@ -29,32 +29,31 @@ static void comms_i2c_receive_task(void *pvParameters){
             
                 ESP_LOGV(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
                         receivedData.lineAngle, receivedData.lineSize);    
-                // unlock the semaphore, other tasks can use the new data now
                 xSemaphoreGive(rdSem);
             } else {
                 ESP_LOGW(TAG, "Failed to acquire semaphore in time!");
             }
         } else {
-            ESP_LOGE(TAG, "Discarding invalid buffer, first byte is: %d, expected: %d", buf[0], I2C_BEGIN_BYTE);
+            ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X, expected: 0x%X", buf[0], I2C_BEGIN_BYTE);
         }
 
         esp_task_wdt_reset();
     }
 }
 
-void comms_i2c_init_master(){
+void comms_i2c_init_master(i2c_port_t port){
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = 21,
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 500000 // 0.5 MHz, max is 1 MHz, unit is Hz
+        .master.clk_speed = 100000, // 0.5 MHz, max is 1 MHz, unit is Hz
     };
-    ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 0, 0, 0));
+    ESP_ERROR_CHECK(i2c_param_config(port, &conf));
+    ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
 
-    ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave)");
+    ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
 
 void comms_i2c_init_slave(){
@@ -77,6 +76,7 @@ void comms_i2c_init_slave(){
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
+// TODO make an I2C struct
 void comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize){
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));

@@ -107,7 +107,7 @@ float cluster_get_right_angle(ls_cluster *cluster){
 void lsarray_init(void){
     for (int i = 0; i < LS_NUM; i++){
         // cheeky malloc to stop it from being destroyed after going out of scope
-        light_sensor *sensor  = calloc(1, sizeof(light_sensor));
+        light_sensor *sensor = calloc(1, sizeof(light_sensor));
         sensor->pin = lsPins[i];
         ls_init(sensor);
         sensors[i] = sensor;

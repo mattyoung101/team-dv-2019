@@ -21,6 +21,7 @@
 #include "esp_timer.h"
 #include "comms_wifi.h"
 #include "esp_task_wdt.h"
+#include "simple_imu.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 static esp_timer_handle_t tsopTimer = NULL;
@@ -34,23 +35,24 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     comms_wifi_init_host();
+    cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
-    state_machine_t stateMachine = {0};
+    // state_machine_t stateMachine;
 
     esp_task_wdt_add(NULL);
 
     while (true){
-        // printf("BACKWARDS\n");
-        // motor_run_pwm(-20.0);
-        // vTaskDelay(pdMS_TO_TICKS(2500));
-
-        // printf("FORWARDS\n");
-        // motor_run_pwm(20.0);
-        // vTaskDelay(pdMS_TO_TICKS(2500));
+        // if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //     ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
+        //     xSemaphoreGive(goalDataSem);
+        // } else {
+        //     ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
+        // }
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
@@ -59,18 +61,28 @@ void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
     // Initialise hardware
-    comms_i2c_init_master();
+    comms_i2c_init_master(I2C_NUM_0);
+    ESP_LOGI("I2C Bus", "Waiting");
+    vTaskDelay(pdMS_TO_TICKS(2048));
     tsop_init();
-    ESP_LOGI(TAG, "Slave hardware init OK");
+    i2c_scanner();
+    simu_init();
 
+    ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
+
+    vec3d_t vec = {0};
     
-    while (true){
-        for (int i = 0; i < TSOP_TARGET_READS; i++){
-            tsop_update(NULL);
-        }
-        tsop_dump();
-        tsop_calc();
+    while (true) {
+        // for (int i = 0; i < TSOP_TARGET_READS; i++){
+        //     tsop_update(NULL);
+        // }
+        // tsop_dump();
+        // tsop_process();
+        // tsop_calc(5);
+
+        vec = simu_read_gyro();
+        ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
         // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
         comms_i2c_send(1234, 4321, 1010, 64321);
@@ -138,7 +150,6 @@ void app_main(){
         // };
         // ESP_ERROR_CHECK(esp_timer_create(&args, &tsopTimer));
         // ESP_ERROR_CHECK(esp_timer_start_periodic(tsopTimer, TSOP_READ_PERIOD_US));
-
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
     }
 }

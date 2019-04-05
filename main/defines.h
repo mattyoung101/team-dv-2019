@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment to write either Master or Slave to NVS flash so that the device can be identified as either
-// #define NVS_WRITE_MASTER
+#define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // You will need to uncomment both of these
@@ -11,6 +11,9 @@
 
 // Websocket
 // #define WEBSOCKET_ENABLED
+
+// RTOS
+#define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 23
@@ -72,6 +75,8 @@
 #define CAM_OFFSET_X 0
 #define CAM_OFFSET_Y 0
 #define CAM_NO_VALUE 0xBAD
+#define CAM_UART_TX 17
+#define CAM_UART_RX 16
 
 // Goals
 #define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF

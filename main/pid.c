@@ -1,8 +1,8 @@
 #include "pid.h"
 
-static int64_t lastTime;
-static float integral;
-static float lastInput;
+static int64_t lastTime = 0;
+static float integral = 0;
+static float lastInput = 0;
 
 float pid_update(pid_config_t *conf, float input, float setpoint, float modulus){
     float derivative;

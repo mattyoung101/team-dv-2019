@@ -42,6 +42,6 @@ void lsarray_calc_clusters(void);
 void lsarray_fill_in_sensors(void);
 void lsarray_calc_line(void);
 
-uint8_t numClusters;
-float lineAngle;
-float lineSize;
+uint8_t numClusters = 0;
+float lineAngle = 0.0f;
+float lineSize = 0.0f;

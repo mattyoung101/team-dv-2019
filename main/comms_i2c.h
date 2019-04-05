@@ -19,12 +19,12 @@ typedef struct {
 } i2c_data_t;
 
 /** data received over I2C **/
-i2c_data_t receivedData;
+extern i2c_data_t receivedData;
 /** received data semaphore for the variable receivedData **/
 extern SemaphoreHandle_t rdSem;
 
 /** Real life slave. Sends sensor data to the master. AUTOMODE_SLAVE. **/
-void comms_i2c_init_master();
+void comms_i2c_init_master(i2c_port_t port);
 /** Real life master. Receives sensor data from the master. AUTOMODE_MASTER. **/
 void comms_i2c_init_slave();
 /** Send a full data packet from the slave to the master **/
