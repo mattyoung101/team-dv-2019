@@ -7,6 +7,7 @@
         "inv_mpu.h": "c"
     },
     "cSpell.words": [
+        "GYRO",
         "LOGD",
         "LOGI",
         "LOGV",
@@ -19,8 +20,8 @@
         "lsarray",
         "mcpwm",
         "mplexer",
-        "wifi",
-        "GYRO"
+        "sinfd",
+        "wifi"
     ],
     "C_Cpp.errorSquiggles": "Enabled"
 }

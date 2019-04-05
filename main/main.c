@@ -62,33 +62,32 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
-    ESP_LOGI("I2C Bus", "Waiting");
-    vTaskDelay(pdMS_TO_TICKS(2048));
     tsop_init();
     i2c_scanner();
-    simu_init();
+    // simu_init();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
 
-    vec3d_t vec = {0};
+    // vec3d_t vec = {0};
     
     while (true) {
-        // for (int i = 0; i < TSOP_TARGET_READS; i++){
-        //     tsop_update(NULL);
-        // }
-        // tsop_dump();
-        // tsop_process();
-        // tsop_calc(5);
+        for (int i = 0; i < TSOP_TARGET_READS; i++){
+            tsop_update(NULL);
+        }
+        tsop_dump();
+        tsop_calc(5);
 
-        vec = simu_read_gyro();
-        ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
+        ESP_LOGI("TSOP", "Angle: %f\tStrength: %f", tsopAngle, tsopStrength);
+
+        // vec = simu_read_gyro();
+        // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
         // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
         comms_i2c_send(1234, 4321, 1010, 64321);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 

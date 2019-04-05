@@ -35,6 +35,10 @@
         return 1; \
     } } while (0);
 
+#define cosfd(x) (cosf(x * DEG_RAD) * RAD_DEG)
+#define sinfd(x) (sinf(x * DEG_RAD) * RAD_DEG)
+
+
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
 int number_comparator_descending(const void *a, const void *b);

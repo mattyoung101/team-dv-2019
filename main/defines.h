@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment to write either Master or Slave to NVS flash so that the device can be identified as either
-#define NVS_WRITE_MASTER
+// #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // You will need to uncomment both of these
@@ -162,7 +162,7 @@
 #define TSOP_4 27
 #define TSOP_5 26
 
-#define TSOP_TARGET_READS 24
+#define TSOP_TARGET_READS 255
 #define TSOP_READ_PERIOD_US (((portTICK_PERIOD_MS * 1000) / TSOP_TARGET_READS))
 // #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD
