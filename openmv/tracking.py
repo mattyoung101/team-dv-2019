@@ -6,7 +6,8 @@ import ucollections
 # Serial out format:
 # [42, bfound, bx, by, yfound, yx, yy, 0x0A] (6 bytes not including 0x0A)
 
-thresholds = [(49, 75, -44, 37, 69, 29), # yellow
+thresholds = [(50, 75, 94, 36, -15, 76), # orange
+              #(49, 75, -44, 37, 69, 29), # yellow
              (59, 47, -41, -67, 1, 44)] # blue
 
 # this comes from the output of blob.code()
@@ -137,6 +138,6 @@ while(True):
     #pyb.LED(2).off()
 
     if debug:
-        img.draw_string(5, 5, "S " + " ".join(str(x) for x in out))
+        img.draw_string(5, 5, "S " + "\n".join(str(x) for x in out))
 
     print(clock.fps())

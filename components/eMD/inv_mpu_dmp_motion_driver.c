@@ -20,8 +20,6 @@
 #include <string.h>
 #include <math.h>
 #include "inv_mpu.h"
-// the absolute fucking hot gabrage piece of shit VSCode C/C++ extension can't fucking find this fucking include path
-// so just ignore it :)
 #include "inv_mpu_dmp_motion_driver.h"
 #include "dmpKey.h"
 #include "dmpmap.h"

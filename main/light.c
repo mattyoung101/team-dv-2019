@@ -13,7 +13,7 @@ static bool filledInData[LS_NUM];
 void ls_init_adc(void){
     // Teensy ADC is 10 bit
     adc1_config_width(ADC_WIDTH_BIT_10);
-    // TODO what does this do? (copied from examples) + verify which bus we're using
+    // TODO do this for all channels on adc1
     adc1_config_channel_atten(ADC_CHANNEL_6, ADC_ATTEN_DB_0); // channel 6, atten_db_0
 }
 
@@ -34,6 +34,7 @@ uint16_t ls_read(light_sensor *ls){
     uint32_t reading = 0;
 
     for (int i = 0; i < ADC_SAMPLES; i++){
+        // TODO ayyy fix this it's not channel 6 it'll be whatever the heck channel
         reading += adc1_get_raw(ADC_CHANNEL_6);
     }
 

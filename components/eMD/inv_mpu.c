@@ -706,7 +706,6 @@ int mpu_init(struct int_param_s *int_param)
 #endif
 
 #ifdef AK89xx_SECONDARY
-    ESP_LOGI("MPU9250", "All that shit's done, doing the fuckin compass now");
     setup_compass();
     if (mpu_set_compass_sample_rate(10))
         return -1;

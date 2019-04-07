@@ -50,7 +50,7 @@ void i2c_scanner(){
 		} else {
 			printf(" --");
 		}
-		// ESP_LOGD("Shit", "Addr 0x%X, RC %s", i, esp_err_to_name(espRc));
+		// ESP_LOGD("I2CScanner", "Addr 0x%X, RC %s", i, esp_err_to_name(espRc));
 		i2c_cmd_link_delete(cmd);
 	}
 	printf("\n");

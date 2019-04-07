@@ -14,9 +14,13 @@ typedef struct {
     gpio_num_t pin;
 } light_sensor;
 
+/** Initialises the ADC for light sensor usage **/
 void ls_init_adc(void);
+/** Initialises a single light sensor struct **/
 void ls_init(light_sensor *ls);
+/** Reads the value of a light sensor **/
 uint16_t ls_read(light_sensor *ls);
+/** Returns true if the light sensor is on the line, else false **/
 bool ls_on_white(light_sensor *ls);
 
 typedef struct {
@@ -36,7 +40,9 @@ float cluster_get_angle(ls_cluster *cluster);
 float cluster_get_left_angle(ls_cluster *cluster);
 float cluster_get_right_angle(ls_cluster *cluster);
 
+/** Initialises all light sensors in the light sensor array **/
 void lsarray_init(void);
+/** Reads all light sensors **/
 void lsarray_read(void);
 void lsarray_calc_clusters(void);
 void lsarray_fill_in_sensors(void);

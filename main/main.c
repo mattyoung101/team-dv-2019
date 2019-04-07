@@ -44,12 +44,12 @@ void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        // if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-        //     ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
-        //     xSemaphoreGive(goalDataSem);
-        // } else {
-        //     ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
-        // }
+        if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
+            xSemaphoreGive(goalDataSem);
+        } else {
+            ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
+        }
         esp_task_wdt_reset();
 
         vTaskDelay(pdMS_TO_TICKS(250));
