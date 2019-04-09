@@ -119,18 +119,20 @@ while(True):
 
     out += [0xB]
 
-    #if biggestBlue == None:
-        #out += [False, 0, 0]
-    #else:
-        #out += [True, int(biggestBlue.cx()), int(biggestBlue.cy())]
+    if biggestBlue == None:
+        out += [False, 0, 0]
+    else:
+        out += [True, int(biggestBlue.cx()), int(biggestBlue.cy())]
 
-    #if biggestYellow == None:
-        #out += [False, 0, 0]
-    #else:
-        #out += [True, int(biggestYellow.cx()), int(biggestYellow.cy())]
+    if biggestYellow == None:
+        out += [False, 0, 0]
+    else:
+        out += [True, int(biggestYellow.cx()), int(biggestYellow.cy())]
+
+    out += [0xE]
 
     # junk values for UART testing
-    out += [1, 64, 18, 1, 20, 21, 0xE]
+    #out += [1, 64, 18, 1, 20, 21, 0xE]
 
     #pyb.LED(2).on()
     for byte in out:
