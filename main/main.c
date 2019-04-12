@@ -51,7 +51,7 @@ void master_task(void *pvParameter){
         }
         esp_task_wdt_reset();
 
-        vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 
