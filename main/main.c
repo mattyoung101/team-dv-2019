@@ -19,12 +19,11 @@
 #include "soc/efuse_reg.h"
 #include "comms_i2c.h"
 #include "esp_timer.h"
-#include "comms_wifi.h"
 #include "esp_task_wdt.h"
 #include "simple_imu.h"
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
-static esp_timer_handle_t tsopTimer = NULL;
+// static esp_timer_handle_t tsopTimer = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
@@ -34,7 +33,7 @@ void master_task(void *pvParameter){
     // Initialise hardware
     motor_init();
     comms_i2c_init_slave();
-    comms_wifi_init_host();
+    // comms_wifi_init_host();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
@@ -63,6 +62,7 @@ void slave_task(void *pvParameter){
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
     tsop_init();
+    ls_init();
     i2c_scanner();
     // simu_init();
 
@@ -72,13 +72,15 @@ void slave_task(void *pvParameter){
     // vec3d_t vec = {0};
     
     while (true) {
-        for (int i = 0; i < TSOP_TARGET_READS; i++){
-            tsop_update(NULL);
-        }
-        tsop_dump();
-        tsop_calc(5);
+        // for (int i = 0; i < TSOP_TARGET_READS; i++){
+        //     tsop_update(NULL);
+        // }
+        // tsop_dump();
+        // tsop_calc(5);
 
-        ESP_LOGI("TSOP", "Angle: %f\tStrength: %f", tsopAngle, tsopStrength);
+        // ESP_LOGI("TSOP", "Angle: %f\tStrength: %f", tsopAngle, tsopStrength);
+
+        lsarray_debug();
 
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);

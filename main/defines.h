@@ -119,34 +119,19 @@
 // Light sensor
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 300
-#define LS_NUM 24
+#define LS_NUM 48
+#define LS_NUM_PER_MUX 24
 #define LS_NO_LINE_ANGLE 0xBAD
 #define LS_NO_LINE_SIZE 0xBAD
 
-#define LS_0 0
-#define LS_1 0
-#define LS_2 0
-#define LS_3 0
-#define LS_4 0
-#define LS_5 0
-#define LS_6 0
-#define LS_7 0
-#define LS_8 0
-#define LS_9 0
-#define LS_10 0
-#define LS_11 0
-#define LS_12 0
-#define LS_13 0
-#define LS_14 0
-#define LS_15 0
-#define LS_16 0
-#define LS_17 0
-#define LS_18 0
-#define LS_19 0
-#define LS_20 0
-#define LS_21 0
-#define LS_22 0
-#define LS_23 0
+#define LS_MUX0_OUT ADC1_CHANNEL_3
+#define LS_MUX1_OUT ADC2_CHANNEL_1
+#define LS_MUX_S0 2
+#define LS_MUX_S1 4
+#define LS_MUX_S2 5
+#define LS_MUX_S3 12
+#define LS_MUX_S4 13
+#define LS_EN 15
 
 // TSOPs
 #define TSOP_NUM 18
