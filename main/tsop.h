@@ -7,6 +7,7 @@
 #include "mplexer.h"
 #include "esp_timer.h"
 #include <inttypes.h>
+#include "movavg.h"
 
 float tsopAngle;
 float tsopStrength;

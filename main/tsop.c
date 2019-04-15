@@ -13,6 +13,8 @@ static mplexer_4bit_t tsopMux = {
 // TSOP 4 & 5 are unconnected so they are represented by 255
 static const gpio_num_t irTable[] = {8, 0, 1, 2, 255, 255, 7, 6, 5, 4, 3, 15, 14, 13, 12, 11, 10, 9};
 static const char *TAG = "TSOP";
+static mov_avg_t* angleAvg;
+static mov_avg_t* strengthAvg;
 
 static void tsop_reset(){
     for (int i = 0; i < TSOP_NUM; i++){
@@ -33,6 +35,9 @@ void tsop_init(void){
 
     mplexer_4bit_init(&tsopMux);
     tsop_reset();
+
+    angleAvg = mov_avg_create(16);
+    strengthAvg = mov_avg_create(16);
 }
 
 void tsop_update(void *args){
@@ -62,15 +67,19 @@ static int cmp_vec_mag(const void *p, const void *q){
 }
 
 void tsop_calc(){
-    // int64_t begin = esp_timer_get_time();
+    ESP_LOGI(TAG, "Read %d times", tsopCounter);
 
     // scale down the magnitudes
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X = ((float) readings[i].X / (float) tsopCounter);
     }
+    // ESP_LOGI(TAG, "Scaled down:");
+    // tsop_dump();
 
     // sort values to obtain the best n vectors with the highest magnitudes
     qsort(readings, TSOP_NUM, sizeof(hmm_vec2), cmp_vec_mag);
+    // ESP_LOGI(TAG, "Sorted:");
+    // tsop_dump();
 
     // convert them to cartesian
     for (int i = 0; i < TSOP_BEST; i++){
@@ -79,10 +88,13 @@ void tsop_calc(){
         readings[i].X = r * cosfd(theta);
         readings[i].Y = r * sinfd(theta);
     }
+    // ESP_LOGI(TAG, "Converted to cartesian:");
+    // tsop_dump();
 
     // sum them
-    hmm_vec2 sum;
+    hmm_vec2 sum = {0};
     for (int i = 0; i < TSOP_BEST; i++){
+        // ESP_LOGD(TAG, "Current sum: (%f, %f) adding: (%f, %f)", sum.X, sum.Y, readings[i].X, readings[i].Y);
         sum = HMM_AddVec2(sum, readings[i]);
     }
 
@@ -91,16 +103,18 @@ void tsop_calc(){
     float sumY = sum.Y;
     tsopStrength = sqrtf(sq(sumX) + sq(sumY));
     tsopAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
+    
+    mov_avg_push(angleAvg, tsopAngle);
+    mov_avg_push(strengthAvg, tsopStrength);
+
+    ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", mov_avg_calc(angleAvg), mov_avg_calc(strengthAvg));
 
     tsop_reset();
-
-    // int64_t diff = esp_timer_get_time() - begin;
-    // ESP_LOGV(TAG, "Time: %" PRIu64 " us", diff);
 }
 
 void tsop_dump(void){
     // this is generated using tsop_format_gen.py in the scripts folder, yes I know it sucks
-    ESP_LOGV(TAG, "Values: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)," 
+    ESP_LOGD(TAG, "Values: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), " 
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, 
     readings[2].Y, readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, 

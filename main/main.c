@@ -75,21 +75,19 @@ void slave_task(void *pvParameter){
     // vec3d_t vec = {0};
     
     while (true) {
-        // for (int i = 0; i < TSOP_TARGET_READS; i++){
-        //     tsop_update(NULL);
-        // }
-        // tsop_dump();
-        // tsop_calc(5);
-
+        for (int i = 0; i < 32; i++){
+            tsop_update(NULL);
+        }
+        tsop_calc(5);
         // ESP_LOGI("TSOP", "Angle: %f\tStrength: %f", tsopAngle, tsopStrength);
 
-        lsarray_debug();
+        // lsarray_debug();
 
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
         // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
-        comms_i2c_send(1234, 4321, 1010, 64321);
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(250));
@@ -146,7 +144,6 @@ void app_main(){
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         ESP_LOGI("AppMain", "Time between TSOP reads: %d us", TSOP_READ_PERIOD_US);
-        // // note: read seems takes 34 us
         // esp_timer_create_args_t args = {
         //     .callback = &tsop_update,
         //     .name = "TSOPTimer",

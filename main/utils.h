@@ -21,12 +21,15 @@
 #define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY)); } while(0);
 /** Automated I2C error checking code for the sensor use ONLY **/
 #define I2C_ERR_CHECK(err) do { if (err != ESP_OK){ \
-        ESP_LOGE(TAG, "Read/write failed! Error: %s. Attempting bus reset.", esp_err_to_name(err)); \
+        ESP_LOGE(TAG, "I2C failure! Error: %s. Attempting bus reset.", esp_err_to_name(err)); \
         i2c_reset_tx_fifo(I2C_NUM_0); \
         i2c_reset_rx_fifo(I2C_NUM_0); \
         return 1; \
     } } while (0);
-
+/** Starts counting on the performance timer. The variable "pfBegin" must be undefined **/
+#define PERF_TIMER_START int64_t pfBegin = esp_timer_get_time();
+/** Stops the performance timer and logs to UART. **/
+#define PERF_TIMER_STOP ESP_LOGD("PerfTimer", "%lld ms", (esp_timer_get_time() - pfBegin) / 1000);
 /** Cosine in degrees of x in degrees **/
 #define cosfd(x) (cosf(x * DEG_RAD) * RAD_DEG)
 /** Sin in degrees of x in degrees **/

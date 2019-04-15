@@ -2,6 +2,7 @@
 
 SemaphoreHandle_t rdSem = NULL;
 i2c_data_t receivedData = {0};
+static const char *TAG = "CommsI2C";
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
@@ -99,12 +100,7 @@ void comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngl
     ESP_ERROR_CHECK(i2c_master_write(cmd, buf, 9, I2C_ACK_MODE));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
-
-    if (err != ESP_OK){
-        ESP_LOGE("CommsI2C_M", "Send failed! Error: %s. Attemtping bus reset.", esp_err_to_name(err));
-        i2c_reset_tx_fifo(I2C_NUM_0);
-        i2c_reset_rx_fifo(I2C_NUM_0);
-    }
+    I2C_ERR_CHECK(err);
 
     i2c_cmd_link_delete(cmd);
 }

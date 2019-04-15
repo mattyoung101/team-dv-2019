@@ -4,7 +4,7 @@ static bool readings[LS_NUM] = {0};
 static uint32_t rawValues[LS_NUM] = {0};
 static light_sensor *sensors[LS_NUM] = {0};
 static mplexer_5bit_t lsMux0 = {
-    LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX0_OUT, LS_MUX_EN
+    LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX0_OUT, LS_MUX_EN, LS_MUX_WR
 };
 static mplexer_5bit_t lsMux1 = {
     LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_MUX_EN, LS_MUX_WR
@@ -37,11 +37,11 @@ static void ls_func_calibrate(light_sensor* ls, uint8_t mux){
 
 // read and put in array
 static void ls_func_read(light_sensor *ls, uint8_t mux){
-    uint64_t begin = esp_timer_get_time();
+    // uint64_t begin = esp_timer_get_time();
     uint16_t reading = ls_read(mux);
     readings[ls->pin] = reading > ls->thresholdValue;
     rawValues[ls->pin] = reading;
-    // printf("Read time: %lld\n", esp_timer_get_time() - fuck);
+    // printf("Read time: %lld\n", esp_timer_get_time() - begin);
 }
 
 void ls_iterate(ls_func_t func){
