@@ -4,10 +4,10 @@ static bool readings[LS_NUM] = {0};
 static uint32_t rawValues[LS_NUM] = {0};
 static light_sensor *sensors[LS_NUM] = {0};
 static mplexer_5bit_t lsMux0 = {
-    LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX0_OUT, LS_EN
+    LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX0_OUT, LS_MUX_EN
 };
 static mplexer_5bit_t lsMux1 = {
-    LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_EN
+    LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_MUX_EN, LS_MUX_WR
 };
 static const char *TAG = "LightSensor";
 
@@ -23,7 +23,6 @@ uint16_t ls_read(uint8_t mux){
             reading += heck;
         }
     }
-    // ESP_LOGD(TAG, "The fucking reading is fucking %d on mux %d", reading, mux);
     return reading / ADC_SAMPLES;
 }
 
@@ -38,9 +37,11 @@ static void ls_func_calibrate(light_sensor* ls, uint8_t mux){
 
 // read and put in array
 static void ls_func_read(light_sensor *ls, uint8_t mux){
+    uint64_t begin = esp_timer_get_time();
     uint16_t reading = ls_read(mux);
     readings[ls->pin] = reading > ls->thresholdValue;
     rawValues[ls->pin] = reading;
+    // printf("Read time: %lld\n", esp_timer_get_time() - fuck);
 }
 
 void ls_iterate(ls_func_t func){
@@ -66,14 +67,15 @@ static void print_char_val_type(esp_adc_cal_value_t val_type){
 }
 
 void ls_init(void){
+    // TODO make this 12 bit for higher accuracy - does it make it slower?
     adc1_config_width(ADC_WIDTH_BIT_10);
     adc1_config_channel_atten(LS_MUX0_OUT, ADC_ATTEN_0db);
     esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
+    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
     
     adc2_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_0db);
     esp_adc_cal_characteristics_t *adc2_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_11db, ADC_WIDTH_BIT_10, 1100, adc2_chars));
+    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc2_chars));
 
     mplexer_5bit_init(&lsMux0);
     mplexer_5bit_init(&lsMux1);
@@ -97,7 +99,7 @@ void lsarray_read(void){
 
 void lsarray_debug(void){
     ls_iterate(&ls_func_read);
-    
+
     printf("BEGIN ");
     for (int i = 0; i < LS_NUM; i++){
         printf("%d ", rawValues[i]);

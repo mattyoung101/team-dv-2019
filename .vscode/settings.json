@@ -12,6 +12,7 @@
         "LOGI",
         "LOGV",
         "LOGW",
+        "ROBOTNUM",
         "SSID",
         "TSOPs",
         "WMSG",

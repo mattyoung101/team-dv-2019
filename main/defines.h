@@ -1,13 +1,12 @@
 #pragma once
 #include "esp_log.h"
 
-// Uncomment to write either Master or Slave to NVS flash so that the device can be identified as either
+// Uncomment ONE of these two identify the device as either a master or a slave.
 // #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
-// You will need to uncomment both of these
-// #define NVS_WRITE_ROBOTNUM
-// #define NVS_ROBOTNUM 0 // 0 or 1, 0 = wifi host, 1 = wifi client
+// If this is defined, the value of the robot number will be written to NVS
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = wifi host, 1 = wifi client
 
 // Websocket
 // #define WEBSOCKET_ENABLED
@@ -55,7 +54,7 @@
 #define AUTOMODE_MASTER 1
 
 // ADC
-#define ADC_SAMPLES 32
+#define ADC_SAMPLES 4
 
 // WiFi
 #define WIFI_SSID "DVRobotLink"
@@ -67,7 +66,6 @@
 
 // Camera
 #define CAM_DATA_LEN 8
-#define SERIAL_BUF_LEN 64
 #define CAM_BEGIN_BYTE 0xB
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 100
@@ -79,10 +77,9 @@
 #define CAM_UART_RX 16
 
 // Goals
-#define ENEMY_GOAL 0 //0: Yellow, 1: Blue, 2: OFF
+#define ENEMY_GOAL 0 // 0: Yellow, 1: Blue, 2: OFF
 #define HALFWAY_DISTANCE 90
 
-// Pins
 // Motors and Encoders
 #define MOTOR_FL_PWM 12
 #define MOTOR_FL_IN1 4
@@ -120,7 +117,7 @@
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 300
 #define LS_NUM 48
-#define LS_NUM_PER_MUX 24
+#define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
 #define LS_NO_LINE_ANGLE 0xBAD
 #define LS_NO_LINE_SIZE 0xBAD
 
@@ -131,7 +128,8 @@
 #define LS_MUX_S2 5
 #define LS_MUX_S3 12
 #define LS_MUX_S4 13
-#define LS_EN 15
+#define LS_MUX_EN 15
+#define LS_MUX_WR 14
 
 // TSOPs
 #define TSOP_NUM 18

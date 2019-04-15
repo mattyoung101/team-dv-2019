@@ -1,7 +1,4 @@
 #include "tsop.h"
-// stupid hack to make it compile, we have to include these here
-#define HANDMADE_MATH_IMPLEMENTATION
-#define HANDMADE_MATH_NO_SSE
 #include "HandmadeMath.h"
 
 static uint16_t tsopCounter = 0;
@@ -102,8 +99,7 @@ void tsop_calc(){
 }
 
 void tsop_dump(void){
-    // this is generated using tsop_format_gen.py in the scripts folder
-    // even still, holy shit
+    // this is generated using tsop_format_gen.py in the scripts folder, yes I know it sucks
     ESP_LOGV(TAG, "Values: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)," 
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, 

@@ -39,8 +39,9 @@ void mplexer_5bit_init(mplexer_5bit_t *config){
     gpio_set_direction(config->s2, GPIO_MODE_OUTPUT);
     gpio_set_direction(config->s3, GPIO_MODE_OUTPUT);
     gpio_set_direction(config->s4, GPIO_MODE_OUTPUT);
-    gpio_set_direction(config->out, GPIO_MODE_INPUT);
+    // gpio_set_direction(config->out, GPIO_MODE_INPUT); // done with ADC
     gpio_set_direction(config->en, GPIO_MODE_OUTPUT);
+    gpio_set_direction(config->wr, GPIO_MODE_OUTPUT);
 }
 
 void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
@@ -59,9 +60,12 @@ void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
     ESP_LOGV("Mux_5bit", "Pin %d, Binary %d%d%d%d%d", pin, binary[0], binary[1], binary[2], binary[3], binary[4]);
     
     gpio_set_level(plexer->en, 0);
+    
+    gpio_set_level(plexer->wr, 0);
     gpio_set_level(plexer->s0, binary[0]);
     gpio_set_level(plexer->s1, binary[1]);
     gpio_set_level(plexer->s2, binary[2]);
     gpio_set_level(plexer->s3, binary[3]);
     gpio_set_level(plexer->s4, binary[4]);
+    gpio_set_level(plexer->wr, 1);
 }

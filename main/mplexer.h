@@ -13,8 +13,9 @@ uint32_t mplexer_4bit_read(mplexer_4bit_t *plexer, uint8_t pin);
 
 ////////////////////////////////////////////////////////////////
 
+/** A 5 bit multiplexer, the ADG732 **/
 typedef struct {
-    gpio_num_t s0, s1, s2, s3, s4, out, en;
+    gpio_num_t s0, s1, s2, s3, s4, out, en, wr;
 } mplexer_5bit_t;
 
 /** Initialises the pins on the multiplexer **/
