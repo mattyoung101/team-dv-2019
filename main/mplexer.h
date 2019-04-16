@@ -22,3 +22,5 @@ typedef struct {
 void mplexer_5bit_init(mplexer_5bit_t *config);
 /** Dials in the pin to the multiplexer **/
 void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin);
+/** Reads the Nth pin of a 5 bit multiplexer **/
+uint32_t mplexer_5bit_read(mplexer_5bit_t *plexer, uint8_t pin);

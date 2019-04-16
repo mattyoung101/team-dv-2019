@@ -7,6 +7,7 @@
 #include "esp_log.h"
 
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
+// TODO shouldn't this be separate variables or something?
 typedef struct {
     // inputs
     bool goalVisible;

@@ -1,20 +1,20 @@
 #pragma once
 #include "esp_log.h"
 
-// Uncomment ONE of these two identify the device as either a master or a slave.
+// Uncomment ONE of these to identify the device as either a master or a slave.
 // #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
 // #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = wifi host, 1 = wifi client
 
-// Debug mode
-// If enabled, I2C debug packets will be sent from the slave to the master, then to the PC webserver using sockets
-// Caution: may slow down processing, don't enable in competition
-#define DEBUG_ENABLED
+// Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
+// Will probably slow down the robot, don't enable in competition!
+#define WEB_DEBUG_ENABLED
 
-// RTOS
+// FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
+#define CONF_LOG_LEVEL ESP_LOG_DEBUG
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 23
@@ -40,24 +40,15 @@
 // Defence
 #define DEFEND_DISTANCE 30
 
-// Timers
-#define TIMER_TSOP 1
-
 // Maths
 #define PI 3.14159265358979323846
-#define DEG_RAD 0.017453292519943295
-#define RAD_DEG 57.29577951308232
-
-// Logging
-#define CONF_LOG_LEVEL ESP_LOG_DEBUG
+#define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
+#define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
 
 // AutoMode (code that automatically starts attack/defence tasks based on NVS)
 #define AUTOMODE_ILLEGAL 254
 #define AUTOMODE_SLAVE 0
 #define AUTOMODE_MASTER 1
-
-// ADC
-#define ADC_SAMPLES 4
 
 // WiFi
 #define WIFI_SSID "DVRobotLink"
@@ -123,6 +114,7 @@
 #define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
 #define LS_NO_LINE_ANGLE 0xBAD
 #define LS_NO_LINE_SIZE 0xBAD
+#define ADC_SAMPLES 4
 
 #define LS_MUX0_OUT ADC1_CHANNEL_3
 #define LS_MUX1_OUT ADC2_CHANNEL_1
@@ -135,21 +127,19 @@
 #define LS_MUX_WR 14
 
 // TSOPs
-#define TSOP_NUM 18
+#define TSOP_NUM 24
 #define TSOP_BEST 5
-#define TSOP_PWR_1 32
-#define TSOP_PWR_2 33
-
-#define TSOP_MUX_S0 16
-#define TSOP_MUX_S1 17
-#define TSOP_MUX_S2 18
-#define TSOP_MUX_S3 19
-#define TSOP_MUX_OUT 35
-#define TSOP_4 27
-#define TSOP_5 26
-
 #define TSOP_TARGET_READS 255
 #define TSOP_READ_PERIOD_US 75
 // #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 16
+
+#define TSOP_MUX_S0 19
+#define TSOP_MUX_S1 18
+#define TSOP_MUX_S2 17
+#define TSOP_MUX_S3 16
+#define TSOP_MUX_S4 32
+#define TSOP_MUX_OUT 35
+#define TSOP_MUX_EN 27
+#define TSOP_MUX_WR 26

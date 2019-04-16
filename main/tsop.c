@@ -4,14 +4,11 @@
 static uint16_t tsopCounter = 0;
 // in polar form, so x = mag, y = theta
 static hmm_vec2 readings[TSOP_NUM] = {0};
-
-static mplexer_4bit_t tsopMux = {
-    TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_OUT
+static mplexer_5bit_t tsopMux = {
+    TSOP_MUX_S0, TSOP_MUX_S1, TSOP_MUX_S2, TSOP_MUX_S3, TSOP_MUX_S4, TSOP_MUX_OUT, TSOP_MUX_EN, TSOP_MUX_WR
 };
-
 // Index = TSOP number, Value = multiplexer pin
-// TSOP 4 & 5 are unconnected so they are represented by 255
-static const gpio_num_t irTable[] = {8, 0, 1, 2, 255, 255, 7, 6, 5, 4, 3, 15, 14, 13, 12, 11, 10, 9};
+static const gpio_num_t irTable[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 23, 22, 21, 20, 19, 18, 17, 16};
 static const char *TAG = "TSOP";
 static movavg_t* angleAvg = NULL;
 static movavg_t* strengthAvg = NULL;
@@ -29,15 +26,7 @@ static void tsop_reset(){
 }
 
 void tsop_init(void){
-    gpio_set_direction(TSOP_PWR_1, GPIO_MODE_OUTPUT);
-    gpio_set_direction(TSOP_PWR_2, GPIO_MODE_OUTPUT);
-    gpio_set_level(TSOP_PWR_1, 1);
-    gpio_set_level(TSOP_PWR_2, 1);
-
-    gpio_set_direction(TSOP_4, GPIO_MODE_INPUT);
-    gpio_set_direction(TSOP_5, GPIO_MODE_INPUT);
-
-    mplexer_4bit_init(&tsopMux);
+    mplexer_5bit_init(&tsopMux);
     tsop_reset();
 
     angleAvg = movavg_create(TSOP_MOVAVG_SIZE);
@@ -46,17 +35,12 @@ void tsop_init(void){
 
 void tsop_update(void *args){
     for (int i = 0; i < TSOP_NUM; i++){
-        if (i == 4){
-            readings[i].X += gpio_get_level(TSOP_4) ^ 1;
-        } else if (i == 5){
-            readings[i].X += gpio_get_level(TSOP_5) ^ 1;
-        } else {
-            readings[i].X += mplexer_4bit_read(&tsopMux, irTable[i]) ^ 1;
-        }
+        readings[i].X += mplexer_5bit_read(&tsopMux, irTable[i]) ^ 1;
     }
     tsopCounter++;
 }
 
+/** compares polar vectors based on their magnitudes in descending order **/
 static int cmp_vec_mag(const void *p, const void *q){
     hmm_vec2 a = *(const hmm_vec2 *) p;
     hmm_vec2 b = *(const hmm_vec2 *) q;
@@ -72,7 +56,6 @@ static int cmp_vec_mag(const void *p, const void *q){
 
 void tsop_calc(){
     // ESP_LOGI(TAG, "Read %d times", tsopCounter);
-
     // scale down the magnitudes
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X = ((float) readings[i].X / (float) tsopCounter);
@@ -120,12 +103,14 @@ void tsop_calc(){
 
 void tsop_dump(void){
     // this is generated using tsop_format_gen.py in the scripts folder, yes I know it sucks
-    ESP_LOGD(TAG, "Values: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), " 
+    ESP_LOGD(TAG, "Values: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
-    "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, 
-    readings[2].Y, readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, 
-    readings[6].Y, readings[7].X, readings[7].Y, readings[8].X, readings[8].Y, readings[9].X, readings[9].Y, readings[10].X, 
-    readings[10].Y, readings[11].X, readings[11].Y, readings[12].X, readings[12].Y, readings[13].X, readings[13].Y, 
-    readings[14].X, readings[14].Y, readings[15].X, readings[15].Y, readings[16].X, readings[16].Y, readings[17].X, 
-    readings[17].Y);
+    "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
+    "(%.2f, %.2f), (%.2f, %.2f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, readings[2].Y, 
+    readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, readings[6].Y, 
+    readings[7].X, readings[7].Y, readings[8].X, readings[8].Y, readings[9].X, readings[9].Y, readings[10].X, readings[10].Y, 
+    readings[11].X, readings[11].Y, readings[12].X, readings[12].Y, readings[13].X, readings[13].Y, readings[14].X, 
+    readings[14].Y, readings[15].X, readings[15].Y, readings[16].X, readings[16].Y, readings[17].X, readings[17].Y, 
+    readings[18].X, readings[18].Y, readings[19].X, readings[19].Y, readings[20].X, readings[20].Y, readings[21].X, 
+    readings[21].Y, readings[22].X, readings[22].Y, readings[23].X, readings[23].Y);
 }
