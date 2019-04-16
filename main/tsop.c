@@ -13,8 +13,12 @@ static mplexer_4bit_t tsopMux = {
 // TSOP 4 & 5 are unconnected so they are represented by 255
 static const gpio_num_t irTable[] = {8, 0, 1, 2, 255, 255, 7, 6, 5, 4, 3, 15, 14, 13, 12, 11, 10, 9};
 static const char *TAG = "TSOP";
-static mov_avg_t* angleAvg;
-static mov_avg_t* strengthAvg;
+static movavg_t* angleAvg = NULL;
+static movavg_t* strengthAvg = NULL;
+float tsopAngle = 0.0f;
+float tsopStrength = 0.0f;
+float tsopAvgAngle = 0.0f;
+float tsopAvgStrength = 0.0f;
 
 static void tsop_reset(){
     for (int i = 0; i < TSOP_NUM; i++){
@@ -36,8 +40,8 @@ void tsop_init(void){
     mplexer_4bit_init(&tsopMux);
     tsop_reset();
 
-    angleAvg = mov_avg_create(16);
-    strengthAvg = mov_avg_create(16);
+    angleAvg = movavg_create(TSOP_MOVAVG_SIZE);
+    strengthAvg = movavg_create(TSOP_MOVAVG_SIZE);
 }
 
 void tsop_update(void *args){
@@ -67,7 +71,7 @@ static int cmp_vec_mag(const void *p, const void *q){
 }
 
 void tsop_calc(){
-    ESP_LOGI(TAG, "Read %d times", tsopCounter);
+    // ESP_LOGI(TAG, "Read %d times", tsopCounter);
 
     // scale down the magnitudes
     for (int i = 0; i < TSOP_NUM; i++){
@@ -104,10 +108,12 @@ void tsop_calc(){
     tsopStrength = sqrtf(sq(sumX) + sq(sumY));
     tsopAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
     
-    mov_avg_push(angleAvg, tsopAngle);
-    mov_avg_push(strengthAvg, tsopStrength);
+    movavg_push(angleAvg, tsopAngle);
+    movavg_push(strengthAvg, tsopStrength);
+    tsopAvgAngle = movavg_calc(angleAvg);
+    tsopAvgStrength = movavg_calc(strengthAvg);
 
-    ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", mov_avg_calc(angleAvg), mov_avg_calc(strengthAvg));
+    ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", tsopAvgAngle, tsopAvgStrength);
 
     tsop_reset();
 }

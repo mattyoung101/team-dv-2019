@@ -8,8 +8,13 @@ typedef struct {
     size_t size;
     uint16_t counter;
     float *items;
-} mov_avg_t;
+} movavg_t;
 
-mov_avg_t *mov_avg_create(size_t size);
-void mov_avg_push(mov_avg_t *mov_avg, float value);
-float mov_avg_calc(mov_avg_t *mov_avg);
+/** Instantiates a new moving average object **/
+movavg_t *movavg_create(size_t size);
+/** Frees a moving average object **/
+void movavg_free(movavg_t *mov_avg);
+/** Pushes a new value to the moving average items array, looping around to the start if required **/
+void movavg_push(movavg_t *mov_avg, float value);
+/** Calculates the moving average **/
+float movavg_calc(movavg_t *mov_avg);

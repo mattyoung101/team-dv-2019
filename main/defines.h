@@ -8,8 +8,10 @@
 // If this is defined, the value of the robot number will be written to NVS
 // #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = wifi host, 1 = wifi client
 
-// Websocket
-// #define WEBSOCKET_ENABLED
+// Debug mode
+// If enabled, I2C debug packets will be sent from the slave to the master, then to the PC webserver using sockets
+// Caution: may slow down processing, don't enable in competition
+#define DEBUG_ENABLED
 
 // RTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -18,7 +20,8 @@
 #define I2C_ESP_SLAVE_ADDR 23
 #define I2C_TIMEOUT 250 // ms
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
-#define I2C_BEGIN_BYTE 0xB
+#define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
+#define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
 
 // Music
 #define MUSIC_BPM 100
@@ -149,3 +152,4 @@
 #define TSOP_READ_PERIOD_US 75
 // #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD
+#define TSOP_MOVAVG_SIZE 16

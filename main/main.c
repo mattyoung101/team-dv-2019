@@ -37,7 +37,7 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     // comms_wifi_init_host();
-    cam_init();
+    // cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
@@ -46,15 +46,14 @@ void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
-            xSemaphoreGive(goalDataSem);
-        } else {
-            ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
-        }
+        // if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //     // ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
+        //     xSemaphoreGive(goalDataSem);
+        // } else {
+        //     ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
+        // }
         esp_task_wdt_reset();
-
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
@@ -79,15 +78,13 @@ void slave_task(void *pvParameter){
             tsop_update(NULL);
         }
         tsop_calc(5);
-        // ESP_LOGI("TSOP", "Angle: %f\tStrength: %f", tsopAngle, tsopStrength);
 
         // lsarray_debug();
 
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
-        // ESP_LOGD(TAG, "TSOP angle: %f, TSOP str: %f", tsopAngle, tsopStrength);
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321);
+        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(250));
@@ -143,14 +140,6 @@ void app_main(){
         xTaskCreatePinnedToCore(master_task, "MasterTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
-        ESP_LOGI("AppMain", "Time between TSOP reads: %d us", TSOP_READ_PERIOD_US);
-        // esp_timer_create_args_t args = {
-        //     .callback = &tsop_update,
-        //     .name = "TSOPTimer",
-        //     .arg = NULL
-        // };
-        // ESP_ERROR_CHECK(esp_timer_create(&args, &tsopTimer));
-        // ESP_ERROR_CHECK(esp_timer_start_periodic(tsopTimer, TSOP_READ_PERIOD_US));
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
     }
 }

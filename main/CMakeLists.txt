@@ -3,6 +3,7 @@ set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
 set(COMPONENT_SRCS "main.c"
+                   "comms_i2c.c"
                    "tsop.c"
                    "utils.c"
                    "motor.c"
@@ -11,7 +12,6 @@ set(COMPONENT_SRCS "main.c"
                    "fsm.c"
                    "states.c"
                    "cam.c"
-                   "comms_i2c.c"
                    "music.c"
                    "mplexer.c"
                    "comms_wifi.c"

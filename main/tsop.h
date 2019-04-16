@@ -9,8 +9,10 @@
 #include <inttypes.h>
 #include "movavg.h"
 
-float tsopAngle;
-float tsopStrength;
+extern float tsopAngle;
+extern float tsopStrength;
+extern float tsopAvgAngle;
+extern float tsopAvgStrength;
 
 /** Initialises the TSOP pins and multiplexer **/
 void tsop_init(void);
