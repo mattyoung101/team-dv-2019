@@ -19,9 +19,13 @@ float angleBetween(float angleCounterClockwise, float angleClockwise){
     return mod(angleClockwise - angleCounterClockwise, 360);
 }
 
-float midAngleBetween(float angleCounterClockwise, float angleClockwise){
-    float ang = angleBetween(angleCounterClockwise, angleClockwise);
+float smallestAngleBetween(float angle1, float angle2){
+    float ang = angleBetween(angle1, angle2);
     return fminf(ang, 360 - ang);
+}
+
+float midAngleBetween(float angleCounterClockwise, float angleClockwise){
+    return mod(angleCounterClockwise + angleBetween(angleCounterClockwise, angleClockwise) / 2.0, 360);
 }
 
 int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max){

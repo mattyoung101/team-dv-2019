@@ -37,6 +37,11 @@ void state_pursue_enter(state_machine_t *fsm);
 void state_pursue_update(state_machine_t *fsm);
 extern fsm_state_t pursueState;
 
+// Orbit ball: aspoijcrnaopiefnjpwe
+void state_orbit_enter(state_machine_t *fsm);
+void state_orbit_update(state_machine_t *fsm);
+extern fsm_state_t orbitState;
+
 /*
 States are:
 - Move to centre (if we can't see ball)

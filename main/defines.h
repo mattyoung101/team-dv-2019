@@ -42,6 +42,7 @@
 
 // Maths
 #define PI 3.14159265358979323846
+#define E 2.71828182845904523536
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
 

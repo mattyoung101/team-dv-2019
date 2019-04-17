@@ -33,7 +33,7 @@ void state_centre_update(state_machine_t *fsm){
         robotState.direction = mod(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - (robotState.heading), 360);
         robotState.speed = sqrtf(distanceMovement * distanceMovement + sidewaysMovement * sidewaysMovement);
     } else {
-        ESP_LOGD("CentreState", "Ball not visible, braking");
+        ESP_LOGD("CentreState", "Goal not visible, braking");
         // can't see goal, brake
         robotState.speed = 0;
         robotState.direction = 0;
@@ -43,4 +43,22 @@ void state_centre_update(state_machine_t *fsm){
 // Pursue
 void state_pursue_update(state_machine_t *fsm){
 
+}
+
+// Orbit
+void state_orbit_update(state_machine_t *fsm){
+    // Simple orbit based on ball angle and strength
+
+    if (robotState.ballAngle == TSOP_NO_BALL_ANGLE){
+        ESP_LOGI("Orbit state", "Ball not visible, braking");
+        // Can't see ball, brake
+        robotState.speed = 0;
+        robotState.direction = 0;
+    } else {
+        ESP_LOGI("Orbit state", "Ball is visible, orbiting");
+
+        float ball_angle_difference = -sign(robotState.ballAngle - 180) * fminf(90, 0.4 * pow(E, 0.5 * (float)smallestAngleBetween(robotState.ballAngle, 0)));
+        
+        // FYI: Need to finish
+    }
 }

@@ -39,6 +39,7 @@ int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
 int number_comparator_descending(const void *a, const void *b);
 float angleBetween(float angleCounterClockwise, float angleClockwise);
+float smallestAngleBetween(float angle1, float angle2);
 float midAngleBetween(float angleCounterClockwise, float angleClockwise);
 int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 void i2c_scanner();
