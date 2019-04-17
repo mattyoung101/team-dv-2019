@@ -11,16 +11,17 @@
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
 typedef struct {
     // inputs
-    bool goalVisible;
-    int16_t goalAngle;
-    float heading;
-    int16_t goalLength;
-    int16_t ballAngle;
-    int16_t ballStrength;
+    bool inGoalVisible;
+    int16_t inGoalAngle;
+    float inHeading;
+    int16_t inGoalLength;
+    int16_t inBallAngle;
+    int16_t inBallStrength;
     
     // outputs
-    int16_t speed;
-    int16_t direction;
+    int16_t outSpeed;
+    int16_t outDirection;
+    int16_t outOrientation;
 } robot_state_t;
 
 extern SemaphoreHandle_t robotStateSem;

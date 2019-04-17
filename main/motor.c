@@ -53,18 +53,18 @@ void motor_init(void){
     ESP_LOGI(TAG, "Motor init OK");
 }
 
-void motor_calc(int16_t angle, int16_t direction, float speed){
-    float radAngle = DEG_RAD * (float) angle;
+void motor_calc(int16_t direction, int16_t orientation, float speed){
+    float radAngle = DEG_RAD * (float) direction;
 
     pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
     pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
     pwmValues[2] = cosf(((MOTOR_BL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
     pwmValues[3] = cosf(((MOTOR_BR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
 
-    flmotor_speed = speed * pwmValues[0] + direction;
-    frmotor_speed = speed * pwmValues[1] + direction;
-    blmotor_speed = speed * pwmValues[2] + direction;
-    brmotor_speed = speed * pwmValues[3] + direction;
+    flmotor_speed = speed * pwmValues[0] + orientation;
+    frmotor_speed = speed * pwmValues[1] + orientation;
+    blmotor_speed = speed * pwmValues[2] + orientation;
+    brmotor_speed = speed * pwmValues[3] + orientation;
 
     float maxSpeed = fmaxf(
         fmaxf(fabsf(flmotor_speed), fabsf(frmotor_speed)), 
