@@ -3,10 +3,10 @@
 #include <string.h>
 #include <stdbool.h>
 #include "esp_log.h"
+#include "DG_dynarr.h"
 
-// Based on/inspired by:
-// https://github.com/libgdx/gdx-ai/blob/master/gdx-ai/src/com/badlogic/gdx/ai/fsm/DefaultStateMachine.java
-// TODO add message passing like in libGDX
+// State machine with stack history, based on/inspired by:
+// https://github.com/libgdx/gdx-ai/blob/master/gdx-ai/src/com/badlogic/gdx/ai/fsm/StackStateMachine.java
 
 typedef struct fsm_state_t fsm_state_t;
 typedef struct state_machine_t state_machine_t;
@@ -21,9 +21,11 @@ struct fsm_state_t {
     char *name;
 };
 
+DA_TYPEDEF(fsm_state_t*, fsm_state_history_t);
+
 struct state_machine_t {
     fsm_state_t *currentState;
-    fsm_state_t *previousState;
+    fsm_state_history_t stateHistory;
 };
 
 void fsm_update(state_machine_t *fsm);

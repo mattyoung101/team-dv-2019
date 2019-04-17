@@ -4,7 +4,8 @@
         "bno055_wrapper.h": "c",
         "efuse_reg.h": "c",
         "uart.h": "c",
-        "inv_mpu.h": "c"
+        "inv_mpu.h": "c",
+        "states.h": "c"
     },
     "cSpell.words": [
         "GYRO",

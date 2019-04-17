@@ -41,7 +41,9 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
-    // state_machine_t stateMachine;
+    state_machine_t defenceFsm = {0};
+    state_machine_t attackFsm = {0};
+    robotStateSem = xSemaphoreCreateBinary();
 
     esp_task_wdt_add(NULL);
 
