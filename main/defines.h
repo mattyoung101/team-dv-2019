@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment ONE of these to identify the device as either a master or a slave.
-// #define NVS_WRITE_MASTER
+#define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
@@ -30,12 +30,17 @@
 #define FORWARD_KP 10
 #define FORWARD_KI 0
 #define FORWARD_KD 0.1
-#define FORWARD_MAX 255
+#define FORWARD_MAX 100
 
 #define SIDE_KP 5
 #define SIDE_KI 0
 #define SIDE_KD 0.2
-#define SIDE_MAX 255
+#define SIDE_MAX 100
+
+#define LRF_KP 1
+#define LRF_KI 0
+#define LRF_KD 0.1
+#define LRF_MAX 100
 
 // Defence
 #define DEFEND_DISTANCE 30
@@ -74,6 +79,8 @@
 // Goals
 #define ENEMY_GOAL 0 // 0: Yellow, 1: Blue, 2: OFF
 #define HALFWAY_DISTANCE 90
+#define IDLE_DISTANCE 90
+#define IDLE_OFFSET 30
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 12
@@ -144,3 +151,10 @@
 #define TSOP_MUX_OUT 35
 #define TSOP_MUX_EN 27
 #define TSOP_MUX_WR 26
+
+// Orbit
+
+#define BALL_FAR_STRENGTH 100
+#define BALL_CLOSE_STRENGTH 150
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 70

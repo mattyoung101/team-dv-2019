@@ -35,15 +35,15 @@ void master_task(void *pvParameter){
 
     // Initialise hardware
     motor_init();
-    comms_i2c_init_slave();
+    // comms_i2c_init_slave();
     // comms_wifi_init_host();
     // cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
-    state_machine_t defenceFsm = {0};
-    state_machine_t attackFsm = {0};
-    robotStateSem = xSemaphoreCreateBinary();
+    // state_machine_t defenceFsm = {0};
+    // state_machine_t attackFsm = {0};
+    // robotStateSem = xSemaphoreCreateBinary();
 
     esp_task_wdt_add(NULL);
 
@@ -54,8 +54,9 @@ void master_task(void *pvParameter){
         // } else {
         //     ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
         // }
-        esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(250));
+        // esp_task_wdt_reset();
+        motor_run_pwm(100);
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 

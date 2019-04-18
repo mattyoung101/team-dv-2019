@@ -44,17 +44,19 @@ extern fsm_state_t stateAttackPursue;
 // Orbit ball state: orbits the ball
 void state_attack_orbit_enter(state_machine_t *fsm);
 void state_attack_orbit_update(state_machine_t *fsm);
-extern fsm_state_t stateAttackObit;
+extern fsm_state_t stateAttackOrbit;
 
 // Dribble
-void state_attack_dribble_enter(state_machine_t *fsm);
-extern fsm_state_t stateShootEnter;
+void state_attack_dribble_enter(state_machine_t *fsm); // <- Isn't this supposed to be update not enter?
+extern fsm_state_t stateAttackDribble;
 
 // Shoot
-void state_attack_shoot_enter(state_machine_t *fsm);
+void state_attack_shoot_enter(state_machine_t *fsm); // <- Same here?
 extern fsm_state_t stateAttackShoot;
 
 /////////// DEFENCE FSM /////////
 
+void state_defence_reverse_update(state_machine_t *fsm);
+extern fsm_state_t stateDefenceReverse;
 
 /////////// GENERAL FSM /////////

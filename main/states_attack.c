@@ -7,18 +7,21 @@ static pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MA
 static pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
 
 fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state_attack_idle_update, "AttackIdle"};
-fsm_state_t stateAttackPursue = {&state_nothing_enter, &state_nothing_enter, &state_attack_pursue_update, "AttackPursue"};
+fsm_state_t stateAttackPursue = {&state_nothing_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
+fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &state_attack_orbit_update, "AttackOrbit"};
+// NOTE: need to do one for Dribble
+fsm_state_t stateAttackShoot= {&state_nothing_enter, &state_nothing_exit, &state_attack_shoot_update, "AttackShoot"};
 
 // Centre
 void state_attack_idle_update(state_machine_t *fsm){
     // if ball is visible, pursue it
-    if (robotState.ballStrength > 0){
+    if (robotState.inBallStrength > 0){
         ESP_LOGD("CentreState", "Changing to pursue: ball found (angle %d)", robotState.inBallAngle);
         fsm_change_state(fsm, &stateAttackPursue);
         return;
     }
 
-    if (robotState.goalVisible){
+    if (robotState.inGoalVisible){
         ESP_LOGD("CentreState", "Ball visible, going to centre");
         // fixed goal angle
         float g = robotState.inGoalAngle < 0 ? robotState.inGoalAngle + 360 : robotState.inGoalAngle;
@@ -27,8 +30,8 @@ void state_attack_idle_update(state_machine_t *fsm){
         float vDist = robotState.inGoalLength * cosf(DEG_RAD * g);
         float hDist = robotState.inGoalLength * sinf(DEG_RAD * g);
         
-        float distanceMovement = -pid_update(&forwardPID, vDist, DEFEND_DISTANCE, 0.0f);
-        float sidewaysMovement = -pid_update(&sidePID, hDist, 0.0f, 0.0f);
+        float distanceMovement = -pid_update(&forwardPID, vDist, IDLE_DISTANCE, 0.0f);
+        float sidewaysMovement = -pid_update(&sidePID, hDist, IDLE_OFFSET, 0.0f);
 
         robotState.outDirection = mod(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - (robotState.inHeading), 360);
         robotState.outSpeed = sqrtf(distanceMovement * distanceMovement + sidewaysMovement * sidewaysMovement);
@@ -67,12 +70,12 @@ void state_attack_orbit_update(state_machine_t *fsm){
     } else {
         ESP_LOGI("Orbit state", "Ball is visible, orbiting");
 
-        float ballAngleDifference = -sign(robotState.inBallAngle - 180) * fminf(90, 0.4 * powf(E, 0.5 * (float)smallestAngleBetween(robotState.inBallAngle, 0)));
-        float strengthFactor = constrain(((float)robotState.inBallStrength - (float)BALL_STRENGTH_FAR) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
+        float ballAngleDifference = ((-(robotState.inBallAngle - 180) > 0) - (-(robotState.inBallAngle - 180) < 0)) * fminf(90, 0.4 * powf(E, 0.5 * (float)smallestAngleBetween(robotState.inBallAngle, 0)));
+        float strengthFactor = constrain(((float)robotState.inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
         float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2.5 * strengthFactor), 0, 1);
         float angleAddition = ballAngleDifference * distanceMultiplier;
 
-        robotState.outDirection = modf(ballAngle + angleAddition, 360);
+        robotState.outDirection = floatMod(robotState.inBallAngle + angleAddition, 360);
         robotState.outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)abs(angleAddition) / 90.0);
     }
 }
