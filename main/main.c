@@ -43,7 +43,7 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     // comms_wifi_init_host();
-    // cam_init();
+    cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers

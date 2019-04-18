@@ -83,7 +83,7 @@
 #define IDLE_OFFSET 30
 
 // Motors and Encoders
-#define MOTOR_FL_PWM 12
+#define MOTOR_FL_PWM 15
 #define MOTOR_FL_IN1 4
 #define MOTOR_FL_IN2 5
 #define MOTOR_FL_ANGLE 300
@@ -91,7 +91,7 @@
 #define ENC_FL_IN1 1
 #define ENC_FL_IN2 0
 
-#define MOTOR_FR_PWM 13
+#define MOTOR_FR_PWM 23
 #define MOTOR_FR_IN1 18
 #define MOTOR_FR_IN2 19
 #define MOTOR_FR_ANGLE 60
@@ -107,7 +107,7 @@
 #define ENC_BL_IN1 5
 #define ENC_BL_IN2 4
 
-#define MOTOR_BR_PWM 15
+#define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 27
 #define MOTOR_BR_IN2 32
 #define MOTOR_BR_ANGLE 135

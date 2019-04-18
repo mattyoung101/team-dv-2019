@@ -103,7 +103,7 @@ void tsop_calc(){
 
 void tsop_dump(void){
     // this is generated using tsop_format_gen.py in the scripts folder, yes I know it sucks
-    ESP_LOGD(TAG, "Values: (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
+    printf("BEGIN_TSOP_DEBUG (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
     "(%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), (%.2f, %.2f), "
     "(%.2f, %.2f), (%.2f, %.2f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, readings[2].Y, 

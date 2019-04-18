@@ -44,9 +44,9 @@
     return; \
 } while (0);
 /** Switch to a state in the FSM **/
-#define FSM_CHANGE_STATE(STATE) do { fsm_change_state(fsm, &stateAttack##STATE); return; } while (0);
+#define FSM_CHANGE_STATE(STATE) do { fsm_change_state(fsm, &stateAttack ##STATE); return; } while (0);
 /** Revert state in FSM **/
-#define FSM_REVERT do { fsm_revert_state(&fsm); return; } while (0);
+#define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
