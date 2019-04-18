@@ -8,7 +8,7 @@ static const char *TAG = "CommsI2C";
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
     uint8_t *buf = calloc(9, sizeof(uint8_t));
-    rdSem = xSemaphoreCreateBinary();
+    rdSem = xSemaphoreCreateMutex();
     xSemaphoreGive(rdSem);
 
     esp_task_wdt_add(NULL);

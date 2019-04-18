@@ -25,6 +25,12 @@
 #include "esp_task_wdt.h"
 #include "simple_imu.h"
 
+#if ENEMY_GOAL == GOAL_YELLOW
+    #define GOAL goalYellow
+#elif ENEMY_GOAL == GOAL_BLUE
+    #define GOAL goalBlue
+#endif
+
 static uint8_t mode = AUTOMODE_ILLEGAL;
 // static esp_timer_handle_t tsopTimer = NULL;
 
@@ -35,28 +41,52 @@ void master_task(void *pvParameter){
 
     // Initialise hardware
     motor_init();
-    // comms_i2c_init_slave();
+    comms_i2c_init_slave();
     // comms_wifi_init_host();
     // cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // Initialise software controllers
-    // state_machine_t defenceFsm = {0};
-    // state_machine_t attackFsm = {0};
-    // robotStateSem = xSemaphoreCreateBinary();
+    state_machine_t stateMachine = {0};
+    stateMachine.currentState = &stateAttackIdle;
+    robotStateSem = xSemaphoreCreateMutex();
 
     esp_task_wdt_add(NULL);
 
     while (true){
-        // if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-        //     // ESP_LOGI(TAG, "Yellow goal: %d, %d, %d", goalYellow.exists, goalYellow.x, goalYellow.y);
-        //     xSemaphoreGive(goalDataSem);
-        // } else {
-        //     ESP_LOGE(TAG, "Failed to acquire cam data semaphore");
-        // }
-        // esp_task_wdt_reset();
-        motor_run_pwm(100);
-        vTaskDelay(pdMS_TO_TICKS(500));
+        // update values for FSM
+        if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
+            xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
+            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+                // reset out values
+                robotState.outShouldBrake = false;
+                robotState.outOrientation = 0;
+                robotState.outDirection = 0;
+
+                // update
+                robotState.inBallAngle = receivedData.tsopAngle;
+                robotState.inBallStrength = receivedData.tsopStrength;
+                robotState.inGoalVisible = GOAL.exists;
+                robotState.inGoalAngle = GOAL.angle;
+                robotState.inGoalLength = GOAL.length;
+
+                // unlock semaphores
+                xSemaphoreGive(robotStateSem);
+                xSemaphoreGive(rdSem);
+                xSemaphoreGive(goalDataSem);
+        } else {
+            ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
+        }
+
+        // update the actual FSM
+        fsm_update(&stateMachine);
+
+        // run motors
+        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
+        motor_move(robotState.outShouldBrake);
+
+        esp_task_wdt_reset();
+        // vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
@@ -80,7 +110,7 @@ void slave_task(void *pvParameter){
         for (int i = 0; i < 32; i++){
             tsop_update(NULL);
         }
-        tsop_calc(5);
+        tsop_calc();
 
         // lsarray_debug();
 
@@ -90,7 +120,7 @@ void slave_task(void *pvParameter){
         comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(250));
+        // vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 

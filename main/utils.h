@@ -19,9 +19,9 @@
 #define UNPACK_16(a, b) ((uint16_t) ((a << 8) | b))
 /** halt in case of irrecoverable error **/
 #define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY)); } while(0);
-/** Automated I2C error checking code for the sensor use ONLY **/
+/** Automated I2C error checking code **/
 #define I2C_ERR_CHECK(err) do { if (err != ESP_OK){ \
-        ESP_LOGE(TAG, "I2C failure! Error: %s. Attempting bus reset.", esp_err_to_name(err)); \
+        ESP_LOGE(TAG, "I2C failure in %s! Error: %s. Attempting bus reset.", __FUNCTION__, esp_err_to_name(err)); \
         i2c_reset_tx_fifo(I2C_NUM_0); \
         i2c_reset_rx_fifo(I2C_NUM_0); \
         return 1; \
@@ -34,6 +34,19 @@
 #define cosfd(x) (cosf(x * DEG_RAD) * RAD_DEG)
 /** Sin in degrees of x in degrees **/
 #define sinfd(x) (sinf(x * DEG_RAD) * RAD_DEG)
+/** Sign function **/
+#define sign(x) (copysignf(1.0f, x))
+/** Brake the motors in the FSM **/
+#define FSM_MOTOR_BRAKE do { \
+    robotState.outSpeed = 0; \
+    robotState.outDirection = 0; \
+    robotState.outShouldBrake = true; \
+    return; \
+} while (0);
+/** Switch to a state in the FSM **/
+#define FSM_CHANGE_STATE(STATE) do { fsm_change_state(fsm, &stateAttack##STATE); return; } while (0);
+/** Revert state in FSM **/
+#define FSM_REVERT do { fsm_revert_state(&fsm); return; } while (0);
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
@@ -43,3 +56,5 @@ float smallestAngleBetween(float angle1, float angle2);
 float midAngleBetween(float angleCounterClockwise, float angleClockwise);
 int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
 void i2c_scanner();
+/** Source: https://stackoverflow.com/a/11412077/5007892 **/
+bool is_angle_between(float target, float angle1, float angle2);

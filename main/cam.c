@@ -10,7 +10,7 @@ int16_t robotY = 0;
 
 static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";
-    goalDataSem = xSemaphoreCreateBinary();
+    goalDataSem = xSemaphoreCreateMutex();
     xSemaphoreGive(goalDataSem);
     
     uint8_t *buffer = calloc(CAM_BUF_SIZE, sizeof(uint8_t));

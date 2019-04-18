@@ -22,15 +22,16 @@ typedef struct {
     int16_t outSpeed;
     int16_t outDirection;
     int16_t outOrientation;
+    bool outShouldBrake;
 } robot_state_t;
 
 extern SemaphoreHandle_t robotStateSem;
 extern robot_state_t robotState;
 
 // Generic do nothing states (used for example if no "enter" method is needed on a state)
-void state_nothing_enter(state_machine_t *fsm){}
-void state_nothing_exit(state_machine_t *fsm){}
-void state_nothing_update(state_machine_t *fsm){}
+void state_nothing_enter(state_machine_t *fsm);
+void state_nothing_exit(state_machine_t *fsm);
+void state_nothing_update(state_machine_t *fsm);
 
 /////////// ATTACK FSM /////////
 // Centre state: moves the robot to the centre of the field. Only update.
@@ -46,16 +47,15 @@ void state_attack_orbit_enter(state_machine_t *fsm);
 void state_attack_orbit_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackOrbit;
 
-// Dribble
-void state_attack_dribble_enter(state_machine_t *fsm); // <- Isn't this supposed to be update not enter?
+// Dribble state: rushes towards goal and dribbles if we had a dribbler
+void state_attack_dribble_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackDribble;
 
-// Shoot
-void state_attack_shoot_enter(state_machine_t *fsm); // <- Same here?
+// Shoot state: NOTE this is not currently used since we don't have a kicker
+void state_attack_shoot_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackShoot;
 
 /////////// DEFENCE FSM /////////
-
 void state_defence_reverse_update(state_machine_t *fsm);
 extern fsm_state_t stateDefenceReverse;
 

@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment ONE of these to identify the device as either a master or a slave.
-#define NVS_WRITE_MASTER
+// #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
@@ -42,9 +42,6 @@
 #define LRF_KD 0.1
 #define LRF_MAX 100
 
-// Defence
-#define DEFEND_DISTANCE 30
-
 // Maths
 #define PI 3.14159265358979323846
 #define E 2.71828182845904523536
@@ -77,7 +74,10 @@
 #define CAM_UART_RX 16
 
 // Goals
-#define ENEMY_GOAL 0 // 0: Yellow, 1: Blue, 2: OFF
+#define GOAL_YELLOW 0
+#define GOAL_BLUE 1
+#define GOAL_OFF 2
+#define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 90
 #define IDLE_DISTANCE 90
 #define IDLE_OFFSET 30
@@ -153,8 +153,18 @@
 #define TSOP_MUX_WR 26
 
 // Orbit
-
 #define BALL_FAR_STRENGTH 100
 #define BALL_CLOSE_STRENGTH 150
 #define ORBIT_SPEED_SLOW 40
 #define ORBIT_SPEED_FAST 70
+
+// Attacker FSM defines
+#define PURSUE_BALL_TOO_CLOSE 69
+#define ORBIT_BALL_TOO_FAR 69
+#define ORBIT_BALL_TOO_CLOSE 69
+#define DRIBBLE_BALL_TOO_FAR 69
+#define IN_FRONT_MIN_ANGLE 20
+#define IN_FRONT_MAX_ANGLE 340
+
+// Defence FSM defines
+#define DEFEND_DISTANCE 30
