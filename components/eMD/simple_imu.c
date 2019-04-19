@@ -1,5 +1,9 @@
 #include "simple_imu.h"
 
+static float calibrationGyro = 0.0f;
+float heading = 0.0f;
+static int64_t previousTimeGyro = 0;
+
 // hack to fix shit
 static void esp_hack(uint8_t addr, uint8_t reg, uint8_t count, uint8_t data){
     esp_i2c_write(addr, reg, count, &data);
@@ -12,6 +16,8 @@ void simu_init(){
     esp_hack(MPU9250_ADDRESS, 28, 1, ACC_FULL_SCALE_2_G);
     esp_hack(MPU9250_ADDRESS, 0x37, 1, 0x02);
     esp_hack(MPU9250_ADDRESS, 0x0A, 1, 0x16);
+
+    previousTimeGyro = esp_timer_get_time();
 }
 
 // static float convertRawAcceleration(int raw) {
@@ -43,4 +49,24 @@ vec3d_t simu_read_gyro(){
 
     vec3d_t returnVector = {convertRawGyro(gx), convertRawGyro(gy), convertRawGyro(gz)};
     return returnVector;
+}
+
+void simu_calibrate(){
+    for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
+        float readingGyro = (float) simu_read_gyro().z;
+        calibrationGyro += readingGyro;
+        delay(IMU_CALIBRATION_TIME);
+    }
+
+    calibrationGyro /= IMU_CALIBRATION_COUNT;
+}
+
+void simu_calc(){
+    float reading = (float) simu_read_gyro().z;
+
+	int64_t currentTime = esp_timer_get_time();
+    heading += -(((float)(currentTime - previousTimeGyro) / 1000000.0f) * (reading - calibrationGyro));
+	heading = doubleMod(heading, 360.0f);
+
+	previousTimeGyro = currentTime;
 }

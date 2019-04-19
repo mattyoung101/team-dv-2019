@@ -111,7 +111,8 @@ void slave_task(void *pvParameter){
     tsop_init();
     ls_init();
     i2c_scanner();
-    // simu_init();
+    simu_init();
+    simu_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -122,7 +123,7 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        // lsarray_debug();
+        simu_calc();
 
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
