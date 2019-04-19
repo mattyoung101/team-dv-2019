@@ -23,6 +23,8 @@ typedef struct {
     float x, y, z;
 } vec3d_t;
 
+extern float heading;
+
 void simu_init();
 void simu_read_accel();
 vec3d_t simu_read_gyro();

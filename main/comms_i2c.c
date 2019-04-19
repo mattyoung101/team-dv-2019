@@ -7,7 +7,7 @@ static const char *TAG = "CommsI2C";
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
-    uint8_t *buf = calloc(9, sizeof(uint8_t));
+    uint8_t *buf = calloc(11, sizeof(uint8_t));
     rdSem = xSemaphoreCreateMutex();
     xSemaphoreGive(rdSem);
 
@@ -15,7 +15,7 @@ static void comms_i2c_receive_task(void *pvParameters){
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
     while (true){
-        memset(buf, 0, 9);
+        memset(buf, 0, 11);
 
         esp_task_wdt_reset();
 
@@ -29,9 +29,10 @@ static void comms_i2c_receive_task(void *pvParameters){
                 receivedData.tsopStrength = UNPACK_16(buf[3], buf[4]);
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
+                receivedData.heading = UNPACK_16(buf[9], buf[10]);
             
-                ESP_LOGD(TAG, "Received: %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
-                        receivedData.lineAngle, receivedData.lineSize);    
+                ESP_LOGD(TAG, "Received: %d, %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
+                        receivedData.lineAngle, receivedData.lineSize, receivedData.heading);    
                 xSemaphoreGive(rdSem);
             } else {
                 ESP_LOGW(TAG, "Failed to acquire semaphore in time!");
@@ -94,11 +95,11 @@ static int comms_i2c_send_data(uint8_t *buf, size_t bufSize){
     return ESP_OK;
 }
 
-int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize){
+int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize, uint16_t heading){
     ESP_LOGV("CommsI2C_M", "Sending: %d, %d, %d, %d", tsopAngle, tsopStrength, lineAngle, lineSize);
     
     // temp 9 byte buffer on the stack to expand out 4 16 bit integers into 8 8 bit integers + 1 start byte
-    uint8_t *buf = alloca(9);
+    uint8_t *buf = alloca(11);
     buf[0] = I2C_BEGIN_DEFAULT;
     buf[1] = HIGH_BYTE_16(tsopAngle);
     buf[2] = LOW_BYTE_16(tsopAngle);
@@ -108,6 +109,8 @@ int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle
     buf[6] = LOW_BYTE_16(lineAngle);
     buf[7] = HIGH_BYTE_16(lineSize);
     buf[8] = LOW_BYTE_16(lineSize);
+    buf[9] = HIGH_BYTE_16(heading);
+    buf[10] = LOW_BYTE_16(heading);
 
-    return comms_i2c_send_data(buf, 9);
+    return comms_i2c_send_data(buf, 11);
 }

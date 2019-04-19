@@ -16,6 +16,7 @@ typedef struct {
     uint16_t tsopStrength;
     uint16_t lineAngle;
     uint16_t lineSize;
+    uint16_t heading;
 } i2c_data_t;
 
 /** data received over I2C **/
@@ -28,4 +29,4 @@ void comms_i2c_init_master(i2c_port_t port);
 /** Real life master. Receives sensor data from the master. AUTOMODE_MASTER. **/
 void comms_i2c_init_slave();
 /** Send a full data packet from the slave to the master **/
-int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize);
+int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize, uint16_t heading);
