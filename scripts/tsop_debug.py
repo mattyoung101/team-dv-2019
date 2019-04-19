@@ -1,16 +1,12 @@
 import serial
 import pygame
-import os
 from numpy import interp
 
-# can't believe we have to do this
-os.environ["SDL_VIDEO_CENTERED"] = "1"
-
-# ser = serial.Serial("COM5", 115200)
+ser = serial.Serial("COM8", 115200)
 # just pylint being a dumbass as usual, please ignore
 # pylint: disable=no-member
 pygame.init()
-display = pygame.display.set_mode((1180, 750), 0, 32)
+display = pygame.display.set_mode((1280, 128), 0, 32)
 pygame.display.set_caption("TSOP Debug")
 clock = pygame.time.Clock()
 
@@ -24,15 +20,15 @@ while running:
             break
     display.fill((255, 0, 0))
 
-    # line = ser.readline().decode("utf-8")
+    line = ser.readline().decode("utf-8")
 
-    # if line.startswith("TSOP_DEBUG_BEGIN"):
-        # actually need to split this into vectors or something
-        # values = line.split()[1::]
-        # pass
+    if line.startswith("BEGIN_TSOP_DEBUG"):
+        values = [int(interp(float(x), [0.0, 1.0], [0, 255])) for x in line.split()[1::]]
+        rect_width = 1280 / 24
+        for sensor in range(24):
+            colour = values[sensor]
+            pygame.draw.rect(display, (colour, colour, colour), (sensor * rect_width, 0, rect_width + 1, 128))
 
     pygame.display.update()
 
 pygame.quit()
-
-# while True:

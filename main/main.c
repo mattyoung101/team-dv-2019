@@ -103,11 +103,9 @@ void slave_task(void *pvParameter){
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
-
-    // vec3d_t vec = {0};
     
     while (true) {
-        for (int i = 0; i < 32; i++){
+        for (int i = 0; i < 2048; i++){
             tsop_update(NULL);
         }
         tsop_calc();
@@ -117,7 +115,7 @@ void slave_task(void *pvParameter){
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
-        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
+        // comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
 
         esp_task_wdt_reset();
         // vTaskDelay(pdMS_TO_TICKS(250));

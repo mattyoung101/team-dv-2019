@@ -54,7 +54,7 @@ void motor_init(void){
 }
 
 void motor_calc(int16_t direction, int16_t orientation, float speed){
-    float radAngle = DEG_RAD * (float) direction;
+    float radAngle = DEG_RAD * ((float) direction + 180.0f);
 
     pwmValues[0] = cosf(((MOTOR_FL_ANGLE + 90.0f) * DEG_RAD) - radAngle);
     pwmValues[1] = cosf(((MOTOR_FR_ANGLE + 90.0f) * DEG_RAD) - radAngle);
