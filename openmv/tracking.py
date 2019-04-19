@@ -6,8 +6,7 @@ import ucollections
 # Serial out format:
 # [42, bfound, bx, by, yfound, yx, yy, 0x0A] (6 bytes not including 0x0A)
 
-thresholds = [(50, 75, 94, 36, -15, 76), # orange
-              #(49, 75, -44, 37, 69, 29), # yellow
+thresholds = [(44, 73, -10, 24, 9, 83), # yellow
              (59, 47, -41, -67, 1, 44)] # blue
 
 # this comes from the output of blob.code()
@@ -37,8 +36,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time = 1000)
-#sensor.set_windowing((23, 0, 100, 100))
-#sensor.set_windowing((21, 0, 100, 100))
+sensor.set_windowing((34, 1, 95, 95))
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -50,11 +48,11 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-6.02073, -4.528669, 2.045822))
+rgb_gain_db=(-6.02073, -5.494869, 0.4617908))
 
-sensor.set_brightness(0)
-sensor.set_contrast(0)
-sensor.set_saturation(0)
+sensor.set_brightness(-3)
+sensor.set_contrast(3)
+sensor.set_saturation(3)
 
 sensor.skip_frames(time=1000)
 

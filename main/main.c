@@ -78,6 +78,9 @@ void master_task(void *pvParameter){
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
 
+        // update cam
+        cam_update();
+
         // update the actual FSM
         fsm_update(&stateMachine);
 
@@ -85,8 +88,17 @@ void master_task(void *pvParameter){
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
+        if (xSemaphoreTake(rdSem, 25)){
+            // printf("tsop: %d\n", receivedData.tsopAngle);
+            motor_calc(robotState.inGoalAngle, 0, 10.0f);
+            motor_move(false);
+            xSemaphoreGive(rdSem);
+        } else {
+            printf("Fuck\n");
+        }
+
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(500));
+        // vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
@@ -105,7 +117,7 @@ void slave_task(void *pvParameter){
     esp_task_wdt_add(NULL);
     
     while (true) {
-        for (int i = 0; i < 2048; i++){
+        for (int i = 0; i < 255; i++){
             tsop_update(NULL);
         }
         tsop_calc();
@@ -115,7 +127,7 @@ void slave_task(void *pvParameter){
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
-        // comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
+        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
 
         esp_task_wdt_reset();
         // vTaskDelay(pdMS_TO_TICKS(250));
