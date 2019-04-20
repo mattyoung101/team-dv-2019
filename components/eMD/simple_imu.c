@@ -55,7 +55,7 @@ void simu_calibrate(){
     for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
         float readingGyro = (float) simu_read_gyro().z;
         calibrationGyro += readingGyro;
-        delay(IMU_CALIBRATION_TIME);
+        vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_TIME));
     }
 
     calibrationGyro /= IMU_CALIBRATION_COUNT;
@@ -66,7 +66,7 @@ void simu_calc(){
 
 	int64_t currentTime = esp_timer_get_time();
     heading += -(((float)(currentTime - previousTimeGyro) / 1000000.0f) * (reading - calibrationGyro));
-	heading = doubleMod(heading, 360.0f);
+	heading = floatMod(heading, 360.0f);
 
 	previousTimeGyro = currentTime;
 }

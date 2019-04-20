@@ -27,6 +27,11 @@
 #define MUSIC_BPM 100
 
 // PIDs
+#define HEADING_KP 0.5
+#define HEADING_KI 0
+#define HEADING_KD 0.05
+#define HEADING_MAX_CORRECTION 100
+
 #define FORWARD_KP 10
 #define FORWARD_KI 0
 #define FORWARD_KD 0.1

@@ -56,18 +56,18 @@ static int cmp_vec_mag(const void *p, const void *q){
 
 void tsop_calc(){
     // ESP_LOGI(TAG, "TSOP 0: %f, TSOP 12: %f", readings[0].X, readings[12].X);
-    ESP_LOGI(TAG, "Read %d times", tsopCounter);
+    // ESP_LOGI(TAG, "Read %d times", tsopCounter);
     // scale down the magnitudes
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X = ((float) readings[i].X / (float) tsopCounter);
     }
-    ESP_LOGI(TAG, "Scaled down:");
-    tsop_dump();
+    // ESP_LOGI(TAG, "Scaled down:");
+    // tsop_dump();
 
     // sort values to obtain the best n vectors with the highest magnitudes
     qsort(readings, TSOP_NUM, sizeof(hmm_vec2), cmp_vec_mag);
-    ESP_LOGI(TAG, "Sorted:");
-    tsop_dump();
+    // ESP_LOGI(TAG, "Sorted:");
+    // tsop_dump();
 
     // convert them to cartesian
     for (int i = 0; i < TSOP_NUM; i++){
@@ -76,13 +76,13 @@ void tsop_calc(){
         readings[i].X = r * cosfd(theta);
         readings[i].Y = r * sinfd(theta);
     }
-    ESP_LOGI(TAG, "Converted to cartesian:");
-    tsop_dump();
+    // ESP_LOGI(TAG, "Converted to cartesian:");
+    // tsop_dump();
 
     // sum them
     hmm_vec2 sum = {0};
     for (int i = 0; i < TSOP_BEST; i++){
-        ESP_LOGD(TAG, "Current sum: (%f, %f) adding: (%f, %f)", sum.X, sum.Y, readings[i].X, readings[i].Y);
+        // ESP_LOGD(TAG, "Current sum: (%f, %f) adding: (%f, %f)", sum.X, sum.Y, readings[i].X, readings[i].Y);
         sum = HMM_AddVec2(sum, readings[i]);
     }
 
@@ -97,8 +97,8 @@ void tsop_calc(){
     tsopAvgAngle = movavg_calc(angleAvg);
     tsopAvgStrength = movavg_calc(strengthAvg);
 
-    ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", tsopAvgAngle, tsopAvgStrength);
-    ESP_LOGI(TAG, "Angle %f, Strength: %f", tsopAngle, tsopStrength);
+    // ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", tsopAvgAngle, tsopAvgStrength);
+    // ESP_LOGI(TAG, "Angle %f, Strength: %f", tsopAngle, tsopStrength);
 
     tsop_reset();
 }

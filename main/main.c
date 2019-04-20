@@ -31,6 +31,9 @@
     #define GOAL goalBlue
 #endif
 
+// Temp defines
+pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
+
 static uint8_t mode = AUTOMODE_ILLEGAL;
 // static esp_timer_handle_t tsopTimer = NULL;
 
@@ -41,6 +44,7 @@ void master_task(void *pvParameter){
 
     // Initialise hardware
     motor_init();
+    motor_run_pwm(0);
     comms_i2c_init_slave();
     // comms_wifi_init_host();
     cam_init();
@@ -54,43 +58,46 @@ void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        // update values for FSM
-        if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                // reset out values
-                robotState.outShouldBrake = false;
-                robotState.outOrientation = 0;
-                robotState.outDirection = 0;
+        // PERF_TIMER_START;
+        // // update values for FSM
+        // if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
+        //     xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
+        //     xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //         // reset out values
+        //         robotState.outShouldBrake = false;
+        //         robotState.outOrientation = 0;
+        //         robotState.outDirection = 0;
 
-                // update
-                robotState.inBallAngle = receivedData.tsopAngle;
-                robotState.inBallStrength = receivedData.tsopStrength;
-                robotState.inGoalVisible = GOAL.exists;
-                robotState.inGoalAngle = GOAL.angle;
-                robotState.inGoalLength = GOAL.length;
+        //         // update
+        //         robotState.inBallAngle = receivedData.tsopAngle;
+        //         robotState.inBallStrength = receivedData.tsopStrength;
+        //         robotState.inGoalVisible = GOAL.exists;
+        //         robotState.inGoalAngle = GOAL.angle;
+        //         robotState.inGoalLength = GOAL.length;
 
-                // unlock semaphores
-                xSemaphoreGive(robotStateSem);
-                xSemaphoreGive(rdSem);
-                xSemaphoreGive(goalDataSem);
-        } else {
-            ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
-        }
+        //         // unlock semaphores
+        //         xSemaphoreGive(robotStateSem);
+        //         xSemaphoreGive(rdSem);
+        //         xSemaphoreGive(goalDataSem);
+        // } else {
+        //     ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
+        // }
 
-        // update cam
-        cam_update();
+        // // update cam
+        // cam_update();
 
-        // update the actual FSM
-        fsm_update(&stateMachine);
+        // // update the actual FSM
+        // fsm_update(&stateMachine);
 
-        // run motors
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
-        motor_move(robotState.outShouldBrake);
+        // // run motors
+        // motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
+        // motor_move(robotState.outShouldBrake);
+
+        float correction = pid_update(&headingPID, floatMod(floatMod((receivedData.heading / IMU_MULTIPLIER) + 180.0f, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
 
         if (xSemaphoreTake(rdSem, 25)){
-            // printf("tsop: %d\n", receivedData.tsopAngle);
-            motor_calc(robotState.inGoalAngle, 0, 10.0f);
+            printf("imu: %f, correction: %f\n", (receivedData.heading / IMU_MULTIPLIER), correction);
+            motor_calc(0, correction, 0);
             motor_move(false);
             xSemaphoreGive(rdSem);
         } else {
@@ -98,7 +105,8 @@ void master_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(100));
+        // PERF_TIMER_STOP;
+        // vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 
@@ -128,10 +136,11 @@ void slave_task(void *pvParameter){
         // vec = simu_read_gyro();
         // ESP_LOGI(TAG, "X: %f, Y: %f, Z: %f", vec.x, vec.y, vec.z);
 
-        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321);
+        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
+        // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(250));
+        // vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 

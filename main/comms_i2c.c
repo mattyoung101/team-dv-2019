@@ -20,7 +20,7 @@ static void comms_i2c_receive_task(void *pvParameters){
         esp_task_wdt_reset();
 
         // wait slightly shorter than the task watchdog timeout for us to get some data
-        i2c_slave_read_buffer(I2C_NUM_0, buf, 9, pdMS_TO_TICKS(4000));
+        i2c_slave_read_buffer(I2C_NUM_0, buf, 11, pdMS_TO_TICKS(4000));
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
             // we got sensor data
@@ -31,8 +31,11 @@ static void comms_i2c_receive_task(void *pvParameters){
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
                 receivedData.heading = UNPACK_16(buf[9], buf[10]);
             
-                ESP_LOGD(TAG, "Received: %d, %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
-                        receivedData.lineAngle, receivedData.lineSize, receivedData.heading);    
+                // ESP_LOGD(TAG, "Received: %d, %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
+                    // receivedData.lineAngle, receivedData.lineSize, receivedData.heading);
+
+                // ESP_LOGD(TAG, "Highbyte: %d, Lowbyte: %d, Value: %d", buf[7], buf[8], receivedData.lineSize);
+
                 xSemaphoreGive(rdSem);
             } else {
                 ESP_LOGW(TAG, "Failed to acquire semaphore in time!");
@@ -52,7 +55,7 @@ void comms_i2c_init_master(i2c_port_t port){
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 100000, // 0.5 MHz, max is 1 MHz, unit is Hz
+        .master.clk_speed = 50000, // 0.5 MHz, max is 1 MHz, unit is Hz --- NOTE: 1MHz is so fast that every second packet has 4 bits dropped off from it lol
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
@@ -96,7 +99,7 @@ static int comms_i2c_send_data(uint8_t *buf, size_t bufSize){
 }
 
 int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize, uint16_t heading){
-    ESP_LOGV("CommsI2C_M", "Sending: %d, %d, %d, %d", tsopAngle, tsopStrength, lineAngle, lineSize);
+    // ESP_LOGV("CommsI2C_M", "Sending: %d, %d, %d, %d", tsopAngle, tsopStrength, lineAngle, lineSize);
     
     // temp 9 byte buffer on the stack to expand out 4 16 bit integers into 8 8 bit integers + 1 start byte
     uint8_t *buf = alloca(11);
@@ -111,6 +114,8 @@ int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle
     buf[8] = LOW_BYTE_16(lineSize);
     buf[9] = HIGH_BYTE_16(heading);
     buf[10] = LOW_BYTE_16(heading);
+
+    // ESP_LOGD("CommsI2C_M", "Sending: Highbyte: %d, Lowbyte: %d", buf[7], buf[8]);
 
     return comms_i2c_send_data(buf, 11);
 }

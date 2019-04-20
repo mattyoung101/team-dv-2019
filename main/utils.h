@@ -12,7 +12,7 @@
 /** x squared **/
 #define sq(x) (x * x)
 /** first 8 bits of unsigned 16 bit int **/
-#define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xF))
+#define HIGH_BYTE_16(num) ((uint8_t) ((num >> 8) & 0xFF))
 /** second 8 bits of unsigned 16 bit int **/
 #define LOW_BYTE_16(num)  ((uint8_t) ((num & 0xFF)))
 /** unpack two 8 bit integers into a 16 bit integer **/
