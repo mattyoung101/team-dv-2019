@@ -6,8 +6,8 @@ import ucollections
 # Serial out format:
 # [42, bfound, bx, by, yfound, yx, yy, 0x0A] (6 bytes not including 0x0A)
 
-thresholds = [(44, 73, -10, 24, 9, 83), # yellow
-             (59, 47, -41, -67, 1, 44)] # blue
+thresholds = [(44, 73, -10, 24, 9, 83)] # yellow
+             #(59, 47, -41, -67, 1, 44)] # blue
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah

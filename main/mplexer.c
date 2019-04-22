@@ -61,11 +61,11 @@ void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
     
     gpio_set_level(plexer->en, 0);
     gpio_set_level(plexer->wr, 0);
-    gpio_set_level(plexer->s0, binary[0]);
-    gpio_set_level(plexer->s1, binary[1]);
+    gpio_set_level(plexer->s0, binary[4]);
+    gpio_set_level(plexer->s1, binary[3]);
     gpio_set_level(plexer->s2, binary[2]);
-    gpio_set_level(plexer->s3, binary[3]);
-    gpio_set_level(plexer->s4, binary[4]);
+    gpio_set_level(plexer->s3, binary[1]);
+    gpio_set_level(plexer->s4, binary[0]);
     // gpio_set_level(plexer->wr, 1);
 }
 

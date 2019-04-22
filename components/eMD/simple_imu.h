@@ -3,7 +3,7 @@
 #include "esp_utils.h"
 
 #define IMU_CALIBRATION_COUNT 15
-#define IMU_CALIBRATION_TIME 150
+#define IMU_CALIBRATION_TIME 200
 #define IMU_THRESHOLD 1000
 #define IMU_MULTIPLIER 100.0f
 

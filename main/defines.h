@@ -27,9 +27,12 @@
 #define MUSIC_BPM 100
 
 // PIDs
-#define HEADING_KP 0.5
+
+// --- IMU Correction --- //
+// Note: this needs to be reversed (-pid_update)
+#define HEADING_KP 0.3
 #define HEADING_KI 0
-#define HEADING_KD 0.05
+#define HEADING_KD 0.03
 #define HEADING_MAX_CORRECTION 100
 
 #define FORWARD_KP 10
@@ -46,6 +49,12 @@
 #define LRF_KI 0
 #define LRF_KD 0.1
 #define LRF_MAX 100
+
+// --- Goal Correction --- //
+#define GOAL_KP 0.3
+#define GOAL_KI 0
+#define GOAL_KD 0.06
+#define GOAL_MAX_CORRECTION 100
 
 // Maths
 #define PI 3.14159265358979323846
@@ -146,7 +155,7 @@
 #define TSOP_READ_PERIOD_US 75
 // #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD
-#define TSOP_MOVAVG_SIZE 16
+#define TSOP_MOVAVG_SIZE 4
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
