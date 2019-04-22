@@ -20,7 +20,7 @@ static void imu_correction(){
     // Function for correcting forward
     // printf("Is this shit wrong: %f\n", (float)robotState.inHeading);
     robotState.outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState.inHeading, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
-    // printf("IMU Correcting: %d\n", robotState.outOrientation);
+    printf("IMU Correcting: %d\n", robotState.outOrientation);
 }
 
 static void goal_correction(){
@@ -34,31 +34,32 @@ static void goal_correction(){
 
 // Idle
 void state_attack_idle_update(state_machine_t *fsm){
-    imu_correction();
+    printf("Do not use the idle state!\n");
+    // imu_correction();
 
-    // Check criteria:
-    // Ball visible (switch to pursue), goal not visible (can't centre correctly so brake)
-    if (robotState.inBallStrength > 0){
-        ESP_LOGD("CentreState", "Changing to pursue: ball found (angle %d)", robotState.inBallAngle);
-        FSM_CHANGE_STATE(Pursue);
-    } else if (!robotState.inGoalVisible){
-        ESP_LOGD("CentreState", "Goal not visible, braking");
-        FSM_MOTOR_BRAKE;
-    }
+    // // Check criteria:
+    // // Ball visible (switch to pursue), goal not visible (can't centre correctly so brake)
+    // if (robotState.inBallStrength > 0){
+    //     ESP_LOGD("CentreState", "Changing to pursue: ball found (angle %d)", robotState.inBallAngle);
+    //     FSM_CHANGE_STATE(Pursue);
+    // } else if (!robotState.inGoalVisible){
+    //     ESP_LOGD("CentreState", "Goal not visible, braking");
+    //     FSM_MOTOR_BRAKE;
+    // }
 
-    ESP_LOGD("CentreState", "Ball not visible, going to centre");
-    // fixed goal angle
-    float g = robotState.inGoalAngle < 0 ? robotState.inGoalAngle + 360 : robotState.inGoalAngle;
-    g = floatMod(g + robotState.inHeading, 360.0f);
+    // ESP_LOGD("CentreState", "Ball not visible, going to centre");
+    // // fixed goal angle
+    // float g = robotState.inGoalAngle < 0 ? robotState.inGoalAngle + 360 : robotState.inGoalAngle;
+    // g = floatMod(g + robotState.inHeading, 360.0f);
 
-    float vDist = robotState.inGoalLength * cosf(DEG_RAD * g);
-    float hDist = robotState.inGoalLength * sinf(DEG_RAD * g);
+    // float vDist = robotState.inGoalLength * cosf(DEG_RAD * g);
+    // float hDist = robotState.inGoalLength * sinf(DEG_RAD * g);
     
-    float distanceMovement = -pid_update(&forwardPID, vDist, IDLE_DISTANCE, 0.0f);
-    float sidewaysMovement = -pid_update(&sidePID, hDist, IDLE_OFFSET, 0.0f);
+    // float distanceMovement = -pid_update(&forwardPID, vDist, IDLE_DISTANCE, 0.0f);
+    // float sidewaysMovement = -pid_update(&sidePID, hDist, IDLE_OFFSET, 0.0f);
 
-    robotState.outDirection = mod(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - (robotState.inHeading), 360);
-    robotState.outSpeed = sqrtf(distanceMovement * distanceMovement + sidewaysMovement * sidewaysMovement);
+    // robotState.outDirection = mod(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - (robotState.inHeading), 360);
+    // robotState.outSpeed = sqrtf(distanceMovement * distanceMovement + sidewaysMovement * sidewaysMovement);
 }
 
 // Pursue
@@ -92,17 +93,21 @@ void state_attack_orbit_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength > ORBIT_BALL_TOO_FAR){
         ESP_LOGD("OrbitState", "Ball too far away, reverting");
-        FSM_REVERT;
+        printf("Ignoring switch request\n");
+        // FSM_REVERT;
     } else if (rs.inBallStrength < ORBIT_BALL_TOO_CLOSE 
                 && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
         ESP_LOGD("OrbitState", "Ball and angle in correct spot, switching to dribble");
-        FSM_CHANGE_STATE(Dribble);
+        printf("Ignoring switch request\n");
+        // FSM_CHANGE_STATE(Dribble);
     }
 
+    int16_t tempAngle = rs.inBallAngle > 180 ? rs.inBallAngle - 360 : rs.inBallAngle;
+
     ESP_LOGD("OrbitState", "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(robotState.inBallAngle)) * fminf(90, 0.4 * powf(E, 0.5 * (float)smallestAngleBetween(robotState.inBallAngle, 0))));
+    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.5 * powf(E, 0.5 * (float)smallestAngleBetween(tempAngle, 0))));
     float strengthFactor = constrain(((float)robotState.inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
-    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2.5 * strengthFactor), 0, 1);
+    float distanceMultiplier = constrain(0.3 * strengthFactor * powf(E, 2.5 * strengthFactor), 0, 1);
     float angleAddition = ballAngleDifference * distanceMultiplier;
 
     robotState.outDirection = floatMod(robotState.inBallAngle + angleAddition, 360);

@@ -30,9 +30,9 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 1
+#define HEADING_KP 0.3
 #define HEADING_KI 0
-#define HEADING_KD 0.2
+#define HEADING_KD 0.03
 #define HEADING_MAX_CORRECTION 100
 
 #define FORWARD_KP 10
@@ -167,16 +167,16 @@
 #define TSOP_MUX_WR 26
 
 // Orbit
-#define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 150
+#define BALL_FAR_STRENGTH 140
+#define BALL_CLOSE_STRENGTH 170
 #define ORBIT_SPEED_SLOW 20
 #define ORBIT_SPEED_FAST 40
 
 // Attacker FSM defines
 #define PURSUE_BALL_TOO_CLOSE 90
 #define ORBIT_BALL_TOO_FAR 90
-#define ORBIT_BALL_TOO_CLOSE 140
-#define DRIBBLE_BALL_TOO_FAR 140
+#define ORBIT_BALL_TOO_CLOSE 120
+#define DRIBBLE_BALL_TOO_FAR 120
 #define IN_FRONT_MIN_ANGLE 20
 #define IN_FRONT_MAX_ANGLE 340
 

@@ -39,7 +39,6 @@
 /** Brake the motors in the FSM **/
 #define FSM_MOTOR_BRAKE do { \
     robotState.outSpeed = 0; \
-    robotState.outDirection = 0; \
     robotState.outShouldBrake = true; \
     return; \
 } while (0);

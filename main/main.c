@@ -51,7 +51,7 @@ void master_task(void *pvParameter){
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateAttackIdle;
+    stateMachine.currentState = &stateAttackOrbit; //&stateAttackPursue;
     robotStateSem = xSemaphoreCreateMutex();
 
     esp_task_wdt_add(NULL);
@@ -72,7 +72,7 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = receivedData.tsopAngle;
+                robotState.inBallAngle = (receivedData.tsopAngle - 20) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
                 robotState.inGoalVisible = GOAL.exists;
                 robotState.inGoalAngle = GOAL.angle;
@@ -89,7 +89,8 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(&stateMachine);
 
-        // printf("direction: %d, orientation: %d, speed: %d\n", robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
+        // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
+        // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -97,8 +98,10 @@ void master_task(void *pvParameter){
 
         // float correction = -pid_update(&headingPID, floatMod(floatMod((float)receivedData.heading / IMU_MULTIPLIER, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
 
+        ESP_LOGD("IR", "%d\n", robotState.inBallAngle);
+
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        // vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
