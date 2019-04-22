@@ -5,6 +5,7 @@ SemaphoreHandle_t robotStateSem = NULL;
 
 pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
 pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
+pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
 
 fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state_attack_idle_update, "AttackIdle"};
 fsm_state_t stateAttackPursue = {&state_nothing_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
@@ -14,13 +15,22 @@ fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &st
 // shortcut lol
 #define rs robotState
 
-static inline void goal_correct_attack(){
-    // TODO PID?
-    robotState.outOrientation = robotState.inGoalAngle;
+static void imu_correction(){
+    // do the thing as well
+}
+
+static void goal_correction(){
+    if (!robotState.inGoalVisible){
+        // do the thing and that thing is goal correction
+    } else {
+        imu_correction();
+    }
 }
 
 // Idle
 void state_attack_idle_update(state_machine_t *fsm){
+    goal_correction();
+
     // Check criteria:
     // Ball visible (switch to pursue), goal not visible (can't centre correctly so brake)
     if (robotState.inBallStrength > 0){
@@ -48,7 +58,7 @@ void state_attack_idle_update(state_machine_t *fsm){
 
 // Pursue
 void state_attack_pursue_update(state_machine_t *fsm){
-    goal_correct_attack();
+    goal_correction();
 
     // Check criteria:
     // Ball not visible (brake) and ball too close (switch to orbit)
@@ -96,7 +106,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
 // Dribble
 void state_attack_dribble_update(state_machine_t *fsm){
-    goal_correct_attack();
+    goal_correction();
 
     // Check criteria:
     // Ball too far away, Ball not in front of us, Goal not visible, Ball not visible
