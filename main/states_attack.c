@@ -1,4 +1,5 @@
 #include "states.h"
+#include "simple_imu.h"
 
 robot_state_t robotState = {0};
 SemaphoreHandle_t robotStateSem = NULL;
@@ -16,12 +17,16 @@ fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &st
 #define rs robotState
 
 static void imu_correction(){
-    // do the thing as well
+    // Function for correcting forward
+    // printf("Is this shit wrong: %f\n", (float)robotState.inHeading);
+    robotState.outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState.inHeading, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+    // printf("IMU Correcting: %d\n", robotState.outOrientation);
 }
 
 static void goal_correction(){
     if (!robotState.inGoalVisible){
-        // do the thing and that thing is goal correction
+        // Function for goal correction
+        robotState.outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState.inGoalAngle, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
     } else {
         imu_correction();
     }
@@ -29,7 +34,7 @@ static void goal_correction(){
 
 // Idle
 void state_attack_idle_update(state_machine_t *fsm){
-    goal_correction();
+    imu_correction();
 
     // Check criteria:
     // Ball visible (switch to pursue), goal not visible (can't centre correctly so brake)
@@ -41,7 +46,7 @@ void state_attack_idle_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     }
 
-    ESP_LOGD("CentreState", "Ball visible, going to centre");
+    ESP_LOGD("CentreState", "Ball not visible, going to centre");
     // fixed goal angle
     float g = robotState.inGoalAngle < 0 ? robotState.inGoalAngle + 360 : robotState.inGoalAngle;
     g = floatMod(g + robotState.inHeading, 360.0f);
@@ -58,7 +63,7 @@ void state_attack_idle_update(state_machine_t *fsm){
 
 // Pursue
 void state_attack_pursue_update(state_machine_t *fsm){
-    goal_correction();
+    imu_correction();
 
     // Check criteria:
     // Ball not visible (brake) and ball too close (switch to orbit)
@@ -72,13 +77,13 @@ void state_attack_pursue_update(state_machine_t *fsm){
 
     ESP_LOGD("PursueState", "Ball is visible, pursuing");
     // Quickly approach the ball
-    robotState.outSpeed = 100;
+    robotState.outSpeed = 40;
     robotState.outDirection = robotState.inBallAngle;
 }
 
 // Orbit
 void state_attack_orbit_update(state_machine_t *fsm){
-    // TODO do we want to goal correct?
+    imu_correction();
 
     // Check criteria:
     // Ball too far away, Ball too close (go to dribble), Ball too far (revert)
@@ -106,7 +111,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
 // Dribble
 void state_attack_dribble_update(state_machine_t *fsm){
-    goal_correction();
+    imu_correction();
 
     // Check criteria:
     // Ball too far away, Ball not in front of us, Goal not visible, Ball not visible

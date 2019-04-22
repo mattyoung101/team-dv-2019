@@ -98,7 +98,7 @@ void tsop_calc(){
     tsopAvgStrength = movavg_calc(strengthAvg);
 
     // ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", tsopAvgAngle, tsopAvgStrength);
-    ESP_LOGI(TAG, "Angle %f, Strength: %f", tsopAngle, tsopStrength);
+    // ESP_LOGI(TAG, "Angle %f, Strength: %f", tsopAngle, tsopStrength);
 
     tsop_reset();
 }
