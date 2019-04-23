@@ -60,8 +60,6 @@ void master_task(void *pvParameter){
         // update cam
         cam_calc();
 
-        printf("===== NEW LOOP =====\n");
-
         // update values for FSM
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -95,10 +93,6 @@ void master_task(void *pvParameter){
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
-
-        // float correction = -pid_update(&headingPID, floatMod(floatMod((float)receivedData.heading / IMU_MULTIPLIER, 360.0f) + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
-
-        ESP_LOGD("IR", "%d\n", robotState.inBallAngle);
 
         esp_task_wdt_reset();
         // vTaskDelay(pdMS_TO_TICKS(100));

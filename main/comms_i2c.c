@@ -63,7 +63,7 @@ void comms_i2c_init_master(i2c_port_t port){
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
 
-void comms_i2c_init_slave(){
+void comms_i2c_init_slave(void){
     i2c_config_t conf = {
         .mode = I2C_MODE_SLAVE,
         .sda_io_num = 21,

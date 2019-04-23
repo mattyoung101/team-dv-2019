@@ -18,21 +18,21 @@ static const char *TAG = "Motor";
 
 void motor_init(void){
     // Setup pins
-    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, MOTOR_FL_PWM));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN1, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FL_IN2, GPIO_MODE_OUTPUT));
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0A, MOTOR_FL_PWM);
+    gpio_set_direction(MOTOR_FL_IN1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_FL_IN2, GPIO_MODE_OUTPUT);
 
-    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, MOTOR_FR_PWM));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FR_IN1, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_FR_IN2, GPIO_MODE_OUTPUT));
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM0B, MOTOR_FR_PWM);
+    gpio_set_direction(MOTOR_FR_IN1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_FR_IN2, GPIO_MODE_OUTPUT);
 
-    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, MOTOR_BL_PWM));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BL_IN1, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BL_IN2, GPIO_MODE_OUTPUT));
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1A, MOTOR_BL_PWM);
+    gpio_set_direction(MOTOR_BL_IN1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_BL_IN2, GPIO_MODE_OUTPUT);
 
-    ESP_ERROR_CHECK(mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1B, MOTOR_BR_PWM));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BR_IN1, GPIO_MODE_OUTPUT));
-    ESP_ERROR_CHECK(gpio_set_direction(MOTOR_BR_IN2, GPIO_MODE_OUTPUT));
+    mcpwm_gpio_init(MCPWM_UNIT_0, MCPWM1B, MOTOR_BR_PWM);
+    gpio_set_direction(MOTOR_BR_IN1, GPIO_MODE_OUTPUT);
+    gpio_set_direction(MOTOR_BR_IN2, GPIO_MODE_OUTPUT);
 
     // Configure MCPWM timer
     mcpwm_config_t config = {

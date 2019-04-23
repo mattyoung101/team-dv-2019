@@ -19,6 +19,6 @@ void tsop_init(void);
 /** Reads all the TSOP values into the temp array **/
 void tsop_update(void *args);
 /** Calculates tsopAngle and tsopStrength for the best n values **/
-void tsop_calc();
+void tsop_calc(void);
 /** Dumps the temp array to UART **/
 void tsop_dump(void);

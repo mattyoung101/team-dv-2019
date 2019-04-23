@@ -216,7 +216,7 @@ static esp_err_t event_handler_client(void *ctx, system_event_t *event){
     return ESP_OK;
 }
 
-void comms_wifi_init_host(){
+void comms_wifi_init_host(void){
     wifi_event_group = xEventGroupCreate();
     tcpip_adapter_init();
     

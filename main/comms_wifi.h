@@ -41,6 +41,6 @@ typedef enum {
 } wifi_message_t;
 
 /** Initialises the TCPIP stack as the host (i.e. makes an access point and starts the host thread) **/
-void comms_wifi_init_host();
+void comms_wifi_init_host(void);
 /** Initialises the TCPIP stack as the client (i.e. tries to connect to a host) **/
-void comms_wifi_init_client();
+void comms_wifi_init_client(void);

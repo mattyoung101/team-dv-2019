@@ -26,9 +26,9 @@ typedef struct {
 
 extern float heading;
 
-void simu_init();
-void simu_read_accel();
-vec3d_t simu_read_gyro();
-void simu_read_mag();
-void simu_calibrate();
-void simu_calc();
+void simu_init(void);
+void simu_read_accel(void);
+vec3d_t simu_read_gyro(void);
+void simu_read_mag(void);
+void simu_calibrate(void);
+void simu_calc(void);

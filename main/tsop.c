@@ -54,7 +54,7 @@ static int cmp_vec_mag(const void *p, const void *q){
     }
 }
 
-void tsop_calc(){
+void tsop_calc(void){
     // ESP_LOGI(TAG, "TSOP 6: %f, TSOP 18: %f", readings[6].X, readings[18].X);
     // ESP_LOGI(TAG, "Read %d times", tsopCounter);
     // scale down the magnitudes

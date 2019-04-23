@@ -1,12 +1,14 @@
 Deus Vult ESP32 IDF
 ====================
 
-This repository contains the code powering Team Deus Vult's 2019 robot, competing in RoboCup Jr Soccer. It consists of C code written using the ESP-IDF framework and compiled with the new CMake build system.
+This repository contains the code powering Team Deus Vult's 2019 robot, competing in RoboCup Jr Soccer. It is written almost entirely in C, without some Python scripts for code generation and debugging.
 
-The repo is currently being maintained/developed by Matt Young, contact me for any information you need.
+For more information on our robot, please see our team's PowerPoint and poster.
 
-**License:** BSD 4-clause, see LICENSE for details.
+Contact Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns.
 
-**Contributing:** No contributions will be accepted, sorry. If you want to change something, please fork the repo instead.
+**License:** This code is currently proprietary and confidential to Brisbane Boys' College and Team Deus Vult. No redistribution or use outside BBC teams is permitted.
 
-**Issues:** Bug reports are welcome, but we can't guarantee that we'll have the time to fix them. Please be descriptive.
+**Contributing:** No contributions will be accepted, sorry.
+
+**Issues:** We manage all issues on Trello, so the GitHub bug tracker isn't used.
