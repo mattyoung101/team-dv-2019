@@ -66,7 +66,7 @@ void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
     gpio_set_level(plexer->s2, binary[2]);
     gpio_set_level(plexer->s3, binary[1]);
     gpio_set_level(plexer->s4, binary[0]);
-    // gpio_set_level(plexer->wr, 1);
+    // gpio_set_level(plexer->wr, 1); // should be required, but works without it... sooooo yeah may as well not?
 }
 
 uint32_t mplexer_5bit_read(mplexer_5bit_t *plexer, uint8_t pin){

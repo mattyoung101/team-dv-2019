@@ -48,7 +48,6 @@ void master_task(void *pvParameter){
     // comms_wifi_init_host();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
-    gpio_set_direction(2, GPIO_MODE_OUTPUT);
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
@@ -58,8 +57,6 @@ void master_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        gpio_set_level(2, 1);
-
         // update cam
         cam_calc();
 
@@ -78,6 +75,7 @@ void master_task(void *pvParameter){
                 robotState.inGoalVisible = GOAL.exists;
                 robotState.inGoalAngle = GOAL.angle;
                 robotState.inGoalLength = GOAL.length;
+                // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
 
                 // unlock semaphores
@@ -97,10 +95,7 @@ void master_task(void *pvParameter){
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
-        ESP_LOGD(TAG, "Angle %d", robotState.inBallAngle);
-
         esp_task_wdt_reset();
-        gpio_set_level(2, 0);
         // vTaskDelay(pdMS_TO_TICKS(250));
     }
 }

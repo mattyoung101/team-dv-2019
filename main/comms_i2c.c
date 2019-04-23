@@ -30,15 +30,9 @@ static void comms_i2c_receive_task(void *pvParameters){
                 receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
                 receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
                 receivedData.heading = UNPACK_16(buf[9], buf[10]);
-            
-                // ESP_LOGD(TAG, "Received: %d, %d, %d, %d, %d", receivedData.tsopAngle, receivedData.tsopStrength, 
-                    // receivedData.lineAngle, receivedData.lineSize, receivedData.heading);
-
-                // ESP_LOGD(TAG, "Highbyte: %d, Lowbyte: %d, Value: %d", buf[7], buf[8], receivedData.lineSize);
-
                 xSemaphoreGive(rdSem);
             } else {
-                ESP_LOGW(TAG, "Failed to acquire semaphore in time!");
+                ESP_LOGW(TAG, "Failed to acquire received data semaphore in time!");
             }
         } else {
             ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
@@ -55,7 +49,9 @@ void comms_i2c_init_master(i2c_port_t port){
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        .master.clk_speed = 50000, // 0.5 MHz, max is 1 MHz, unit is Hz --- NOTE: 1MHz is so fast that every second packet has 4 bits dropped off from it lol
+        // 0.5 MHz, max is 1 MHz, unit is Hz
+        // NOTE: 1MHz tends to break the i2c packets - use with caution!!
+        .master.clk_speed = 50000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
@@ -74,10 +70,9 @@ void comms_i2c_init_slave(void){
         .slave.slave_addr = I2C_ESP_SLAVE_ADDR
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
-    // min size is 100 bytes, so we use a 32 * 9 byte buffer
+    // min size is of i2c fifo buffer is 100 bytes, so we use a 32 * 9 byte buffer
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 288, 288, 0));
-    // we don't need to pin this task (no need to access FPU), so the scheduler will put it on whichever core is doing 
-    // the least amount of work (at least I think it will)
+    // TODO decrease stack size?
     xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
@@ -99,9 +94,7 @@ static int comms_i2c_send_data(uint8_t *buf, size_t bufSize){
 }
 
 int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize, uint16_t heading){
-    // ESP_LOGV("CommsI2C_M", "Sending: %d, %d, %d, %d", tsopAngle, tsopStrength, lineAngle, lineSize);
-    
-    // temp 9 byte buffer on the stack to expand out 4 16 bit integers into 8 8 bit integers + 1 start byte
+    // temp 11 byte buffer on the stack to expand out 5 16 bit integers into 10 8 bit integers + 1 start byte
     uint8_t *buf = alloca(11);
     buf[0] = I2C_BEGIN_DEFAULT;
     buf[1] = HIGH_BYTE_16(tsopAngle);
@@ -114,8 +107,6 @@ int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle
     buf[8] = LOW_BYTE_16(lineSize);
     buf[9] = HIGH_BYTE_16(heading);
     buf[10] = LOW_BYTE_16(heading);
-
-    // ESP_LOGD("CommsI2C_M", "Sending: Highbyte: %d, Lowbyte: %d", buf[7], buf[8]);
 
     return comms_i2c_send_data(buf, 11);
 }
