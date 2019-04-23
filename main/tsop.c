@@ -55,19 +55,26 @@ static int cmp_vec_mag(const void *p, const void *q){
 }
 
 void tsop_calc(void){
-    // ESP_LOGI(TAG, "TSOP 6: %f, TSOP 18: %f", readings[6].X, readings[18].X);
-    // ESP_LOGI(TAG, "Read %d times", tsopCounter);
+    #ifdef TSOP_DEBUG
+        ESP_LOGI(TAG, "TSOP 6: %f, TSOP 18: %f", readings[6].X, readings[18].X);
+        ESP_LOGI(TAG, "Read %d times", tsopCounter);
+    #endif
+
     // scale down the magnitudes
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X = ((float) readings[i].X / (float) tsopCounter);
     }
-    // ESP_LOGI(TAG, "Scaled down:");
-    // tsop_dump();
+    #ifdef TSOP_DEBUG
+        ESP_LOGI(TAG, "Scaled down:");
+        tsop_dump();
+    #endif
 
     // sort values to obtain the best n vectors with the highest magnitudes
     qsort(readings, TSOP_NUM, sizeof(hmm_vec2), cmp_vec_mag);
-    // ESP_LOGI(TAG, "Sorted:");
-    // tsop_dump();
+    #ifdef TSOP_DEBUG
+        ESP_LOGI(TAG, "Sorted:");
+        tsop_dump();
+    #endif
 
     // convert them to cartesian
     for (int i = 0; i < TSOP_NUM; i++){
@@ -76,13 +83,17 @@ void tsop_calc(void){
         readings[i].X = r * cosfd(theta);
         readings[i].Y = r * sinfd(theta);
     }
-    // ESP_LOGI(TAG, "Converted to cartesian:");
-    // tsop_dump();
+    #ifdef TSOP_DEBUG
+        ESP_LOGI(TAG, "Converted to cartesian:");
+        tsop_dump();
+    #endif
 
     // sum them
     hmm_vec2 sum = {0};
     for (int i = 0; i < TSOP_BEST; i++){
-        // ESP_LOGD(TAG, "Current sum: (%f, %f) adding: (%f, %f)", sum.X, sum.Y, readings[i].X, readings[i].Y);
+        #ifdef TSOP_DEBUG
+            ESP_LOGD(TAG, "Current sum: (%f, %f) adding: (%f, %f)", sum.X, sum.Y, readings[i].X, readings[i].Y);
+        #endif
         sum = HMM_AddVec2(sum, readings[i]);
     }
 
@@ -97,8 +108,10 @@ void tsop_calc(void){
     tsopAvgAngle = movavg_calc(angleAvg);
     tsopAvgStrength = movavg_calc(strengthAvg);
 
-    // ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", tsopAvgAngle, tsopAvgStrength);
-    // ESP_LOGI(TAG, "Angle %f, Strength: %f", tsopAngle, tsopStrength);
+    #ifdef TSOP_DEBUG
+        ESP_LOGI(TAG, "Average angle: %f, Average strength: %f", tsopAvgAngle, tsopAvgStrength);
+        ESP_LOGI(TAG, "Angle %f, Strength: %f", tsopAngle, tsopStrength);
+    #endif
 
     tsop_reset();
 }
@@ -113,5 +126,11 @@ void tsop_dump(void){
     // ESP_LOGD(TAG, "Values: (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
     // "(%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
     // "(%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
-    // "(%f, %f), (%f, %f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, readings[2].Y, readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, readings[6].Y, readings[7].X, readings[7].Y, readings[8].X, readings[8].Y, readings[9].X, readings[9].Y, readings[10].X, readings[10].Y, readings[11].X, readings[11].Y, readings[12].X, readings[12].Y, readings[13].X, readings[13].Y, readings[14].X, readings[14].Y, readings[15].X, readings[15].Y, readings[16].X, readings[16].Y, readings[17].X, readings[17].Y, readings[18].X, readings[18].Y, readings[19].X, readings[19].Y, readings[20].X, readings[20].Y, readings[21].X, readings[21].Y, readings[22].X, readings[22].Y, readings[23].X, readings[23].Y);
+    // "(%f, %f), (%f, %f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, readings[2].Y, 
+    // readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, readings[6].Y, 
+    // readings[7].X, readings[7].Y, readings[8].X, readings[8].Y, readings[9].X, readings[9].Y, readings[10].X, readings[10].Y, 
+    // readings[11].X, readings[11].Y, readings[12].X, readings[12].Y, readings[13].X, readings[13].Y, readings[14].X, 
+    // readings[14].Y, readings[15].X, readings[15].Y, readings[16].X, readings[16].Y, readings[17].X, readings[17].Y, 
+    // readings[18].X, readings[18].Y, readings[19].X, readings[19].Y, readings[20].X, readings[20].Y, readings[21].X, 
+    // readings[21].Y, readings[22].X, readings[22].Y, readings[23].X, readings[23].Y);
 }

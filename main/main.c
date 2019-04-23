@@ -48,15 +48,18 @@ void master_task(void *pvParameter){
     // comms_wifi_init_host();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
+    gpio_set_direction(2, GPIO_MODE_OUTPUT);
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateAttackOrbit; //&stateAttackPursue;
+    stateMachine.currentState = &stateAttackPursue;
     robotStateSem = xSemaphoreCreateMutex();
 
     esp_task_wdt_add(NULL);
 
     while (true){
+        gpio_set_level(2, 1);
+
         // update cam
         cam_calc();
 
@@ -94,8 +97,11 @@ void master_task(void *pvParameter){
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
+        ESP_LOGD(TAG, "Angle %d", robotState.inBallAngle);
+
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(100));
+        gpio_set_level(2, 0);
+        // vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
@@ -122,7 +128,7 @@ void slave_task(void *pvParameter){
 
         simu_calc();
 
-        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();

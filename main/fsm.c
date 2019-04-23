@@ -20,8 +20,8 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
 
 void fsm_revert_state(state_machine_t *fsm){
     fsm_state_t *previousState = da_pop(fsm->stateHistory);
-    fsm_change_state(fsm, previousState);
     ESP_LOGD(TAG, "Reverting to state %s from %s", previousState->name, fsm->currentState->name);
+    fsm_change_state(fsm, previousState);
 }
 
 bool fsm_in_state(state_machine_t *fsm, char *name){
