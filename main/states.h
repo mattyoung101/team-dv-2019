@@ -6,6 +6,7 @@
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
+#include "freertos/timers.h"
 
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
 typedef struct {
@@ -34,6 +35,7 @@ void state_nothing_update(state_machine_t *fsm);
 
 /////////// ATTACK FSM /////////
 // Centre state: moves the robot to the centre of the field. Only update.
+void state_attack_idle_enter(state_machine_t *fsm);
 void state_attack_idle_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackIdle;
 

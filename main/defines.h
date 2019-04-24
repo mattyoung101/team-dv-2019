@@ -178,6 +178,7 @@
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is less than this
 #define IN_FRONT_MIN_ANGLE 40
 #define IN_FRONT_MAX_ANGLE 320
+#define IDLE_TIME 5000 // ms
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
