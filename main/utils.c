@@ -15,6 +15,7 @@ int number_comparator_descending(const void *a, const void *b){
     return (*(int*)b - *(int*)a);
 }
 
+// TODO rename to getAngleBetween
 float angleBetween(float angleCounterClockwise, float angleClockwise){
     return mod(angleClockwise - angleCounterClockwise, 360);
 }
@@ -38,9 +39,9 @@ bool is_angle_between(float target, float angle1, float angle2){
 	float rAngle = fmodf(fmodf(angle2 - angle1, 360.0f) + 360.0f, 360.0f);
 	if (rAngle >= 180.0f){
 		// std::swap(angle1, angle2);
-		float tmp = angle1;
+		float a1 = angle1;
 		angle1 = angle2;
-		angle2 = tmp;
+		angle2 = a1;
 	}
 
 	// check if it passes through zero

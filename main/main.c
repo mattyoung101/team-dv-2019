@@ -51,7 +51,7 @@ void master_task(void *pvParameter){
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateAttackOrbit; //&stateAttackPursue;
+    stateMachine.currentState = &stateAttackPursue;
     robotStateSem = xSemaphoreCreateMutex();
 
     esp_task_wdt_add(NULL);
@@ -75,6 +75,7 @@ void master_task(void *pvParameter){
                 robotState.inGoalVisible = GOAL.exists;
                 robotState.inGoalAngle = GOAL.angle;
                 robotState.inGoalLength = GOAL.length;
+                // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
 
                 // unlock semaphores
@@ -95,7 +96,7 @@ void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(100));
+        // vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
@@ -122,7 +123,7 @@ void slave_task(void *pvParameter){
 
         simu_calc();
 
-        comms_i2c_send((uint16_t) tsopAvgAngle, (uint16_t) tsopAvgStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();

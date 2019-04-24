@@ -30,9 +30,9 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.3
+#define HEADING_KP 0.5
 #define HEADING_KI 0
-#define HEADING_KD 0.03
+#define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
 #define FORWARD_KP 10
@@ -79,8 +79,8 @@
 #define CAM_DATA_LEN 8
 #define CAM_BEGIN_BYTE 0xB
 #define CAM_END_BYTE 0xE
-#define CAM_FRAME_WIDTH 100
-#define CAM_FRAME_HEIGHT 100
+#define CAM_FRAME_WIDTH 160
+#define CAM_FRAME_HEIGHT 120
 #define CAM_OFFSET_X 0
 #define CAM_OFFSET_Y 0
 #define CAM_NO_VALUE 0xBAD
@@ -156,6 +156,7 @@
 // #define TSOP_TIMER_PERIOD 4
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
+// #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -167,18 +168,16 @@
 #define TSOP_MUX_WR 26
 
 // Orbit
-#define BALL_FAR_STRENGTH 140
-#define BALL_CLOSE_STRENGTH 170
+#define BALL_FAR_STRENGTH 130
+#define BALL_CLOSE_STRENGTH 160
 #define ORBIT_SPEED_SLOW 20
 #define ORBIT_SPEED_FAST 40
 
 // Attacker FSM defines
-#define PURSUE_BALL_TOO_CLOSE 90
-#define ORBIT_BALL_TOO_FAR 90
-#define ORBIT_BALL_TOO_CLOSE 120
-#define DRIBBLE_BALL_TOO_FAR 120
-#define IN_FRONT_MIN_ANGLE 20
-#define IN_FRONT_MAX_ANGLE 340
+#define DRIBBLE_BALL_TOO_FAR 10 // if less than this, switch out of dribble
+#define ORBIT_DIST 110 // switch from orbit to pursue if value is less than this
+#define IN_FRONT_MIN_ANGLE 40
+#define IN_FRONT_MAX_ANGLE 320
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
