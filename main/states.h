@@ -2,7 +2,6 @@
 #include "fsm.h"
 #include <math.h>
 #include "pid.h"
-#include "utils.h"
 #include "defines.h"
 #include "esp_log.h"
 #include "freertos/FreeRTOS.h"
@@ -27,12 +26,6 @@ typedef struct {
 
 extern SemaphoreHandle_t robotStateSem;
 extern robot_state_t robotState;
-
-// PIDs
-extern pid_config_t forwardPID;
-extern pid_config_t sidePID;
-extern pid_config_t headingPID;
-extern pid_config_t goalPID;
 
 // Generic do nothing states (used for example if no "enter" method is needed on a state)
 void state_nothing_enter(state_machine_t *fsm);

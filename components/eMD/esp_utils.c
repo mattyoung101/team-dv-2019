@@ -2,6 +2,7 @@
 #include "defines.h"
 
 // Code to integrate eMD with ESP32
+// TODO rename to esp_mpu_i2c_impl.c
 // Based on https://github.com/sparkfun/SparkFun_MPU-9250-DMP_Arduino_Library/tree/master/src/util
 
 static const char *TAG = "MPU9250";

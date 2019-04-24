@@ -6,7 +6,9 @@
         "uart.h": "c",
         "inv_mpu.h": "c",
         "states.h": "c",
-        "simple_imu.h": "c"
+        "simple_imu.h": "c",
+        "math.h": "c",
+        "pid.h": "c"
     },
     "cSpell.words": [
         "GYRO",

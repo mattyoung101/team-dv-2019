@@ -24,7 +24,7 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
 }
 
 void fsm_revert_state(state_machine_t *fsm){
-    // first check if its safe to pop
+    // first check if it's safe to pop
     if (da_count(fsm->stateHistory) < 1){
         ESP_LOGW(TAG, "Unable to revert: state history too small, size = %d", da_count(fsm->stateHistory));
         return;

@@ -25,7 +25,10 @@
 #include "inv_mpu.h"
 
 ///// Config the library for our sensor /////
-#define MPU9250
+
+// we are using the MPU9250, which according to the Invensense website is made of an MPU-6500 and a AK8963 magnetometer
+// however, the AK8963 doesn't seem to work right now, so we just use the 6500
+#define MPU6500
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -44,8 +47,8 @@
 #define i2c_read    esp_i2c_read
 #define delay_ms    esp_delay_ms
 #define get_ms      esp_get_clock_ms
-#define log_i(msg, __VA_ARGS__...)  do { ESP_LOGI("MPU9250", msg, ## __VA_ARGS__); } while (0);
-#define log_e(msg)  do { ESP_LOGE("MPU9250", msg); } while (0);
+#define log_i(msg, ...)  ESP_LOGI("MPU9250", msg, ## __VA_ARGS__);
+#define log_e(msg)  ESP_LOGE("MPU9250", msg
 #define min(a,b) fminf(a, b)
 
 #if !defined MPU6050 && !defined MPU9150 && !defined MPU6500 && !defined MPU9250

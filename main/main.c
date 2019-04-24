@@ -11,7 +11,6 @@
 #include "driver/uart.h"
 #include "nvs_flash.h"
 #include <math.h>
-#include "pid.h"
 #include "motor.h"
 #include "light.h"
 #include "tsop.h"
@@ -24,15 +23,13 @@
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
 #include "simple_imu.h"
+#include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define GOAL goalYellow
 #elif ENEMY_GOAL == GOAL_BLUE
     #define GOAL goalBlue
 #endif
-
-// Temp defines
-pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
 // static esp_timer_handle_t tsopTimer = NULL;
@@ -85,6 +82,7 @@ void master_task(void *pvParameter){
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
+
         // update the actual FSM
         fsm_update(&stateMachine);
 
@@ -96,7 +94,7 @@ void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 

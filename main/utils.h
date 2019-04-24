@@ -7,6 +7,14 @@
 #include "esp_err.h"
 #include "esp_log.h"
 #include "driver/i2c.h"
+#include "pid.h"
+#include "states.h"
+
+// PIDs
+extern pid_config_t forwardPID;
+extern pid_config_t sidePID;
+extern pid_config_t headingPID;
+extern pid_config_t goalPID;
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 /** x squared **/
@@ -57,3 +65,5 @@ int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t 
 void i2c_scanner();
 /** Source: https://stackoverflow.com/a/11412077/5007892 **/
 bool is_angle_between(float target, float angle1, float angle2);
+void imu_correction(robot_state_t *robotState);
+void goal_correction(robot_state_t *robotState);

@@ -2,10 +2,11 @@
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
-set(COMPONENT_SRCS "main.c"
+set(COMPONENT_SRCS  
+                   "utils.c"
+                   "main.c"
                    "comms_i2c.c"
                    "tsop.c"
-                   "utils.c"
                    "motor.c"
                    "pid.c"
                    "light.c"

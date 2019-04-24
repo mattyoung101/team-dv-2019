@@ -1,5 +1,10 @@
 #include "utils.h"
 
+pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
+pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
+pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
+pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
+
 int32_t mod(int32_t x, int32_t m){
     int32_t r = x % m;
     return r < 0 ? r + m : r;
@@ -50,6 +55,23 @@ bool is_angle_between(float target, float angle1, float angle2){
 	} else {
 		return target >= angle1 || target <= angle2;
 	}
+}
+
+void imu_correction(robot_state_t *robotState){
+    robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+                                + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+    // printf("IMU Correcting: %d\n", robotState.outOrientation);
+}
+
+void goal_correction(robot_state_t *robotState){
+    if (!robotState->inGoalVisible){
+        // if the goal is visible use goal correction
+        robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f) 
+                                    + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+    } else {
+        // otherwise just IMU correct
+        imu_correction(robotState);
+    }
 }
 
 void i2c_scanner(){
