@@ -28,7 +28,7 @@
 
 // we are using the MPU9250, which according to the Invensense website is made of an MPU-6500 and a AK8963 magnetometer
 // however, the AK8963 doesn't seem to work right now, so we just use the 6500
-#define MPU6500
+#define MPU9250
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -2875,9 +2875,11 @@ static int setup_compass(void)
             break;
     }
 
+    ESP_LOGI("MPU9250", "AKM addr: %d", akm_addr);
+
     if (akm_addr > 0x0F) {
         /* TODO: Handle this case in all compass-related functions. */
-        log_e("Compass not found.\n");
+        log_e("Compass not found.\n"));
         return -1;
     }
 

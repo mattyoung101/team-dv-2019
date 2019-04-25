@@ -27,6 +27,7 @@
         "lsarray",
         "mcpwm",
         "mplexer",
+        "mpuw",
         "numpy",
         "pygame",
         "sinfd",

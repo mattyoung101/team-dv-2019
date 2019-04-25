@@ -22,7 +22,7 @@
 #include "comms_i2c.h"
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
-#include "simple_imu.h"
+#include "mpu_wrapper.h"
 #include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -94,7 +94,7 @@ void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(15));
     }
 }
 
@@ -107,8 +107,7 @@ void slave_task(void *pvParameter){
     tsop_init();
     ls_init();
     i2c_scanner();
-    simu_init();
-    simu_calibrate();
+    mpuw_init();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -119,9 +118,7 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        simu_calc();
-
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 69);
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();

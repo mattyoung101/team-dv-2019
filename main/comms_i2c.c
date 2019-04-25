@@ -51,7 +51,7 @@ void comms_i2c_init_master(i2c_port_t port){
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         // 0.5 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
-        .master.clk_speed = 50000,
+        .master.clk_speed = 40000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
