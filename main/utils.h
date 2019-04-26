@@ -11,10 +11,10 @@
 #include "states.h"
 
 // PIDs
-extern pid_config_t forwardPID;
-extern pid_config_t sidePID;
 extern pid_config_t headingPID;
 extern pid_config_t goalPID;
+extern pid_config_t idlePID;
+extern pid_config_t coordPID;
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 /** x squared **/
@@ -67,3 +67,4 @@ void i2c_scanner();
 bool is_angle_between(float target, float angle1, float angle2);
 void imu_correction(robot_state_t *robotState);
 void goal_correction(robot_state_t *robotState);
+void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);

@@ -22,7 +22,8 @@
 #include "comms_i2c.h"
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
-#include "mpu_wrapper.h"
+#include "simple_imu.h"
+// #include "mpu_wrapper.h"
 #include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -67,13 +68,15 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = (receivedData.tsopAngle - 20) % 360;
+                robotState.inBallAngle = (receivedData.tsopAngle - 10) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
                 robotState.inGoalVisible = GOAL.exists;
                 robotState.inGoalAngle = GOAL.angle + CAM_ANGLE_OFFSET;
                 robotState.inGoalLength = GOAL.length;
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
+                robotState.inX = robotX;
+                robotState.inY = robotY;
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
@@ -88,7 +91,8 @@ void master_task(void *pvParameter){
 
         // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
-
+        // printf("Heading: %f\n", robotState.inHeading);
+        // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
         // printf("Yellow - Angle: %d, Length: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalVisible);
 
         // run motors
@@ -109,7 +113,9 @@ void slave_task(void *pvParameter){
     tsop_init();
     ls_init();
     i2c_scanner();
-    mpuw_init();
+    // mpuw_init();
+    simu_init();
+    simu_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -120,7 +126,9 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 69);
+        simu_calc();
+
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();

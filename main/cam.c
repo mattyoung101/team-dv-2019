@@ -28,12 +28,12 @@ static void cam_receive_task(void *pvParameter){
             if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // first byte is begin byte so skip that
                 goalBlue.exists = buffer[1];
-                goalBlue.x = buffer[2] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
-                goalBlue.y = buffer[3] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;
+                goalBlue.x = buffer[2] - CAM_OFFSET_X;
+                goalBlue.y = buffer[3] - CAM_OFFSET_Y;
 
                 goalYellow.exists = buffer[4];
-                goalYellow.x = buffer[5] - CAM_FRAME_WIDTH / 2 + CAM_OFFSET_X;
-                goalYellow.y = buffer[6] - CAM_FRAME_HEIGHT / 2 + CAM_OFFSET_Y;
+                goalYellow.x = buffer[5] - CAM_OFFSET_X;
+                goalYellow.y = buffer[6] - CAM_OFFSET_Y;
 
                 cam_calc();
                 xSemaphoreGive(goalDataSem);
