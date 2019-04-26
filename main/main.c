@@ -70,7 +70,7 @@ void master_task(void *pvParameter){
                 robotState.inBallAngle = (receivedData.tsopAngle - 20) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
                 robotState.inGoalVisible = GOAL.exists;
-                robotState.inGoalAngle = GOAL.angle;
+                robotState.inGoalAngle = GOAL.angle + CAM_ANGLE_OFFSET;
                 robotState.inGoalLength = GOAL.length;
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
@@ -89,12 +89,14 @@ void master_task(void *pvParameter){
         // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
 
+        // printf("Yellow - Angle: %d, Length: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalVisible);
+
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
 

@@ -4,6 +4,7 @@ pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
 pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
 pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
 pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
+pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION};
 
 int32_t mod(int32_t x, int32_t m){
     int32_t r = x % m;
@@ -58,19 +59,29 @@ bool is_angle_between(float target, float angle1, float angle2){
 }
 
 void imu_correction(robot_state_t *robotState){
-    robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+    if (robotState->outSpeed == 0){
+        robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
                                 + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+        // printf("IDLE PID");
+    } else {
+        robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+                                + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+        // printf("HEADING PID");
+    }
+    
     // printf("IMU Correcting: %d\n", robotState.outOrientation);
 }
 
 void goal_correction(robot_state_t *robotState){
-    if (!robotState->inGoalVisible){
+    if (robotState->inGoalVisible){
         // if the goal is visible use goal correction
         robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f) 
                                     + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+        // printf("Goal correction");
     } else {
         // otherwise just IMU correct
         imu_correction(robotState);
+        // printf("Cannot see goal");
     }
 }
 

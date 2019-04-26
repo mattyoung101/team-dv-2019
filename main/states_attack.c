@@ -72,7 +72,8 @@ void state_attack_orbit_update(state_machine_t *fsm){
     } else if (rs.inBallStrength < ORBIT_DIST){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
                  ORBIT_DIST);
-        FSM_REVERT;
+        // FSM_REVERT;
+        FSM_CHANGE_STATE(Pursue);
     } else if (rs.inBallStrength >= ORBIT_DIST && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
         ESP_LOGD(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
         " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE,
@@ -113,16 +114,18 @@ void state_attack_dribble_update(state_machine_t *fsm){
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
         ESP_LOGD(TAG, "Ball not in front, reverting, angle: %d, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE);
-        FSM_REVERT;
+        // FSM_REVERT;
+        FSM_CHANGE_STATE(Orbit);
     } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, thresh: %d", robotState.inBallStrength,
         DRIBBLE_BALL_TOO_FAR);
-        FSM_REVERT;
+        // FSM_REVERT;
+        FSM_CHANGE_STATE(Orbit);
     }
 
     // rush towards goal
     // ESP_LOGD(TAG, "Rushing goal");
-    robotState.outSpeed = 100;
+    robotState.outSpeed = 60;
     robotState.outDirection = robotState.inBallAngle; //robotState.inGoalAngle; // (no goal correction so just use ball)
 }
 

@@ -51,10 +51,16 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.3
+#define GOAL_KP 0.5
 #define GOAL_KI 0
-#define GOAL_KD 0.06
+#define GOAL_KD 0.05
 #define GOAL_MAX_CORRECTION 100
+
+// --- Idle Correction --- //
+#define IDLE_KP 0.1
+#define IDLE_KI 0
+#define IDLE_KD 0.01
+#define IDLE_MAX_CORRECTION 100
 
 // Maths
 #define PI 3.14159265358979323846
@@ -83,6 +89,7 @@
 #define CAM_FRAME_HEIGHT 120
 #define CAM_OFFSET_X 0
 #define CAM_OFFSET_Y 0
+#define CAM_ANGLE_OFFSET 20
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
 #define CAM_UART_RX 16
@@ -170,11 +177,12 @@
 // Orbit
 #define BALL_FAR_STRENGTH 130
 #define BALL_CLOSE_STRENGTH 160
-#define ORBIT_SPEED_SLOW 20
-#define ORBIT_SPEED_FAST 40
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 60
+#define IDLE_TIME 5000
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 10 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is less than this
 #define IN_FRONT_MIN_ANGLE 40
 #define IN_FRONT_MAX_ANGLE 320
