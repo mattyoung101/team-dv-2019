@@ -12,6 +12,8 @@ typedef struct {
 } euler_angles_t;
 
 extern euler_angles_t eulerAngles;
+extern float mpuYaw;
+extern float mpuErrorCorrection;
 
 /** Initialises the MPU and DMP **/
 void mpuw_init();
