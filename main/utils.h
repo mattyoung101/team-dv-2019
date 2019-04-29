@@ -68,3 +68,4 @@ bool is_angle_between(float target, float angle1, float angle2);
 void imu_correction(robot_state_t *robotState);
 void goal_correction(robot_state_t *robotState);
 void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);
+float lerp(float fromValue, float toValue, float progress);

@@ -102,6 +102,10 @@ void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
     }
 }
 
+float lerp(float fromValue, float toValue, float progress){
+    return fromValue + (toValue - fromValue) * progress;
+}
+
 void i2c_scanner(){
     ESP_LOGI("I2CScanner", "Scanning...");
 

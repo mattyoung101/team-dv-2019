@@ -12,6 +12,7 @@ fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &st
 
 static TimerHandle_t idleTimer = NULL;
 static bool timerRunning = false;
+static float accelProgess = 0;
 
 // shortcut lol
 #define rs robotState
@@ -40,6 +41,7 @@ void state_attack_idle_update(state_machine_t *fsm){
 // Pursue
 void state_attack_pursue_update(state_machine_t *fsm){
     static const char *TAG = "PursueState";
+    accelProgess = 0; // reset acceleration progress
     imu_correction(&robotState);
 
     // Check criteria:
@@ -62,6 +64,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
 // Orbit
 void state_attack_orbit_update(state_machine_t *fsm){
     static const char *TAG = "OrbitState";
+    accelProgess = 0; // reset acceleration progress
 
     // if(robotState.inBallAngle < 80 || robotState.inBallAngle > 280) goal_correction(&robotState);
     // else imu_correction(&robotState);
@@ -90,10 +93,10 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
     float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 
-                                0.3 * powf(E, 0.3 * (float)smallestAngleBetween(tempAngle, 0))));
+                                0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0))));
     float strengthFactor = constrain(((float)robotState.inBallStrength - (float)BALL_FAR_STRENGTH) / 
                             ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
-    float distanceMultiplier = constrain(0.3 * strengthFactor * powf(E, 2.5 * strengthFactor), 0, 1);
+    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2.5 * strengthFactor), 0, 1);
     float angleAddition = ballAngleDifference * distanceMultiplier;
 
     robotState.outDirection = floatMod(robotState.inBallAngle + angleAddition, 360);
@@ -131,10 +134,12 @@ void state_attack_dribble_update(state_machine_t *fsm){
         FSM_CHANGE_STATE(Orbit);
     }
 
-    // rush towards goal
+    // linear acceleration to give robot time to goal correct and so it doesn't slip
     // ESP_LOGD(TAG, "Rushing goal");
-    robotState.outSpeed = 80;
+    robotState.outSpeed = lerp(ORBIT_SPEED_FAST, DRIBBLE_SPEED, accelProgess);
     robotState.outDirection = robotState.inBallAngle; //robotState.inGoalAngle; // (no goal correction so just use ball)
+
+    accelProgess += ACCEL_PROG;
 }
 
 // done with this macro
