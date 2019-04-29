@@ -67,13 +67,15 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = (receivedData.tsopAngle - 20) % 360;
+                robotState.inBallAngle = (receivedData.tsopAngle - 10) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
                 robotState.inGoalVisible = GOAL.exists;
                 robotState.inGoalAngle = GOAL.angle + CAM_ANGLE_OFFSET;
                 robotState.inGoalLength = GOAL.length;
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
+                robotState.inX = robotX;
+                robotState.inY = robotY;
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
@@ -88,7 +90,8 @@ void master_task(void *pvParameter){
 
         // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
-
+        // printf("Heading: %f\n", robotState.inHeading);
+        // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
         // printf("Yellow - Angle: %d, Length: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalVisible);
 
         // run motors

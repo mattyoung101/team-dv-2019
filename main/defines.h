@@ -30,9 +30,9 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.5
+#define HEADING_KP 0.6
 #define HEADING_KI 0
-#define HEADING_KD 0.05
+#define HEADING_KD 0.06
 #define HEADING_MAX_CORRECTION 100
 
 #define FORWARD_KP 10
@@ -45,15 +45,20 @@
 #define SIDE_KD 0.2
 #define SIDE_MAX 100
 
+#define COORD_KP 5
+#define COORD_KI 0
+#define COORD_KD 0.2
+#define COORD_MAX 100
+
 #define LRF_KP 1
 #define LRF_KI 0
 #define LRF_KD 0.1
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.5
+#define GOAL_KP 0.6
 #define GOAL_KI 0
-#define GOAL_KD 0.05
+#define GOAL_KD 0.06
 #define GOAL_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
@@ -85,11 +90,11 @@
 #define CAM_DATA_LEN 8
 #define CAM_BEGIN_BYTE 0xB
 #define CAM_END_BYTE 0xE
-#define CAM_FRAME_WIDTH 160
-#define CAM_FRAME_HEIGHT 120
-#define CAM_OFFSET_X 0
-#define CAM_OFFSET_Y 0
-#define CAM_ANGLE_OFFSET 20
+#define CAM_FRAME_WIDTH 0
+#define CAM_FRAME_HEIGHT 0
+#define CAM_OFFSET_X 65
+#define CAM_OFFSET_Y 53
+#define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
 #define CAM_UART_RX 16
@@ -102,6 +107,8 @@
 #define HALFWAY_DISTANCE 90
 #define IDLE_DISTANCE 90
 #define IDLE_OFFSET 30
+#define COORD_THRESHOLD 0
+#define GOAL_TRACK_DIST 40
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -197,12 +204,12 @@
 #define BALL_FAR_STRENGTH 130
 #define BALL_CLOSE_STRENGTH 160
 #define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 60
+#define ORBIT_SPEED_FAST 50
 #define IDLE_TIME 5000
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
-#define ORBIT_DIST 110 // switch from orbit to pursue if value is less than this
+#define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
+#define ORBIT_DIST 80 // switch from orbit to pursue if value is less than this
 #define IN_FRONT_MIN_ANGLE 40
 #define IN_FRONT_MAX_ANGLE 320
 #define IDLE_TIME 5000 // ms

@@ -17,6 +17,8 @@ typedef struct {
     int16_t inGoalLength;
     int16_t inBallAngle;
     int16_t inBallStrength;
+    int16_t inX;
+    int16_t inY;
     
     // outputs
     int16_t outSpeed;

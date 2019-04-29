@@ -1,10 +1,9 @@
 #include "utils.h"
 
-pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
-pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
 pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
 pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
 pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION};
+pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX};
 
 int32_t mod(int32_t x, int32_t m){
     int32_t r = x % m;
@@ -69,11 +68,11 @@ void imu_correction(robot_state_t *robotState){
         // printf("HEADING PID");
     }
     
-    // printf("IMU Correcting: %d\n", robotState.outOrientation);
+    // printf("IMU Correcting: %d\n", robotState->outOrientation);
 }
 
 void goal_correction(robot_state_t *robotState){
-    if (robotState->inGoalVisible){
+    if (robotState->inGoalVisible && robotState->inGoalLength < GOAL_TRACK_DIST){
         // if the goal is visible use goal correction
         robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f) 
                                     + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
@@ -82,6 +81,24 @@ void goal_correction(robot_state_t *robotState){
         // otherwise just IMU correct
         imu_correction(robotState);
         // printf("Cannot see goal");
+    }
+}
+
+void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
+    if(robotState->inGoalVisible){
+        // Goal is visible, moving to coordinate
+        if(sqrtf(powf(abs(x - robotState->inX), 2) + powf(abs(y - robotState->inY), 2)) < COORD_THRESHOLD){
+            // We are at the coordinate
+            robotState->outSpeed = 0;
+            robotState->outShouldBrake = true;
+        }else{
+            // Move with PID
+            robotState->outDirection = fmodf(fmodf(90.0 - DEG_RAD * (atan2(y - robotState->inY, x - robotState->inX)), 360) - robotState->inHeading, 360.0);
+            robotState->outSpeed = abs(pid_update(&coordPID, sqrtf(powf(abs(x - robotState->inX), 2) + powf(abs(y - robotState->inY), 2)), 0, 0));
+        }
+    }else{
+        robotState->outSpeed = 0;
+        robotState->outShouldBrake = true;
     }
 }
 

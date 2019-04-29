@@ -6,15 +6,14 @@ import ucollections
 # Serial out format:
 # [42, bfound, bx, by, yfound, yx, yy, 0x0A] (6 bytes not including 0x0A)
 
-thresholds = [(44, 73, -10, 24, 9, 83),  # yellow
-             (36, 52, -24, 4, -51, -11), # blue
-             (46, 76, 27, 77, 9, 62)]    # orange
+thresholds = [(33, 58, -21, 19, 20, 69),  # yellow
+             (36, 52, -24, 4, -51, -11)] # blue
+             #(46, 76, 27, 77, 9, 62)]    # orange
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
 YELLOW = 1
 BLUE = 2
-ORANGE = 3
 
 pyb.LED(1).on()
 
@@ -38,7 +37,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time = 1000)
-#sensor.set_windowing((0, 0, 100, 100))
+#sensor.set_windowing((0, 0, 95, 95))
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -52,7 +51,7 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 sensor.set_auto_whitebal(False,
 rgb_gain_db=(-6.02073, -5.494869, 0.4617908))
 
-sensor.set_brightness(0)
+sensor.set_brightness(-3)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
@@ -100,9 +99,6 @@ while(True):
     blobs = img.find_blobs(thresholds, x_stride=5, y_stride=5, pixels_threshold=20, area_threshold=20)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
-    biggestOrange = scanBlobs(blobs, ORANGE)
-
-    print(biggestOrange.code())
 
     # Debug drawing
     if biggestYellow != None and debug:
@@ -115,12 +111,6 @@ while(True):
         img.draw_rectangle(biggestBlue.rect())
         img.draw_cross(biggestBlue.cx(), biggestBlue.cy())
         img.draw_string(biggestBlue.cx(), biggestBlue.cy(), str(biggestBlue.code()),
-                        color=(255, 0, 0))
-
-    if biggestOrange != None and debug:
-        img.draw_rectangle(biggestOrange.rect())
-        img.draw_cross(biggestOrange.cx(), biggestOrange.cy())
-        img.draw_string(biggestOrange.cx(), biggestOrange.cy(), str(biggestOrange.code()),
                         color=(255, 0, 0))
 
     # Serial out preparation
