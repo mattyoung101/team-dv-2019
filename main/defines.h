@@ -171,6 +171,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
+#define TSOP_CORRECTION 10 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18

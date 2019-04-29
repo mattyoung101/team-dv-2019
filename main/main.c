@@ -50,6 +50,7 @@ void master_task(void *pvParameter){
     state_machine_t stateMachine = {0};
     stateMachine.currentState = &stateAttackPursue;
     robotStateSem = xSemaphoreCreateMutex();
+    xSemaphoreGive(robotStateSem);
 
     esp_task_wdt_add(NULL);
 
@@ -67,7 +68,7 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = (receivedData.tsopAngle - 10) % 360;
+                robotState.inBallAngle = (receivedData.tsopAngle - TSOP_CORRECTION) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
                 robotState.inGoalVisible = GOAL.exists;
                 robotState.inGoalAngle = GOAL.angle + CAM_ANGLE_OFFSET;
@@ -92,7 +93,8 @@ void master_task(void *pvParameter){
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
         // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
-        // printf("Yellow - Angle: %d, Length: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalVisible);
+        // printf("Yellow - Angle: %d, Length: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, 
+        // robotState.inGoalVisible);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -125,11 +127,11 @@ void slave_task(void *pvParameter){
 
         mpuw_update();
 
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 69);
+        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 69);
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(50));
+        // vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 

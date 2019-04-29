@@ -23,6 +23,7 @@
         "WMSG",
         "WTYPE",
         "atten",
+        "comms",
         "gpio",
         "interp",
         "lsarray",
@@ -32,6 +33,7 @@
         "numpy",
         "pygame",
         "sinfd",
+        "tsop",
         "wifi"
     ],
     "C_Cpp.errorSquiggles": "Enabled",
