@@ -4,6 +4,14 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "esp_log.h"
+#include <math.h>
+#include "defines.h"
+
+typedef struct {
+    float pitch, roll, yaw;
+} euler_angles_t;
+
+extern euler_angles_t eulerAngles;
 
 /** Initialises the MPU and DMP **/
 void mpuw_init();

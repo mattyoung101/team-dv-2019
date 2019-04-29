@@ -8,7 +8,8 @@
         "states.h": "c",
         "simple_imu.h": "c",
         "math.h": "c",
-        "pid.h": "c"
+        "pid.h": "c",
+        "esp_utils.h": "c"
     },
     "cSpell.words": [
         "GYRO",
@@ -33,5 +34,6 @@
         "sinfd",
         "wifi"
     ],
-    "C_Cpp.errorSquiggles": "Enabled"
+    "C_Cpp.errorSquiggles": "Enabled",
+    "cSpell.language": "en-GB"
 }

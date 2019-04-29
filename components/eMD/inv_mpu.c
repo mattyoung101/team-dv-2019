@@ -48,7 +48,7 @@
 #define delay_ms    esp_delay_ms
 #define get_ms      esp_get_clock_ms
 #define log_i(msg, ...)  ESP_LOGI("MPU9250", msg, ## __VA_ARGS__);
-#define log_e(msg)  ESP_LOGE("MPU9250", msg
+#define log_e(msg)  ESP_LOGE("MPU9250", msg)
 #define min(a,b) fminf(a, b)
 
 #if !defined MPU6050 && !defined MPU9150 && !defined MPU6500 && !defined MPU9250
@@ -2879,7 +2879,7 @@ static int setup_compass(void)
 
     if (akm_addr > 0x0F) {
         /* TODO: Handle this case in all compass-related functions. */
-        log_e("Compass not found.\n"));
+        log_e("Compass not found.\n");
         return -1;
     }
 

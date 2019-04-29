@@ -120,6 +120,8 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
+        mpuw_update();
+
         comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 69);
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
