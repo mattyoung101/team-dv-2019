@@ -92,8 +92,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 65
-#define CAM_OFFSET_Y 53
+#define CAM_OFFSET_X 75
+#define CAM_OFFSET_Y 55
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -108,7 +108,7 @@
 #define IDLE_DISTANCE 90
 #define IDLE_OFFSET 30
 #define COORD_THRESHOLD 0
-#define GOAL_TRACK_DIST 40
+#define GOAL_TRACK_DIST 10000
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -171,7 +171,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION 10 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION 25 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -202,18 +202,19 @@
 #define ACC_FULL_SCALE_16_G 0x18
 
 // Orbit
-#define BALL_FAR_STRENGTH 130
-#define BALL_CLOSE_STRENGTH 160
-#define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 50
-#define IDLE_TIME 5000
+#define BALL_FAR_STRENGTH 120
+#define BALL_CLOSE_STRENGTH 150
+#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_FAST 60
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
-#define ORBIT_DIST 80 // switch from orbit to pursue if value is less than this
-#define IN_FRONT_MIN_ANGLE 40
-#define IN_FRONT_MAX_ANGLE 320
+#define ORBIT_DIST 75 // switch from orbit to pursue if value is less than this
+#define IN_FRONT_MIN_ANGLE 25
+#define IN_FRONT_MAX_ANGLE 335
 #define IDLE_TIME 5000 // ms
+#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball
+#define ACCEL_PROG 0.05
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
