@@ -201,6 +201,8 @@
 #define ACC_FULL_SCALE_8_G 0x10
 #define ACC_FULL_SCALE_16_G 0x18
 
+#define DMP_RATE 200 // DMP update rate in Hz, max is 200
+
 // Orbit
 #define BALL_FAR_STRENGTH 120
 #define BALL_CLOSE_STRENGTH 150

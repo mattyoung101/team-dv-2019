@@ -23,6 +23,8 @@
 #include <string.h>
 #include <math.h>
 #include "inv_mpu.h"
+#include "esp_utils.h"
+#include <string.h>
 
 ///// Config the library for our sensor /////
 
@@ -42,14 +44,25 @@
  * fabsf(float x)
  * min(int a, int b)
  */
-#include "esp_utils.h"
 #define i2c_write   esp_i2c_write
 #define i2c_read    esp_i2c_read
 #define delay_ms    esp_delay_ms
 #define get_ms      esp_get_clock_ms
-#define log_i(msg, ...)  ESP_LOGI("MPU9250", msg, ## __VA_ARGS__);
+#define log_i(msg, ...) printf("[MPU9250] " msg, ## __VA_ARGS__);
 #define log_e(msg)  ESP_LOGE("MPU9250", msg)
 #define min(a,b) fminf(a, b)
+
+// This is a stupid fucking hack to fix the absolutely atrociously abysmal C/C++ extension for VSCode
+// It will compile fine without this but the fucking extension will spam errors everywhere which is annoying af
+// To the developers who wrote it: FIX YOUR SHIT! THESE ARE DEFINED IN THE HEADER!
+#ifndef INV_X_GYRO
+    #define INV_X_GYRO      (0x40)
+    #define INV_Y_GYRO      (0x20)
+    #define INV_Z_GYRO      (0x10)
+    #define INV_XYZ_GYRO    (INV_X_GYRO | INV_Y_GYRO | INV_Z_GYRO)
+    #define INV_XYZ_ACCEL   (0x08)
+    #define INV_XYZ_COMPASS (0x01)
+#endif
 
 #if !defined MPU6050 && !defined MPU9150 && !defined MPU6500 && !defined MPU9250
 #error  Which gyro are you using? Define MPUxxxx in your compiler options.
@@ -2553,10 +2566,12 @@ int mpu_run_6500_self_test(long *gyro, long *accel, unsigned char debug)
     accel_result = accel_6500_self_test(accel, accel_st, debug);
     if(debug)
     	log_i("Accel Self Test Results: %d\n", accel_result);
+    printf("\n");
 
     gyro_result = gyro_6500_self_test(gyro, gyro_st, debug);
     if(debug)
     	log_i("Gyro Self Test Results: %d\n", gyro_result);
+    printf("\n");
 
     result = 0;
     if (!gyro_result)
@@ -2875,7 +2890,7 @@ static int setup_compass(void)
             break;
     }
 
-    ESP_LOGI("MPU9250", "AKM addr: %d", akm_addr);
+    ESP_LOGI("MPU9250", "Compass address: 0x%X", akm_addr);
 
     if (akm_addr > 0x0F) {
         /* TODO: Handle this case in all compass-related functions. */
@@ -3221,4 +3236,3 @@ lp_int_restore:
 /**
  *  @}
  */
-

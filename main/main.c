@@ -120,6 +120,17 @@ void slave_task(void *pvParameter){
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
+
+    // Find yaw error rate
+    // float yawSum = 0.0f;
+    // for (int i = 0; i < 512; i++){
+    //     mpuw_update();
+    //     yawSum += mpuYaw;
+    //     ets_delay_us(5300); // actual value = 5263, 190 Hz to microseconds
+    // }
+    // yawSum /= 512.0f;
+    // ESP_LOGI(TAG, "MPU error: %f", yawSum);
+    // mpuErrorCorrection = yawSum;
     
     while (true) {
         for (int i = 0; i < 255; i++){
