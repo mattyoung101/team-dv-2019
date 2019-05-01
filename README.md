@@ -9,7 +9,7 @@ Contact Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or 
 
 ## Directory structure
 - components/
-    - eMD: contains the Embedded MotionDriver from Invensense, modified by us to run on the ESP32. With the exception of simple_imu.c and simple_imu.h, all code in this directory is covered under Invensense's license (see License.txt).
+    - eMD: contains the Embedded MotionDriver from InvenSense, with improvements by our team allowing it run on the ESP32 and use 9-axis sensor fusion. Essentially, it processes our IMU (MPU9250) data.
 - docs: contains various bits of documentation
 - main: contains the main code that runs on the ESPs
 - openmv: contains the code that runs on our camera, the OpenMV H7

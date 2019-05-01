@@ -19,3 +19,5 @@ extern float mpuErrorCorrection;
 void mpuw_init();
 /** Updates the DMP FIFO and calculates Euler angles **/
 void mpuw_update();
+/** Calibrates the magnetometer **/
+void mpuw_mag_calibrate();
