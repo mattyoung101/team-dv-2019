@@ -23,6 +23,7 @@
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
 #include "mpu_wrapper.h"
+// #include "simple_imu.h"
 #include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -113,8 +114,8 @@ void slave_task(void *pvParameter){
     comms_i2c_init_master(I2C_NUM_0);
     tsop_init();
     ls_init();
-    simu_init();
-    simu_calibrate();
+    // simu_init();
+    // simu_calibrate();
     i2c_scanner();
     // mpuw_init();
 
@@ -138,13 +139,13 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        // lsarray_read();
+        lsarray_read();
         // lsarray_debug();
 
-        simu_calc();
+        // simu_calc();
         // mpuw_update();
 
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, /*(uint16_t) (heading * IMU_MULTIPLIER)*/ 69);
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();

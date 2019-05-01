@@ -15,6 +15,13 @@ typedef struct {
     int32_t thresholdValue;
     gpio_num_t pin;
 } light_sensor;
+
+extern float lineAngle = LS_NO_LINE_ANGLE;
+extern float lineSize = 0;
+extern float lastAngle = LS_NO_LINE_ANGLE;
+extern bool isOnLine;
+extern bool lineOver;
+
 /** Light sensor func. Receives light sensor and int on which mux its on (0 or 1) **/
 typedef void (*ls_func_t)(light_sensor*, uint8_t);
 

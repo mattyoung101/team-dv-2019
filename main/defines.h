@@ -145,7 +145,8 @@
 
 // Light sensor
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 300
+#define LS_MUX0_BUFFER 100
+#define LS_MUX1_BUFFER 10
 #define LS_NUM 48
 #define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
 #define LS_NO_LINE_ANGLE 0xBAD

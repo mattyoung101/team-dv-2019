@@ -1,6 +1,8 @@
 #include "light.h"
+#include "HandmadeMath.h"
+#include "simple_imu.h"
 
-static bool readings[LS_NUM] = {0};
+static hmm_vec2 readings[LS_NUM] = {0};
 static uint32_t rawValues[LS_NUM] = {0};
 static light_sensor *sensors[LS_NUM] = {0};
 static mplexer_5bit_t lsMux0 = {
@@ -26,18 +28,20 @@ uint16_t ls_read(uint8_t mux){
 
 static void ls_func_calibrate(light_sensor* ls, uint8_t mux){
     float defaultValue = (float) ls_read(mux);
+    uint16_t buffer = mux == 0 ? LS_MUX0_BUFFER : LS_MUX1_BUFFER; // detect which mux we're reading from
+
     for (int i = 0; i < LS_CALIBRATION_COUNT; i++){
         defaultValue += ls_read(mux);
     }
     // ESP_LOGD(TAG, "Default value: %f, Mux: %d, Sensor: %d", defaultValue, mux, ls->pin);
-    ls->thresholdValue = roundf((defaultValue / LS_CALIBRATION_COUNT) + LS_CALIBRATION_BUFFER);
+    ls->thresholdValue = roundf((defaultValue / LS_CALIBRATION_COUNT) + buffer);
 }
 
 // read and put in array
 static void ls_func_read(light_sensor *ls, uint8_t mux){
     // uint64_t begin = esp_timer_get_time();
     uint16_t reading = ls_read(mux);
-    readings[ls->pin] = reading > ls->thresholdValue;
+    readings[ls->pin].X = reading > ls->thresholdValue;
     rawValues[ls->pin] = reading;
     // printf("Read time: %lld\n", esp_timer_get_time() - begin);
 }
@@ -67,13 +71,13 @@ static void print_char_val_type(esp_adc_cal_value_t val_type){
 void ls_init(void){
     // TODO make this 12 bit for higher accuracy - does it make it slower?
     adc1_config_width(ADC_WIDTH_BIT_10);
-    adc1_config_channel_atten(LS_MUX0_OUT, ADC_ATTEN_0db);
+    adc1_config_channel_atten(LS_MUX0_OUT, ADC_ATTEN_11db);
     esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
+    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
     
-    adc1_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_0db);
+    adc1_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_11db);
     // esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
+    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_11db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
 
     mplexer_5bit_init(&lsMux0);
     mplexer_5bit_init(&lsMux1);
@@ -83,6 +87,7 @@ void ls_init(void){
         light_sensor *sensor = calloc(1, sizeof(light_sensor));
         sensor->pin = i;
         sensors[i] = sensor;
+        readings[i].Y = i * (360.0f / (float) LS_NUM); // add angle to each sensor vector
     }
 
     // calibrate ALL light sensors at once with ls_iterate
@@ -98,13 +103,46 @@ void lsarray_read(void){
 void lsarray_debug(void){
     ls_iterate(&ls_func_read);
 
+    // Print raw values
     printf("BEGIN ");
     for (int i = 0; i < LS_NUM; i++){
         printf("%d ", rawValues[i]);
     }
     printf("END\n");
+
+    // // Print on line values
+    // printf("BEGIN ");
+    // for (int i = 0; i < LS_NUM; i++){
+    //     printf("%d ", readings[i].X);
+    // }
+    // printf("END\n");
 }
 
 void lsarray_calc(void){
+    hmm_vec2 sum = {0};
+
+    for (int i = 0; i < LS_NUM; i++){
+        // convert vectors to cartesian
+        float r = readings[i].X;
+        float theta = readings[i].Y;
+        readings[i].X = r * cosfd(theta);
+        readings[i].Y = r * sinfd(theta);
+
+        // vector add all vectors
+        sum = HMM_AddVec2(sum, readings[i]);
+    }
+
+    // convert back to polar and scale between 1 and 0
+    float sumX = ((float) sum.X / (float) LS_NUM);
+    float sumY = sum.Y;
+
+    lineSize = sqrtf(sq(sumX) + sq(sumY));
+    lineAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
+
+    // Processing of values
+    isOnLine = lineSize == 0 ? false : true;
+    lineAngle = fmod(lineAngle + heading, 360);
+    if (lineSize != 0) lineSize = lineOver ? 1 - lineSize : lineSize;
+
     
 }
