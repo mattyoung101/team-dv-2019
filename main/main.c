@@ -115,6 +115,7 @@ void slave_task(void *pvParameter){
     ls_init();
     i2c_scanner();
     mpuw_init();
+    mpuw_mag_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
