@@ -18,9 +18,7 @@ uint16_t ls_read(uint8_t mux){
         if (mux == 0){
             reading += adc1_get_raw(LS_MUX0_OUT);
         } else {
-            int heck = 0;
-            ESP_ERROR_CHECK(adc2_get_raw(LS_MUX1_OUT, ADC_WIDTH_10Bit, &heck));
-            reading += heck;
+            reading += adc1_get_raw(LS_MUX1_OUT);
         }
     }
     return reading / ADC_SAMPLES;
@@ -73,9 +71,9 @@ void ls_init(void){
     esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
     print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
     
-    adc2_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_0db);
-    esp_adc_cal_characteristics_t *adc2_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_2, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc2_chars));
+    adc1_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_0db);
+    // esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
+    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
 
     mplexer_5bit_init(&lsMux0);
     mplexer_5bit_init(&lsMux1);

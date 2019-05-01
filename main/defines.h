@@ -152,12 +152,12 @@
 #define LS_NO_LINE_SIZE 0xBAD
 #define ADC_SAMPLES 4
 
-#define LS_MUX0_OUT ADC1_CHANNEL_3
-#define LS_MUX1_OUT ADC2_CHANNEL_1
+#define LS_MUX0_OUT ADC1_CHANNEL_5
+#define LS_MUX1_OUT ADC1_CHANNEL_6
 #define LS_MUX_S0 2
 #define LS_MUX_S1 4
 #define LS_MUX_S2 5
-#define LS_MUX_S3 12
+#define LS_MUX_S3 23
 #define LS_MUX_S4 13
 #define LS_MUX_EN 15
 #define LS_MUX_WR 14

@@ -113,6 +113,8 @@ void slave_task(void *pvParameter){
     comms_i2c_init_master(I2C_NUM_0);
     tsop_init();
     ls_init();
+    simu_init();
+    simu_calibrate();
     i2c_scanner();
     mpuw_init();
     mpuw_mag_calibrate();
@@ -137,13 +139,17 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        mpuw_update();
+        // lsarray_read();
+        // lsarray_debug();
 
-        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 69);
+        simu_calc();
+        // mpuw_update();
+
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(250));
     }
 }
 
