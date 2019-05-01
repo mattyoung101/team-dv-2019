@@ -16,9 +16,10 @@ typedef struct {
     gpio_num_t pin;
 } light_sensor;
 
-extern float lineAngle = LS_NO_LINE_ANGLE;
-extern float lineSize = 0;
-extern float lastAngle = LS_NO_LINE_ANGLE;
+// Variables for line avoidance
+extern float lineAngle;
+extern float lineSize;
+extern float lastAngle;
 extern bool isOnLine;
 extern bool lineOver;
 
