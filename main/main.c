@@ -23,6 +23,7 @@
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
 #include "mpu_wrapper.h"
+// #include "simple_imu.h"
 #include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -110,8 +111,8 @@ void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
     // Initialise hardware
-    comms_i2c_init_master(I2C_NUM_0);
-    tsop_init();
+    // comms_i2c_init_master(I2C_NUM_0);
+    // tsop_init();
     ls_init();
     i2c_scanner();
     mpuw_init();
@@ -127,7 +128,7 @@ void slave_task(void *pvParameter){
         // tsop_calc();
 
         // lsarray_read();
-        // lsarray_debug();
+        lsarray_debug();
 
         mpuw_update();
 

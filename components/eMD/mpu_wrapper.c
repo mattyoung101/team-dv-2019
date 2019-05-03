@@ -24,8 +24,6 @@ static void mpuw_dmp_init(){
     err += dmp_set_fifo_rate(DMP_RATE);
     err += mpu_set_dmp_state(true);
 
-    inv_build_accel(0, 0, NULL);
-
     if (err == 0){
         ESP_LOGI(TAG, "DMP init OK!");
     } else {

@@ -10,17 +10,25 @@
 
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
 typedef struct {
-    // inputs
+    // Goal Inputs
     bool inGoalVisible;
     int16_t inGoalAngle;
-    float inHeading;
     int16_t inGoalLength;
-    int16_t inBallAngle;
-    int16_t inBallStrength;
     int16_t inX;
     int16_t inY;
-    
-    // outputs
+    // IMU Input
+    float inHeading;
+    // Ball Inputs
+    int16_t inBallAngle;
+    int16_t inBallStrength;
+    // Line Inputs
+    float inLineAngle;
+    float inLineSize;
+    bool inOnLine;
+    bool inLineOver;
+    float inlastAngle;
+
+    // Outputs
     int16_t outSpeed;
     int16_t outDirection;
     int16_t outOrientation;
