@@ -113,39 +113,25 @@ void slave_task(void *pvParameter){
     comms_i2c_init_master(I2C_NUM_0);
     tsop_init();
     ls_init();
-    simu_init();
-    simu_calibrate();
     i2c_scanner();
     mpuw_init();
     mpuw_mag_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
-
-    // Find yaw error rate
-    // float yawSum = 0.0f;
-    // for (int i = 0; i < 512; i++){
-    //     mpuw_update();
-    //     yawSum += mpuYaw;
-    //     ets_delay_us(5300); // actual value = 5263, 190 Hz to microseconds
-    // }
-    // yawSum /= 512.0f;
-    // ESP_LOGI(TAG, "MPU error: %f", yawSum);
-    // mpuErrorCorrection = yawSum;
     
     while (true) {
-        for (int i = 0; i < 255; i++){
-            tsop_update(NULL);
-        }
-        tsop_calc();
+        // for (int i = 0; i < 255; i++){
+        //     tsop_update(NULL);
+        // }
+        // tsop_calc();
 
         // lsarray_read();
         // lsarray_debug();
 
-        simu_calc();
-        // mpuw_update();
+        mpuw_update();
 
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
+        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 0);
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();

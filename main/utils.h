@@ -29,7 +29,7 @@ extern pid_config_t coordPID;
 #define TASK_HALT do { ESP_LOGW(pcTaskGetTaskName(NULL), "Task halting!"); vTaskDelay(pdMS_TO_TICKS(portMAX_DELAY)); } while(0);
 /** Automated I2C error checking code **/
 #define I2C_ERR_CHECK(err) do { if (err != ESP_OK){ \
-        ESP_LOGE(TAG, "I2C failure in %s! Error: %s. Attempting bus reset.", __FUNCTION__, esp_err_to_name(err)); \
+        ESP_LOGE(TAG, "I2C failure in %s:%d! Error: %s. Attempting bus reset.", __FUNCTION__, __LINE__, esp_err_to_name(err)); \
         i2c_reset_tx_fifo(I2C_NUM_0); \
         i2c_reset_rx_fifo(I2C_NUM_0); \
         return 1; \

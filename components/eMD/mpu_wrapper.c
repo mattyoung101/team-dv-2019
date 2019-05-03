@@ -6,10 +6,11 @@
 #include "freertos/task.h"
 #include "freertos/timers.h"
 #include "rom/ets_sys.h"
+#include "data_builder.h"
 
 static const char *TAG = "MPU9250_W";
 float mpuYaw = 0.0f;
-float mpuErrorCorrection = 0.0f;
+float mpuMagYaw = 0.0f;
 static float gyroSens = 1.0f;
 static uint16_t accelSens = 1;
 static float magSens = 32760.0f / 4915.0f; // some constant from Sparkfun docs
@@ -17,13 +18,13 @@ static float magSens = 32760.0f / 4915.0f; // some constant from Sparkfun docs
 /** Just initialises the DMP **/
 static void mpuw_dmp_init(){
     int16_t err = dmp_load_motion_driver_firmware();
-    err += dmp_enable_6x_lp_quat(true);
     err += dmp_enable_gyro_cal(true);
-    // Sparkfun says you have to enable tap detection because there's a bug where the FIFO rate is incorrect if it's off
-    err += dmp_enable_feature(DMP_FEATURE_6X_LP_QUAT | DMP_FEATURE_GYRO_CAL | DMP_FEATURE_SEND_CAL_GYRO |
-                                DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_TAP);
+    // there's a known bug where if tap detection is not enabled, the DMP FIFO rate is stuck at 200 Hz
+    err += dmp_enable_feature(DMP_FEATURE_GYRO_CAL | DMP_FEATURE_SEND_CAL_GYRO | DMP_FEATURE_SEND_RAW_ACCEL | DMP_FEATURE_TAP);
     err += dmp_set_fifo_rate(DMP_RATE);
     err += mpu_set_dmp_state(true);
+
+    inv_build_accel(0, 0, NULL);
 
     if (err == 0){
         ESP_LOGI(TAG, "DMP init OK!");
@@ -37,7 +38,8 @@ void mpuw_init(){
     int16_t err = mpu_init(&int_param);
     err += mpu_set_bypass(true);
     err += mpu_set_sensors(INV_XYZ_GYRO | INV_XYZ_ACCEL | INV_XYZ_COMPASS);
-    err += mpu_set_compass_sample_rate(100); // default is 10 Hz, let's run the compass faster than that
+    err += mpu_set_sample_rate(DMP_RATE);
+    err += mpu_set_compass_sample_rate(100); // max out compass speed
     
     if (err == 0){
         ESP_LOGI(TAG, "MPU9250 init OK!");
@@ -51,6 +53,7 @@ void mpuw_init(){
     // get unit conversion values (hardware units to actual units)
     mpu_get_gyro_sens(&gyroSens);
     mpu_get_accel_sens(&accelSens);
+    ESP_LOGI(TAG, "Gyro sens: %f .... Accel sens: %d", gyroSens, accelSens);
 
     // run self test to determine bias values (i.e. calibration)
     ESP_LOGI(TAG, "Running self test...");
@@ -61,39 +64,58 @@ void mpuw_init(){
     // tell the DMP about our calibration values (the gyro should be automatically calibrated however)
     dmp_set_gyro_bias(gyroBias);
     dmp_set_accel_bias(accelBias);
+    // the InvenSense test example divides these by 65536 so we shall too (see STM32 example line 336)
+    ESP_LOGI(TAG, "Gyro bias: %f %f %f .... Accel bias: %f %f %f", gyroBias[0] / 65536.0f, gyroBias[1] / 65536.0f, 
+    gyroBias[2] / 65536.0f, accelBias[0] / 65536.0f, accelBias[1] / 65536.0f, accelBias[2] / 65536.0f);
+
+    // TODO use hardware cal registers see main.c stm32 example line 352
 }
 
-// static float q_to_float(long number, unsigned char q){
-// 	unsigned long mask = 0;
-// 	for (int i = 0; i < q; i++){
-// 		mask |= (1 << i);
-// 	}
-// 	return (number >> q) + ((number & mask) / (float) (2 << (q - 1)));
-// }
+static int dmpErrors = 0;
+
+static void mpuw_calc_mag_heading(float *magReal){
+    float my = magReal[1];
+    float mx = magReal[0];
+
+    if (my == 0)
+		mpuMagYaw = (mx < 0) ? PI : 0;
+	else
+		mpuMagYaw = atan2f(mx, my);
+	
+	if (mpuMagYaw > PI) mpuMagYaw -= (2.0f * PI);
+	else if (mpuMagYaw < -PI) mpuMagYaw += (2.0f * PI);
+	else if (mpuMagYaw < 0) mpuMagYaw += 2.0f * PI;
+	
+	mpuMagYaw *= 180.0f / PI;
+
+    ESP_LOGD(TAG, "Mag yaw: %f", mpuMagYaw);
+}
 
 void mpuw_update(){
-    int16_t gyro[3];
-    int16_t accel[3];
-    long quat[4];
+    int16_t gyro[3] = {0};
+    int16_t accel[3] = {0};
+    long quat[4] = {0};
     unsigned long timestamp;
     int16_t sensors;
     uint8_t more;
 
-    float gyroReal[3];
-    float accelReal[3];
-    float magReal[3];
-
-    PERF_TIMER_START;
+    float gyroReal[3] = {0};
+    float accelReal[3] = {0};
+    float magReal[3] = {0};
 
     // read the FIFO buffer
     if (dmp_read_fifo(gyro, accel, quat, &timestamp, &sensors, &more) != 0){
-        // ESP_LOGW(TAG, "DMP FIFO read failed.");
+        if (dmpErrors++ > 24){
+            ESP_LOGE(TAG, "Too many DMP errors!");
+            abort();
+        }
         return;
     }
+    dmpErrors = 0;
 
     // make sure we got the values we need
-    if (!(sensors & INV_XYZ_GYRO) || !(sensors & INV_WXYZ_QUAT) || !(sensors & INV_XYZ_ACCEL)) {
-        ESP_LOGW(TAG, "Did not receive correct sensor data!");
+    if (!(sensors & INV_XYZ_GYRO) || !(sensors & INV_XYZ_ACCEL)) {
+        ESP_LOGW(TAG, "Did not receive correct sensor data! Got: %d", sensors);
         return;
     }
 
@@ -112,14 +134,14 @@ void mpuw_update(){
     for (int i = 0; i < 3; i++){
         magReal[i] = ((float) mag[i] / (float) magSens);
     }
-    ESP_LOGD(TAG, "Gyro: %f, %f, %f .... Accel: %f, %f, %f .... Mag: %f, %f, %f", 
+    ESP_LOGD(TAG, "Gyro: %f %f %f .... Accel: %f %f %f .... Mag: %f %f %f", 
     gyroReal[0], gyroReal[1], gyroReal[2], accelReal[0], accelReal[1], accelReal[2], magReal[0], magReal[1], magReal[2]);
 
     // run Madgwick's 9-axis sensor fusion algorithm
     MadgwickAHRSupdate(gyroReal[0] * DEG_RAD, gyroReal[1] * DEG_RAD, gyroReal[2] * DEG_RAD, accelReal[0], accelReal[1], 
     accelReal[2], magReal[0], magReal[1], magReal[2]);
 
-    ESP_LOGD(TAG, "Quaternion: %f, %f, %f, %f", q0, q1, q2, q3);
+    ESP_LOGD(TAG, "Quaternion: %f %f %f %f", q0, q1, q2, q3);
 
     // convert the quaternion to Euler angles - we only care about yaw
     // w = q0, x = q1, y = q2, z = q3 
@@ -127,11 +149,11 @@ void mpuw_update(){
 	float cosy_cosp = +1.0f - 2.0f * (q2 * q2 + q3 * q3);  
 	mpuYaw = atan2f(siny_cosp, cosy_cosp);
     // the 11.0f is the magnetic declination in Brisbane, it's 12.6 in Sydney for the comp
-    mpuYaw = fmodf(mpuYaw * RAD_DEG + 360.0f - 11.0f, 360.0f); 
+    mpuYaw = fmodf(mpuYaw * RAD_DEG + 360.0f, 360.0f); 
 
-    ESP_LOGD(TAG, "Final yaw: %f", mpuYaw);
+    mpuw_calc_mag_heading(magReal);
 
-    PERF_TIMER_STOP;
+    ESP_LOGD(TAG, "Final yaw: %f\n", mpuYaw);
 }
 
 void mpuw_mag_calibrate(){
@@ -139,6 +161,7 @@ void mpuw_mag_calibrate(){
 
     ESP_LOGI(TAG, "Wave device around in a figure 8 until done");
     vTaskDelay(pdMS_TO_TICKS(4000));
+    ESP_LOGI(TAG, "Beginning mag calibration");
 
     uint16_t sample_count = 1500; // 100 Hz sample rate
     int32_t mag_bias[3] = {0, 0, 0}, mag_scale[3] = {0, 0, 0};
@@ -152,20 +175,33 @@ void mpuw_mag_calibrate(){
         long unsigned int cur_time = esp_timer_get_time() / 1000;
         // as far as I can see from his code we don't need to convert these into real units yet
         // note that mpu_get_compass_reg applies the hardware factory calibration automatically
-        mpu_get_compass_reg(mag, &cur_time);
+        if (mpu_get_compass_reg(mag, &cur_time) != 0) {
+            ESP_LOGW(TAG, "MPU compass read failed during mag calibration");
+        }
+        printf("reading: %d %d %d\n", mag[0], mag[1], mag[2]);
 
         for (int j = 0; j < 3; j++) {
-            if(mag_temp[j] > mag_max[j]) mag_max[j] = mag_temp[j];
-            if(mag_temp[j] < mag_min[j]) mag_min[j] = mag_temp[j];
-        }
+            if(mag_temp[j] > mag_max[j]) {
+                mag_max[j] = mag_temp[j];
+                ESP_LOGI(TAG, "new value gt: j = %d, mag_temp = %d, mag_max = %d", j, mag_temp[j], mag_max[j]);
+            }
 
-        ets_delay_us(12000); // 100 Hz, delay 12 seconds (accuracy is important here)
+            if(mag_temp[j] < mag_min[j]){
+                mag_min[j] = mag_temp[j];
+                ESP_LOGI(TAG, "new value lt: j = %d, mag_temp = %d, mag_max = %d", j, mag_temp[j], mag_max[j]);
+            } 
+        }
+        ets_delay_us(12000); // 100 Hz, delay 12 milliseconds
     }
 
+    ESP_LOGI(TAG, "Magnetometer reading completed.");
+    ESP_LOGI(TAG, "Mag max: %d %d %d .... Mag min: %d %d %d .... Mag temp: %d %d %d",
+    mag_max[0], mag_max[1], mag_max[2], mag_min[0], mag_min[1], mag_min[3], mag_temp[0], mag_temp[1], mag_temp[2]);
+
     // Get hard iron correction
-    mag_bias[0]  = (mag_max[0] + mag_min[0])/2;
-    mag_bias[1]  = (mag_max[1] + mag_min[1])/2;
-    mag_bias[2]  = (mag_max[2] + mag_min[2])/2;
+    mag_bias[0]  = (mag_max[0] + mag_min[0])/2.0f;
+    mag_bias[1]  = (mag_max[1] + mag_min[1])/2.0f;
+    mag_bias[2]  = (mag_max[2] + mag_min[2])/2.0f;
 
     // Convert to proper units
     calibration[0] = (float) mag_bias[0] / magSens; // get average x mag bias in counts
@@ -184,7 +220,7 @@ void mpuw_mag_calibrate(){
     scale[1] = avg_rad / ((float) mag_scale[1]);
     scale[2] = avg_rad / ((float) mag_scale[2]);
 
-    ESP_LOGI(TAG, "Magnetometer calibration completed");
+    ESP_LOGI(TAG, "Magnetometer calibration completed:");
     ESP_LOGI(TAG, "Calibration values (hard iron): %f, %f, %f", calibration[0], calibration[1], calibration[2]);
     ESP_LOGI(TAG, "Scale values (soft iron): %f, %f, %f", scale[0], scale[1], scale[2]);
 }
