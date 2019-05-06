@@ -35,6 +35,7 @@ void state_attack_idle_enter(state_machine_t *fsm){
 }
 
 void state_attack_idle_update(state_machine_t *fsm){
+    static const char *TAG = "AttackIdleState";
     printf("Do not use the idle state! It's not implemented yet.\n");
 }
 
