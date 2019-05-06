@@ -67,7 +67,20 @@ void state_attack_shoot_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackShoot;
 
 /////////// DEFENCE FSM /////////
+// Reverse state: reverse to the back wall when goal is not visible
 void state_defence_reverse_update(state_machine_t *fsm);
 extern fsm_state_t stateDefenceReverse;
+
+// Idle state: centres on own goal
+void state_defence_idle_update(state_machine_t *fsm);
+extern fsm_state_t stateDefenceIdle;
+
+// Defend state: positions between ball and centre of goal
+void state_defence_defend_update(state_machine_t *fsm);
+extern fsm_state_t stateDefenceDefend;
+
+// Surge state: push ball away from goal
+void state_defence_surge_update(state_machine_t *fsm);
+extern fsm_state_t stateDefenceSurge;
 
 /////////// GENERAL FSM /////////

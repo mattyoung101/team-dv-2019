@@ -75,6 +75,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
     if (rs.inBallStrength <= 0.0f){
         ESP_LOGD(TAG, "Ball not visible, braking, strength: %d", robotState.inBallStrength);
+        imu_correction(&robotState);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength < ORBIT_DIST){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
