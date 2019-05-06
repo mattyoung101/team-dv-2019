@@ -1414,16 +1414,19 @@ int mpu_set_compass_sample_rate(unsigned short rate)
 {
 #ifdef AK89xx_SECONDARY
     unsigned char div;
-    if (!rate || rate > st.chip_cfg.sample_rate || rate > MAX_COMPASS_SAMPLE_RATE)
+    if (!rate || rate > st.chip_cfg.sample_rate || rate > MAX_COMPASS_SAMPLE_RATE){
+        printf("You goofed, rate: %d, sample rate: %d, max compass rate: %d\n", rate, st.chip_cfg.sample_rate,
+        MAX_COMPASS_SAMPLE_RATE);
         return -1;
+    }
 
     div = st.chip_cfg.sample_rate / rate - 1;
     if (i2c_write(st.hw->addr, st.reg->s4_ctrl, 1, &div))
-        return -1;
+        return -2;
     st.chip_cfg.compass_sample_rate = st.chip_cfg.sample_rate / (div + 1);
     return 0;
 #else
-    return -1;
+    return -3;
 #endif
 }
 
@@ -1761,27 +1764,27 @@ int mpu_read_fifo_stream(unsigned short length, unsigned char *data,
     if (!st.chip_cfg.dmp_on)
         return -1;
     if (!st.chip_cfg.sensors)
-        return -1;
+        return -2;
 
     if (i2c_read(st.hw->addr, st.reg->fifo_count_h, 2, tmp))
-        return -1;
+        return -3;
     fifo_count = (tmp[0] << 8) | tmp[1];
     if (fifo_count < length) {
         more[0] = 0;
-        return -1;
+        return -4;
     }
     if (fifo_count > (st.hw->max_fifo >> 1)) {
         /* FIFO is 50% full, better check overflow bit. */
         if (i2c_read(st.hw->addr, st.reg->int_status, 1, tmp))
-            return -1;
+            return -5;
         if (tmp[0] & BIT_FIFO_OVERFLOW) {
             mpu_reset_fifo();
-            return -2;
+            return -6;
         }
     }
 
     if (i2c_read(st.hw->addr, st.reg->fifo_r_w, length, data))
-        return -1;
+        return -7;
     more[0] = fifo_count / length - 1;
     return 0;
 }

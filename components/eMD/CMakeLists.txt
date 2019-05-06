@@ -6,7 +6,7 @@ set(COMPONENT_SRCS  "esp_utils.c"
                     "simple_imu.c"
                     "mpu_wrapper.c"
                     "MadgwickAHRS.c")
-set(COMPONENT_PRIV_REQUIRES "main")
+set(COMPONENT_PRIV_REQUIRES "main" "mpl")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")
 
 register_component()

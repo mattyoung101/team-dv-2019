@@ -1241,8 +1241,10 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,
     sensors[0] = 0;
 
     /* Get a packet. */
-    if (mpu_read_fifo_stream(dmp.packet_length, fifo_data, more))
+    int err = mpu_read_fifo_stream(dmp.packet_length, fifo_data, more);
+    if (err != 0){
         return -1;
+    }
 
     /* Parse DMP packet. */
     if (dmp.feature_mask & (DMP_FEATURE_LP_QUAT | DMP_FEATURE_6X_LP_QUAT)) {
@@ -1278,7 +1280,7 @@ int dmp_read_fifo(short *gyro, short *accel, long *quat,
             /* Quaternion is outside of the acceptable threshold. */
             mpu_reset_fifo();
             sensors[0] = 0;
-            return -1;
+            return -2;
         }
         sensors[0] |= INV_WXYZ_QUAT;
 #endif
