@@ -103,10 +103,10 @@
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_YELLOW
-#define HALFWAY_DISTANCE 90
-#define IDLE_DISTANCE 90
-#define IDLE_OFFSET 30
+#define ENEMY_GOAL GOAL_BLUE
+#define HALFWAY_DISTANCE 45
+#define IDLE_DISTANCE 45
+#define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000
 
@@ -123,7 +123,7 @@
 #define MOTOR_FR_IN1 4
 #define MOTOR_FR_IN2 5
 #define MOTOR_FR_ANGLE 60
-#define MOTOR_FR_REVERSED false
+#define MOTOR_FR_REVERSED true
 #define ENC_FR_IN1 3
 #define ENC_FR_IN2 2
 
@@ -184,8 +184,8 @@
 #define TSOP_MUX_WR 26
 
 // IMU
-#define IMU_CALIBRATION_COUNT 15
-#define IMU_CALIBRATION_TIME 200
+#define IMU_CALIBRATION_COUNT 50
+#define IMU_CALIBRATION_TIME 500
 #define IMU_THRESHOLD 1000
 #define IMU_MULTIPLIER 100.0f
 
@@ -206,15 +206,15 @@
 
 // Orbit
 #define BALL_FAR_STRENGTH 120
-#define BALL_CLOSE_STRENGTH 150
-#define ORBIT_SPEED_SLOW 50
-#define ORBIT_SPEED_FAST 60
+#define BALL_CLOSE_STRENGTH 140
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 50
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
-#define ORBIT_DIST 75 // switch from orbit to pursue if value is less than this
-#define IN_FRONT_MIN_ANGLE 25
-#define IN_FRONT_MAX_ANGLE 335
+#define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
+#define IN_FRONT_MIN_ANGLE 20
+#define IN_FRONT_MAX_ANGLE 340
 #define IDLE_TIME 5000 // ms
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball
 #define ACCEL_PROG 0.05

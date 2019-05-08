@@ -78,6 +78,12 @@ void cam_calc(void){
     goalYellow.angle = mod(450 - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360);
     goalYellow.length = sqrtf(sq(goalYellow.x) + sq(goalYellow.y));
 
+    // Convert length to mm
+    goalYellow.distance = 0.2433 * powf(goalYellow.length, 2.0f) - 14.705 * goalYellow.length + 223.16;
+    goalBlue.distance = 0.2433 * powf(goalBlue.length, 2.0f) - 14.705 * goalBlue.length + 223.16;
+
+    // y = 0.2433x2 - 14.705x + 223.16
+
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
         robotY = CAM_NO_VALUE;

@@ -36,6 +36,8 @@ void state_attack_idle_enter(state_machine_t *fsm){
 
 void state_attack_idle_update(state_machine_t *fsm){
     static const char *TAG = "AttackIdleState";
+
+    rs.outIsAttack = true;
     printf("Do not use the idle state! It's not implemented yet.\n");
 }
 
@@ -43,6 +45,7 @@ void state_attack_idle_update(state_machine_t *fsm){
 void state_attack_pursue_update(state_machine_t *fsm){
     static const char *TAG = "PursueState";
     accelProgess = 0; // reset acceleration progress
+    rs.outIsAttack = true;
     imu_correction(&robotState);
 
     // Check criteria:
@@ -66,6 +69,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
 void state_attack_orbit_update(state_machine_t *fsm){
     static const char *TAG = "OrbitState";
     accelProgess = 0; // reset acceleration progress
+    rs.outIsAttack = true;
 
     // if(robotState.inBallAngle < 80 || robotState.inBallAngle > 280) goal_correction(&robotState);
     // else imu_correction(&robotState);
@@ -95,10 +99,10 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
     float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 
-                                0.2 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0))));
+                                0.1 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0))));
     float strengthFactor = constrain(((float)robotState.inBallStrength - (float)BALL_FAR_STRENGTH) / 
                             ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
-    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2.5 * strengthFactor), 0, 1);
+    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 3 * strengthFactor), 0, 1);
     float angleAddition = ballAngleDifference * distanceMultiplier;
 
     robotState.outDirection = floatMod(robotState.inBallAngle + angleAddition, 360);
@@ -110,7 +114,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
 void state_attack_dribble_update(state_machine_t *fsm){
     static const char *TAG = "DribbleState";
     goal_correction(&robotState);
-
+    rs.outIsAttack = true;
     // Check criteria:
     // Ball too far away, Ball not in front of us, Goal not visible, Ball not visible
     if (robotState.inBallStrength <= 0.0f){

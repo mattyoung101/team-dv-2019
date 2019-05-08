@@ -27,9 +27,11 @@
 #include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
-    #define GOAL goalYellow
+    #define AWAY_GOAL goalYellow
+    #define HOME_GOAL goalBlue
 #elif ENEMY_GOAL == GOAL_BLUE
-    #define GOAL goalBlue
+    #define AWAY_GOAL goalBlue
+    #define HOME_GOAL goalYellow
 #endif
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
@@ -49,7 +51,7 @@ void master_task(void *pvParameter){
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateAttackPursue;
+    stateMachine.currentState = &stateDefenceIdle;
     robotStateSem = xSemaphoreCreateMutex();
     xSemaphoreGive(robotStateSem);
 
@@ -71,9 +73,12 @@ void master_task(void *pvParameter){
                 // update
                 robotState.inBallAngle = (receivedData.tsopAngle - TSOP_CORRECTION) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
-                robotState.inGoalVisible = GOAL.exists;
-                robotState.inGoalAngle = GOAL.angle + CAM_ANGLE_OFFSET;
-                robotState.inGoalLength = GOAL.length;
+
+                robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
+                robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
+                robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
+
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
                 robotState.inX = robotX;
@@ -94,15 +99,17 @@ void master_task(void *pvParameter){
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
         // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
-        // printf("Yellow - Angle: %d, Length: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, 
-        // robotState.inGoalVisible);
+        printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalDistance, 
+        robotState.inGoalVisible);
+        // printf("Attacking? %d", robotState.outIsAttack);
+        // printf("Xpos: %d, Ypos: %d\n", robotState.inX, robotState.inY);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(15));
+        vTaskDelay(pdMS_TO_TICKS(150));
     }
 }
 

@@ -21,7 +21,8 @@ typedef struct {
     int16_t x;
     int16_t y;
     int16_t angle;
-    int16_t length;
+    float length;
+    int16_t distance;
 } cam_goal;
 
 extern SemaphoreHandle_t goalDataSem;

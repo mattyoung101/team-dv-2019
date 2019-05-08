@@ -14,6 +14,7 @@ typedef struct {
     bool inGoalVisible;
     int16_t inGoalAngle;
     int16_t inGoalLength;
+    int16_t inGoalDistance;
     int16_t inX;
     int16_t inY;
     // IMU Input
@@ -33,6 +34,7 @@ typedef struct {
     int16_t outDirection;
     int16_t outOrientation;
     bool outShouldBrake;
+    bool outIsAttack;
 } robot_state_t;
 
 extern SemaphoreHandle_t robotStateSem;
