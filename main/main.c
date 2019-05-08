@@ -111,12 +111,11 @@ void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
     // Initialise hardware
-    // comms_i2c_init_master(I2C_NUM_0);
+    comms_i2c_init_master(I2C_NUM_0);
     // tsop_init();
     ls_init();
     i2c_scanner();
     mpuw_init();
-    mpuw_mag_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -128,7 +127,7 @@ void slave_task(void *pvParameter){
         // tsop_calc();
 
         // lsarray_read();
-        lsarray_debug();
+        // lsarray_debug();
 
         mpuw_update();
 
