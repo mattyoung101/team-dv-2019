@@ -22,8 +22,7 @@
 #include "comms_i2c.h"
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
-#include "mpu_wrapper.h"
-// #include "simple_imu.h"
+#include "simple_imu.h"
 #include "pid.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -112,30 +111,31 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
-    // tsop_init();
-    ls_init();
+    tsop_init();
+    // ls_init();
     i2c_scanner();
-    mpuw_init();
+    simu_init();
+    simu_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
     
     while (true) {
-        // for (int i = 0; i < 255; i++){
-        //     tsop_update(NULL);
-        // }
-        // tsop_calc();
+        for (int i = 0; i < 255; i++){
+            tsop_update(NULL);
+        }
+        tsop_calc();
 
         // lsarray_read();
         // lsarray_debug();
 
-        mpuw_update();
+        simu_calc();
 
-        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, 0);
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
         // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(250));
+        vTaskDelay(pdMS_TO_TICKS(0));
     }
 }
 

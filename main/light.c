@@ -15,6 +15,7 @@ static mplexer_5bit_t lsMux1 = {
     LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_MUX_EN, LS_MUX_WR
 };
 
+
 float lineAngle = LS_NO_LINE_ANGLE;
 float lineSize = 0;
 float lastAngle = LS_NO_LINE_ANGLE;
@@ -80,11 +81,11 @@ static void print_char_val_type(esp_adc_cal_value_t val_type){
 
 void ls_init(void){
     // TODO make this 12 bit for higher accuracy - does it make it slower?
-    adc1_config_width(ADC_WIDTH_BIT_10);
+    adc1_config_width(ADC_WIDTH_BIT_12);
     adc1_config_channel_atten(LS_MUX0_OUT, ADC_ATTEN_0db);
     adc1_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_0db);
     adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
+    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 10, adc1_chars));
     
     // esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
     // print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
@@ -116,7 +117,8 @@ void lsarray_debug(void){
     // Print raw values
     printf("BEGIN ");
     for (int i = 0; i < LS_NUM; i++){
-        printf("%d ", esp_adc_cal_raw_to_voltage(rawValues[i], adc1_chars));
+        // printf("%d ", esp_adc_cal_raw_to_voltage(rawValues[i], adc1_chars));
+        printf("%d ", rawValues[i]);
     }
     printf("END\n");
 

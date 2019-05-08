@@ -151,7 +151,7 @@
 #define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
 #define LS_NO_LINE_ANGLE 0xBAD
 #define LS_NO_LINE_SIZE 0xBAD
-#define ADC_SAMPLES 4
+#define ADC_SAMPLES 1
 
 #define LS_MUX0_OUT ADC1_CHANNEL_5
 #define LS_MUX1_OUT ADC1_CHANNEL_6
