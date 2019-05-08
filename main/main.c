@@ -22,7 +22,6 @@
 #include "comms_i2c.h"
 #include "esp_timer.h"
 #include "esp_task_wdt.h"
-// #include "mpu_wrapper.h"
 #include "simple_imu.h"
 #include "pid.h"
 
@@ -124,8 +123,6 @@ void slave_task(void *pvParameter){
     i2c_scanner();
     simu_init();
     simu_calibrate();
-    // mpuw_init();
-    // mpuw_mag_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -139,7 +136,6 @@ void slave_task(void *pvParameter){
         // lsarray_read();
         // lsarray_debug();
 
-        // mpuw_update();
         simu_calc();
 
         comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));

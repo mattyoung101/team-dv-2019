@@ -35,7 +35,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 ESP_LOGW(TAG, "Failed to acquire received data semaphore in time!");
             }
         } else {
-            ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
         }
 
         esp_task_wdt_reset();

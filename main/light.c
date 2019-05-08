@@ -15,6 +15,7 @@ static mplexer_5bit_t lsMux1 = {
     LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_MUX_EN, LS_MUX_WR
 };
 
+
 float lineAngle = LS_NO_LINE_ANGLE;
 float lineSize = 0;
 float lastAngle = LS_NO_LINE_ANGLE;
