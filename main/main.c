@@ -74,10 +74,11 @@ void master_task(void *pvParameter){
                 robotState.inBallStrength = receivedData.tsopStrength;
 
                 robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
-                robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
+                                        + CAM_ANGLE_OFFSET;
                 robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
                 robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
-
+                
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
                 robotState.inX = robotX;
@@ -98,8 +99,8 @@ void master_task(void *pvParameter){
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
         // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
-        printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalDistance, 
-        robotState.inGoalVisible);
+        printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, 
+        robotState.inGoalLength, robotState.inGoalDistance, robotState.inGoalVisible);
         // printf("Attacking? %d", robotState.outIsAttack);
         // printf("Xpos: %d, Ypos: %d\n", robotState.inX, robotState.inY);
 
