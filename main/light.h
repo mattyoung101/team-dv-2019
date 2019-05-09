@@ -8,6 +8,7 @@
 #include "math.h"
 #include "mplexer.h"
 #include "esp_adc_cal.h"
+#include "ads1015.h"
 
 // Converted from LightSensor.cpp
 

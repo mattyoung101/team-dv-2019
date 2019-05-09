@@ -24,6 +24,7 @@
 #include "esp_task_wdt.h"
 #include "simple_imu.h"
 #include "pid.h"
+#include "vl53l0x_api.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -34,7 +35,6 @@
 #endif
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
-// static esp_timer_handle_t tsopTimer = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
