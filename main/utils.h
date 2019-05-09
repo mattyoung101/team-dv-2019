@@ -15,6 +15,8 @@ extern pid_config_t headingPID;
 extern pid_config_t goalPID;
 extern pid_config_t idlePID;
 extern pid_config_t coordPID;
+extern pid_config_t sidePID;
+extern pid_config_t forwardPID;
 
 #define constrain(amt,low,high) ((amt)<(low)?(low):((amt)>(high)?(high):(amt)))
 /** x squared **/

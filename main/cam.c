@@ -79,10 +79,10 @@ void cam_calc(void){
     goalYellow.length = sqrtf(sq(goalYellow.x) + sq(goalYellow.y));
 
     // Convert length to mm
-    goalYellow.distance = 0.2433 * powf(goalYellow.length, 2.0f) - 14.705 * goalYellow.length + 223.16;
-    goalBlue.distance = 0.2433 * powf(goalBlue.length, 2.0f) - 14.705 * goalBlue.length + 223.16;
+    goalYellow.distance = 2090.94732 / (1 + 16915.5377 * powf(E, -0.1330901 * goalYellow.length));
+    goalBlue.distance = 2090.94732 / (1 + 16915.5377 * powf(E, -0.1330901 * goalBlue.length));
 
-    // y = 0.2433x2 - 14.705x + 223.16
+    // y = 2090.94732 / (1 + 16915.5377 * powf(E, -0.1330901 * x))
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;

@@ -50,7 +50,7 @@ void master_task(void *pvParameter){
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateDefenceIdle;
+    stateMachine.currentState = &stateAttackPursue;
     robotStateSem = xSemaphoreCreateMutex();
     xSemaphoreGive(robotStateSem);
 
@@ -98,8 +98,8 @@ void master_task(void *pvParameter){
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
         // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
-        printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalDistance, 
-        robotState.inGoalVisible);
+        // printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalDistance, 
+        // robotState.inGoalVisible);
         // printf("Attacking? %d", robotState.outIsAttack);
         // printf("Xpos: %d, Ypos: %d\n", robotState.inX, robotState.inY);
 
@@ -108,7 +108,7 @@ void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(150));
+        vTaskDelay(pdMS_TO_TICKS(15));
     }
 }
 

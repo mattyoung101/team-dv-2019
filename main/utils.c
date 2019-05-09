@@ -4,6 +4,8 @@ pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
 pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
 pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION};
 pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX};
+pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
+pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
 
 int32_t mod(int32_t x, int32_t m){
     int32_t r = x % m;
@@ -84,21 +86,30 @@ void goal_correction(robot_state_t *robotState){
     }
 }
 
-void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
-    if(robotState->inGoalVisible){
-        // Goal is visible, moving to coordinate
-        if(sqrtf(powf(abs(x - robotState->inX), 2) + powf(abs(y - robotState->inY), 2)) < COORD_THRESHOLD){
-            // We are at the coordinate
-            robotState->outSpeed = 0;
-            robotState->outShouldBrake = true;
-        }else{
-            // Move with PID
-            robotState->outDirection = fmodf(fmodf(90.0 - DEG_RAD * (atan2(y - robotState->inY, x - robotState->inX)), 360) - robotState->inHeading, 360.0);
-            robotState->outSpeed = abs(pid_update(&coordPID, sqrtf(powf(abs(x - robotState->inX), 2) + powf(abs(y - robotState->inY), 2)), 0, 0));
-        }
-    }else{
+float get_magnitude(int16_t x, int16_t y){
+    return sqrtf((float) (x * x + y * y));
+}
+
+float get_angle(int16_t x, int16_t y){
+    return fmodf(90 - RAD_DEG * (atan2(y, x)), 360.0f);
+}
+
+void move_by_difference(robot_state_t *robotState, int16_t x, int16_t y){
+    if (get_magnitude(x, y) < COORD_THRESHOLD){
         robotState->outSpeed = 0;
         robotState->outShouldBrake = true;
+    }else{
+        robotState->outDirection = fmodf(get_angle(x, y) - robotState->inHeading, 360.0f);
+        robotState->outSpeed = fabsf(pid_update(&coordPID, get_magnitude(x, y), 0.0f, 0.0f));
+    }
+}
+
+void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
+    if (robotState->inGoalVisible){
+        return move_by_difference(robotState, x - robotState->inX, y - robotState->inY);
+    }else{
+        robotState->outShouldBrake = true;
+        robotState->outSpeed = 0;
     }
 }
 
