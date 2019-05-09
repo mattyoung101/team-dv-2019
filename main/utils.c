@@ -1,8 +1,13 @@
 #include "utils.h"
 
+// Hecking PIDs
+// Orientation Correction PIDs
 pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
 pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
 pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION};
+pid_config_t goaliePID = {GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX};
+
+// Movement PIDs
 pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX};
 pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
 pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
@@ -76,9 +81,15 @@ void imu_correction(robot_state_t *robotState){
 void goal_correction(robot_state_t *robotState){
     if (robotState->inGoalVisible && robotState->inGoalLength < GOAL_TRACK_DIST){
         // if the goal is visible use goal correction
-        robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f) 
-                                    + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
-        // printf("Goal correction");
+        if (robotState->outIsAttack){
+            robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f) 
+                                    + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f);
+            // printf("Attack goal correction");
+        } else {
+            robotState->outOrientation = (int16_t) pid_update(&goaliePID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f)
+                                    + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Also I don't remember how the hell this works but apparently it did
+            // printf("Defend goal correction");
+        }
     } else {
         // otherwise just IMU correct
         imu_correction(robotState);
@@ -115,6 +126,20 @@ void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
 
 float lerp(float fromValue, float toValue, float progress){
     return fromValue + (toValue - fromValue) * progress;
+}
+
+void orbit(robot_state_t *robotState){
+    // orbit requires angles in -180 to +180 range
+    int16_t tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
+
+    // ESP_LOGD(TAG, "Ball is visible, orbiting");
+    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0))));
+    float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
+    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2 * strengthFactor), 0, 1);
+    float angleAddition = ballAngleDifference * distanceMultiplier;
+
+    robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
+    robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
 }
 
 void i2c_scanner(){

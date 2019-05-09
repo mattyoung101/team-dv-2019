@@ -35,6 +35,7 @@
 #define HEADING_KD 0.06
 #define HEADING_MAX_CORRECTION 100
 
+// --- Goalie PIDs --- //
 #define FORWARD_KP 10
 #define FORWARD_KI 0
 #define FORWARD_KD 0.1
@@ -45,6 +46,13 @@
 #define SIDE_KD 0.2
 #define SIDE_MAX 100
 
+#define GOALIE_KP 0.3
+#define GOALIE_KI 0
+#define GOALIE_KD 0.03
+#define GOALIE_MAX 100
+
+// --- Coordinate PID --- //
+// Note: doesn't fucking work
 #define COORD_KP 5
 #define COORD_KI 0
 #define COORD_KD 0.2
@@ -221,3 +229,9 @@
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
+#define SURGE_DISTANCE 40
+#define SURGE_STRENGTH 160
+#define SURGE_SPEED 100
+#define REVERSE_SPEED 60
+#define DEFEND_MAX_ANGLE 270
+#define DEFEND_MIN_ANGLE 90
