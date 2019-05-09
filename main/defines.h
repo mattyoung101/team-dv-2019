@@ -103,7 +103,7 @@
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
 #define IDLE_DISTANCE 45
 #define IDLE_OFFSET 0
@@ -172,7 +172,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION 25 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION 20 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -205,13 +205,13 @@
 #define DMP_RATE 200 // DMP update rate in Hz, max is 200
 
 // Orbit
-#define BALL_FAR_STRENGTH 120
+#define BALL_FAR_STRENGTH 110
 #define BALL_CLOSE_STRENGTH 140
-#define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 50
+#define ORBIT_SPEED_SLOW 30
+#define ORBIT_SPEED_FAST 30
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
 #define IN_FRONT_MIN_ANGLE 20
 #define IN_FRONT_MAX_ANGLE 340

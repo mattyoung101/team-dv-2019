@@ -25,7 +25,6 @@ void state_defence_reverse_update(state_machine_t *fsm){
 void state_defence_idle_update(state_machine_t *fsm){
     static const char *TAG = "DefendIdleState";
 
-    rs.outSpeed = 0;
     rs.outIsAttack = false;
 
     imu_correction(&robotState);
