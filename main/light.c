@@ -130,7 +130,7 @@ void lsarray_debug(void){
     // printf("END\n");
 }
 
-void lsarray_calc(void){
+void lsarray_calc_vec(void){
     hmm_vec2 sum = {0};
 
     for (int i = 0; i < LS_NUM; i++){
@@ -150,11 +150,5 @@ void lsarray_calc(void){
 
     lineSize = sqrtf(sq(sumX) + sq(sumY));
     lineAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
-
-    // Processing of values
-    isOnLine = lineSize == 0 ? false : true;
-    lineAngle = fmod(lineAngle + heading, 360);
-    if (lineSize != 0) lineSize = lineOver ? 1 - lineSize : lineSize;
-
-
 }
+

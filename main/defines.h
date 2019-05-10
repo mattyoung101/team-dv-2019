@@ -161,6 +161,10 @@
 #define LS_NO_LINE_SIZE 0xBAD
 #define ADC_SAMPLES 1
 
+// Line avoid settings
+#define LS_LINE_OVER_BUFFER 80
+#define LINE_BIG_SIZE 1
+
 #define LS_MUX0_OUT ADC1_CHANNEL_5
 #define LS_MUX1_OUT ADC1_CHANNEL_6
 #define LS_MUX_S0 2

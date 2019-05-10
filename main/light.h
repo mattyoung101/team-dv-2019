@@ -36,7 +36,7 @@ void ls_iterate(ls_func_t func);
 
 /** Reads all light sensors **/
 void lsarray_read(void);
-/** Calculates the line from the stored readings **/
-void lsarray_calc(void);
+/** Calculates the line from the stored readings using vectors **/
+void lsarray_calc_vec(void);
 /** Prints debug values to be read by the script ls_debug.py **/
 void lsarray_debug(void);
