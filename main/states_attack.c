@@ -102,7 +102,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
 // Orbit
 void state_attack_orbit_update(state_machine_t *fsm){
     static const char *TAG = "OrbitState";
-    accelProgress = 0; // reset acceleration Progress
+    accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
     goal_correction(&robotState);
 
@@ -128,20 +128,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
         FSM_CHANGE_STATE(Dribble);
     }
 
-    // orbit requires angles in -180 to +180 range
-    int16_t tempAngle = rs.inBallAngle > 180 ? rs.inBallAngle - 360 : rs.inBallAngle;
-
-    // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 
-                                0.1 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0))));
-    float strengthFactor = constrain(((float)robotState.inBallStrength - (float)BALL_FAR_STRENGTH) / 
-                            ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
-    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2 * strengthFactor), 0, 1);
-    float angleAddition = ballAngleDifference * distanceMultiplier;
-
-    robotState.outDirection = floatMod(robotState.inBallAngle + angleAddition, 360);
-    robotState.outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * 
-                            (1.0 - (float)fabsf(angleAddition) / 90.0);
+    orbit(&robotState);
 }
 
 // Dribble

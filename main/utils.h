@@ -11,9 +11,13 @@
 #include "states.h"
 
 // PIDs
+// Orientation Correction PIDs
 extern pid_config_t headingPID;
 extern pid_config_t goalPID;
 extern pid_config_t idlePID;
+extern pid_config_t goaliePID;
+
+// Movement PIDs
 extern pid_config_t coordPID;
 extern pid_config_t sidePID;
 extern pid_config_t forwardPID;
@@ -52,8 +56,10 @@ extern pid_config_t forwardPID;
     robotState.outShouldBrake = true; \
     return; \
 } while (0);
-/** Switch to a state in the FSM **/
+/** Switch to a state in attack FSM **/
 #define FSM_CHANGE_STATE(STATE) do { fsm_change_state(fsm, &stateAttack ##STATE); return; } while (0);
+/** Switch to a state in defence FSM **/
+#define FSM_CHANGE_STATE_DEFENCE(STATE) do { fsm_change_state(fsm, &stateDefence ##STATE); return; } while (0);
 /** Revert state in FSM **/
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
 
@@ -69,5 +75,8 @@ void i2c_scanner();
 bool is_angle_between(float target, float angle1, float angle2);
 void imu_correction(robot_state_t *robotState);
 void goal_correction(robot_state_t *robotState);
+float get_magnitude(int16_t x, int16_t y);
+float get_angle(int16_t x, int16_t y);
 void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);
 float lerp(float fromValue, float toValue, float progress);
+void orbit(robot_state_t *robotState);
