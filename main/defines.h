@@ -196,7 +196,7 @@
 #define TSOP_MUX_WR 26
 
 // IMU
-#define IMU_CALIBRATION_COUNT 50
+#define IMU_CALIBRATION_COUNT 100
 #define IMU_CALIBRATION_TIME 500
 #define IMU_THRESHOLD 1000
 #define IMU_MULTIPLIER 100.0f
@@ -219,8 +219,8 @@
 // Orbit
 #define BALL_FAR_STRENGTH 110
 #define BALL_CLOSE_STRENGTH 140
-#define ORBIT_SPEED_SLOW 30
-#define ORBIT_SPEED_FAST 30
+#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_FAST 50
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
