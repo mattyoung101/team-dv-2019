@@ -25,6 +25,7 @@
 #include "simple_imu.h"
 #include "pid.h"
 #include "vl53l0x_api.h"
+#include "ads1015.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow

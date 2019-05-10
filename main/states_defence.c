@@ -70,9 +70,9 @@ void state_defence_idle_update(state_machine_t *fsm){
     rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
 }
 
-// Defend
-void state_defence_defend_update(state_machine_t *fsm){
-    static const char *TAG = "DefendDefendState"; // Lmao this is stupid
+ // Defend
+ void state_defence_defend_update(state_machine_t *fsm){
+    static const char *TAG = "DefendDefendState";
 
     rs.outIsAttack = false;
 
