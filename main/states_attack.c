@@ -69,13 +69,13 @@ void state_attack_idle_update(state_machine_t *fsm){
 
 // Pursue
 void state_attack_pursue_enter(state_machine_t *fsm){
-    // we start out in this state, so create the idle timer if needs be
+    // since we start out in pursue, create the idle timer if needs be
     idle_timer_create_if_needed(fsm);
 }
 
 void state_attack_pursue_update(state_machine_t *fsm){
     static const char *TAG = "PursueState";
-    accelProgress = 0; // reset acceleration Progress
+    accelProgress = 0;
     rs.outIsAttack = true;
     imu_correction(&robotState);
 

@@ -3,8 +3,8 @@ set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES )
 
 set(COMPONENT_SRCS  
-                   "utils.c"
                    "main.c"
+                   "utils.c"
                    "comms_i2c.c"
                    "tsop.c"
                    "motor.c"
@@ -20,6 +20,7 @@ set(COMPONENT_SRCS
                    "comms_wifi.c"
                    "movavg.c"
                    "ads1015.c"
+                   "comms_bluetooth.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")

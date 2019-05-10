@@ -142,6 +142,21 @@ void orbit(robot_state_t *robotState){
     robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
 }
 
+hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
+    // r cos theta, r sin theta
+    // where r = X, theta = Y
+    float r = vec.X;
+    float theta = vec.Y;
+    return HMM_Vec2(r * cosfd(theta), r * sinfd(theta));
+}
+
+hmm_vec2 vec2_cartesian_to_polar(hmm_vec2 vec){
+    // from TSOP code: sqrtf(sq(sumX) + sq(sumY)), fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f)
+    float x = vec.X;
+    float y = vec.Y;
+    return HMM_Vec2(sqrtf(sq(x) + sq(y)), fmodf((atan2f(y, x) * RAD_DEG) + 360.0f, 360.0f));
+}
+
 void i2c_scanner(){
     ESP_LOGI("I2CScanner", "Scanning...");
 

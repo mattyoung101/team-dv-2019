@@ -23,6 +23,7 @@
         "WMSG",
         "WTYPE",
         "atten",
+        "bluetooth",
         "comms",
         "gpio",
         "interp",

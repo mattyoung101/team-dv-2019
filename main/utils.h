@@ -9,6 +9,11 @@
 #include "driver/i2c.h"
 #include "pid.h"
 #include "states.h"
+// literally the world's stupidest fucking hack to make it compile
+#ifdef HANDMADE_MATH_IMPLEMENTATION
+    #undef HANDMADE_MATH_IMPLEMENTATION
+#endif
+#include "HandmadeMath.h"
 
 // PIDs
 // Orientation Correction PIDs
@@ -69,14 +74,27 @@ int number_comparator_descending(const void *a, const void *b);
 float angleBetween(float angleCounterClockwise, float angleClockwise);
 float smallestAngleBetween(float angle1, float angle2);
 float midAngleBetween(float angleCounterClockwise, float angleClockwise);
+
+/** maps a value to a range **/
 int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max);
+/** lineraly interpolates between two values **/
+float lerp(float fromValue, float toValue, float progress);
+
 void i2c_scanner();
 /** Source: https://stackoverflow.com/a/11412077/5007892 **/
 bool is_angle_between(float target, float angle1, float angle2);
+/** Runs IMU correction **/
 void imu_correction(robot_state_t *robotState);
+/** Runs goal correction **/
 void goal_correction(robot_state_t *robotState);
+
 float get_magnitude(int16_t x, int16_t y);
 float get_angle(int16_t x, int16_t y);
 void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);
-float lerp(float fromValue, float toValue, float progress);
+/** orbits around the ball **/
 void orbit(robot_state_t *robotState);
+
+/** Converts a 2D polar vector to cartesian **/
+hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec);
+/** Converts a 2D cartesian vector to polar **/
+hmm_vec2 vec2_cartesian_to_polar(hmm_vec2 vec);
