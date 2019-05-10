@@ -15,6 +15,7 @@ static mplexer_5bit_t lsMux1 = {
     LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_MUX_EN, LS_MUX_WR
 };
 
+static ls_cluster cluster1, cluster2, cluster3;
 
 float lineAngle = LS_NO_LINE_ANGLE;
 float lineSize = 0;
@@ -79,6 +80,65 @@ static void print_char_val_type(esp_adc_cal_value_t val_type){
     }
 }
 
+///////// CLUSTER ////////
+void cluster_update_left_right(ls_cluster *cluster){
+    cluster->leftSensor = mod(cluster->centre - ((cluster->length - 1) / 2.0f), LS_NUM);
+    cluster->rightSensor = mod(cluster->centre + ((cluster->length - 1) / 2.0f), LS_NUM);
+}
+
+void cluster_update_length_centre(ls_cluster *cluster){
+    if (cluster->leftSensor > cluster->rightSensor) {
+        cluster->centre = floatMod((-(LS_NUM - cluster->leftSensor) + cluster->rightSensor) / 2.0, LS_NUM);
+        cluster->length = (LS_NUM - (cluster->leftSensor - cluster->rightSensor)) + 1;
+    } else {
+        cluster->centre = (cluster->leftSensor + cluster->rightSensor) / 2.0;
+        cluster->length = (cluster->rightSensor - cluster->leftSensor) + 1;
+    }
+}
+
+void cluster_add_cluster(ls_cluster *cluster1, ls_cluster *cluster2){
+    int16_t leftOther = cluster2->leftSensor;
+    int16_t rightOther = cluster2->rightSensor;
+
+    if (mod(cluster1->rightSensor + 1, LS_NUM) == leftOther) {
+        cluster1->rightSensor = rightOther;
+    } else if (mod(rightOther + 1, LS_NUM) == cluster1->leftSensor) {
+        cluster1->leftSensor = leftOther;
+    } else {
+        // We're adding two non-adjacent clusters so we just do not apply any changes to the cluster.
+        return;
+    }
+
+    cluster_update_length_centre(cluster1);
+}
+
+void cluster_reset(ls_cluster *cluster){
+    cluster->centre = 0.0f;
+    cluster->length = 0;
+
+    cluster_update_left_right(cluster);
+}
+
+void cluster_add_clockwise(ls_cluster *cluster){
+    cluster->rightSensor = mod(cluster->rightSensor + 1, LS_NUM);
+    cluster_update_length_centre(cluster);
+}
+
+float cluster_get_angle(ls_cluster *cluster){
+    return cluster->centre / (float) LS_NUM * 360.0f;
+}
+
+float cluster_get_left_angle(ls_cluster *cluster){
+    return cluster->leftSensor / (float) LS_NUM * 360.0f;
+
+}
+
+float cluster_get_right_angle(ls_cluster *cluster){
+    return cluster->rightSensor / (float) LS_NUM * 360.0f;
+}
+
+////////// LIGHT SENSOR ARRAY //////////
+
 void ls_init(void){
     // TODO make this 12 bit for higher accuracy - does it make it slower?
     adc1_config_width(ADC_WIDTH_BIT_12);
@@ -103,10 +163,16 @@ void ls_init(void){
 
     // calibrate ALL light sensors at once with ls_iterate
     ls_iterate(&ls_func_calibrate);
+
+    cluster_reset(&cluster1);
+    cluster_reset(&cluster2);
+    cluster_reset(&cluster3);
+
     ESP_LOGI(TAG, "Light sensor init OK");
 }
 
 ////////////////////////////// LIGHT SENSOR ARRAY //////////////////////////////
+
 void lsarray_read(void){
     ls_iterate(&ls_func_read);
 }
@@ -151,4 +217,6 @@ void lsarray_calc_vec(void){
     lineSize = sqrtf(sq(sumX) + sq(sumY));
     lineAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
 }
+
+
 
