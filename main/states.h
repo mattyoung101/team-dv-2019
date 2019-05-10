@@ -52,6 +52,7 @@ void state_attack_idle_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackIdle;
 
 // Pursue ball state: moves directly towards the ball
+void state_attack_pursue_enter(state_machine_t *fsm);
 void state_attack_pursue_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackPursue;
 

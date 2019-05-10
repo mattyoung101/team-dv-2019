@@ -215,7 +215,7 @@
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
 #define IN_FRONT_MIN_ANGLE 20
 #define IN_FRONT_MAX_ANGLE 340
-#define IDLE_TIME 5000 // ms
+#define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball
 #define ACCEL_PROG 0.05
 

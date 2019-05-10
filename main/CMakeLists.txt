@@ -19,6 +19,7 @@ set(COMPONENT_SRCS
                    "mplexer.c"
                    "comms_wifi.c"
                    "movavg.c"
+                   "ads1015.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")

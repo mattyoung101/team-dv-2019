@@ -38,7 +38,7 @@ void state_defence_idle_update(state_machine_t *fsm){
 
  // Defend
  void state_defence_defend_update(state_machine_t *fsm){
-    static const char *TAG = "DefendDefendState"; // Lmao this is stupid
+    static const char *TAG = "DefendDefendState";
 
     rs.outIsAttack = false;
  }
