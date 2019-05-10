@@ -64,7 +64,12 @@ void state_attack_idle_update(state_machine_t *fsm){
     static const char *TAG = "AttackIdleState";
 
     rs.outIsAttack = true;
-    printf("Do not use the idle state! It's not implemented yet.\n");
+
+    if (rs.inBallStrength > 0){
+        ESP_LOGD(TAG, "Ball is visible, entering pursue");
+        FSM_CHANGE_STATE(Pursue);
+    }
+    // printf("Do not use the idle state! It's not implemented yet.\n");
 }
 
 // Pursue
