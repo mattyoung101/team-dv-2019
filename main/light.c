@@ -1,10 +1,11 @@
 #include "light.h"
 #include "HandmadeMath.h"
 #include "simple_imu.h"
+#include "ads1015.h"
 
 static hmm_vec2 readings[LS_NUM] = {0};
 static uint32_t rawValues[LS_NUM] = {0};
-static light_sensor *sensors[LS_NUM] = {0};
+static light_sensor *sensors[LS_NUM] = {0};;
 esp_adc_cal_characteristics_t *adc1_chars;
 
 static mplexer_5bit_t lsMux0 = {
@@ -27,15 +28,17 @@ static const char *TAG = "LightSensor";
 
 ////////////////////////////// LIGHT SENSOR //////////////////////////////
 uint16_t ls_read(uint8_t mux){
-    uint32_t reading = 0;
-    for (int i = 0; i < ADC_SAMPLES; i++){
-        if (mux == 0){
-            reading += adc1_get_raw(LS_MUX0_OUT);
-        } else {
-            reading += adc1_get_raw(LS_MUX1_OUT);
-        }
-    }
-    return reading / ADC_SAMPLES;
+    // uint32_t reading = 0;
+    // for (int i = 0; i < ADC_SAMPLES; i++){
+    //     if (mux == 0){
+    //         reading += adc1_get_raw(LS_MUX0_OUT);
+    //     } else {
+    //         reading += adc1_get_raw(LS_MUX1_OUT);
+    //     }
+    // }
+    // return reading / ADC_SAMPLES;
+
+    return ads1015_read(mux);
 }
 
 static void ls_func_calibrate(light_sensor* ls, uint8_t mux){
@@ -68,16 +71,6 @@ void ls_iterate(ls_func_t func){
         (*func)(sensors[i], 0);
         (*func)(sensors[i + 24], 1);
     }   
-}
-
-static void print_char_val_type(esp_adc_cal_value_t val_type){
-    if (val_type == ESP_ADC_CAL_VAL_EFUSE_TP) {
-        ESP_LOGI(TAG, "Characterized using Two Point Value");
-    } else if (val_type == ESP_ADC_CAL_VAL_EFUSE_VREF) {
-        ESP_LOGI(TAG, "Characterized using eFuse Vref");
-    } else {
-        ESP_LOGI(TAG, "Characterized using Default Vref");
-    }
 }
 
 ///////// CLUSTER ////////
@@ -140,16 +133,6 @@ float cluster_get_right_angle(ls_cluster *cluster){
 ////////// LIGHT SENSOR ARRAY //////////
 
 void ls_init(void){
-    // TODO make this 12 bit for higher accuracy - does it make it slower?
-    adc1_config_width(ADC_WIDTH_BIT_12);
-    adc1_config_channel_atten(LS_MUX0_OUT, ADC_ATTEN_0db);
-    adc1_config_channel_atten(LS_MUX1_OUT, ADC_ATTEN_0db);
-    adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 10, adc1_chars));
-    
-    // esp_adc_cal_characteristics_t *adc1_chars = calloc(1, sizeof(esp_adc_cal_characteristics_t));
-    // print_char_val_type(esp_adc_cal_characterize(ADC_UNIT_1, ADC_ATTEN_0db, ADC_WIDTH_BIT_10, 1100, adc1_chars));
-
     mplexer_5bit_init(&lsMux0);
     mplexer_5bit_init(&lsMux1);
 
@@ -183,7 +166,6 @@ void lsarray_debug(void){
     // Print raw values
     printf("BEGIN ");
     for (int i = 0; i < LS_NUM; i++){
-        // printf("%d ", esp_adc_cal_raw_to_voltage(rawValues[i], adc1_chars));
         printf("%d ", rawValues[i]);
     }
     printf("END\n");
@@ -217,6 +199,3 @@ void lsarray_calc_vec(void){
     lineSize = sqrtf(sq(sumX) + sq(sumY));
     lineAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
 }
-
-
-

@@ -87,3 +87,4 @@ void state_defence_surge_update(state_machine_t *fsm);
 extern fsm_state_t stateDefenceSurge;
 
 /////////// GENERAL FSM /////////
+extern fsm_state_t stateGeneralNothing;

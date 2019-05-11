@@ -17,7 +17,7 @@
 #define CONF_LOG_LEVEL ESP_LOG_DEBUG
 
 // I2C
-#define I2C_ESP_SLAVE_ADDR 23
+#define I2C_ESP_SLAVE_ADDR 0x23
 #define I2C_TIMEOUT 250 // ms
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data

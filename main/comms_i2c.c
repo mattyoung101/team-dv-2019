@@ -21,6 +21,7 @@ static void comms_i2c_receive_task(void *pvParameters){
 
         // wait slightly shorter than the task watchdog timeout for us to get some data
         i2c_slave_read_buffer(I2C_NUM_0, buf, 11, pdMS_TO_TICKS(4000));
+        // ESP_LOG_BUFFER_HEX("I2C", buf, 11);
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
             // we got sensor data

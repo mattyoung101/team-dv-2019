@@ -51,9 +51,12 @@ void master_task(void *pvParameter){
 
     // Initialise software controllers
     state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateAttackPursue;
+    stateMachine.currentState = &stateGeneralNothing;
     robotStateSem = xSemaphoreCreateMutex();
     xSemaphoreGive(robotStateSem);
+
+    // we do it like this to make sure that pursue_enter is called
+    fsm_change_state(&stateMachine, &stateAttackPursue);
 
     esp_task_wdt_add(NULL);
 
@@ -121,7 +124,7 @@ void slave_task(void *pvParameter){
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
     tsop_init();
-    // ls_init();
+    ls_init();
     i2c_scanner();
     simu_init();
     simu_calibrate();
@@ -135,13 +138,12 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        // lsarray_read();
-        // lsarray_debug();
+        lsarray_read();
+        lsarray_debug();
 
         simu_calc();
 
         comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, 1010, 64321, (uint16_t) (heading * IMU_MULTIPLIER));
-        // printf("Heading: %d\n", (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(0));

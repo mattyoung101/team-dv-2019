@@ -42,7 +42,7 @@ static void idle_timer_stop(){
 /** callback that goes off after idle timeout **/
 static void idle_timer_callback(TimerHandle_t timer){
     static const char *TAG = "IdleTimerCallback";
-    ESP_LOGD(TAG, "Idle timer has gone off, switching to idle state");
+    ESP_LOGI(TAG, "Idle timer has gone off, switching to idle state");
 
     // world-class intellectual hack: we need to get access to the state machine instance from this callback.
     // as it turns out, the timer ID is passed as a void pointer (meaning it can be any type, though in this context
@@ -54,7 +54,7 @@ static void idle_timer_callback(TimerHandle_t timer){
 /** instantiates the idle timer if it null **/
 static void idle_timer_create_if_needed(state_machine_t *fsm){
     if (idleTimer == NULL){
-        ESP_LOGD("CreateIdleTimer", "Creating idle timer");
+        ESP_LOGI("CreateIdleTimer", "Creating idle timer");
         idleTimer = xTimerCreate("IdleTimer", pdMS_TO_TICKS(IDLE_TIMEOUT), false, (void*) fsm, idle_timer_callback);
     }
 }
@@ -65,11 +65,12 @@ void state_attack_idle_update(state_machine_t *fsm){
 
     rs.outIsAttack = true;
 
-    if (rs.inBallStrength > 0){
-        ESP_LOGD(TAG, "Ball is visible, entering pursue");
-        FSM_CHANGE_STATE(Pursue);
+    if (rs.inBallStrength > 0.0f){
+        ESP_LOGD(TAG, "Ball is visible, reverting");
+        FSM_REVERT;
     }
-    // printf("Do not use the idle state! It's not implemented yet.\n");
+
+    // printf("In the idle state\n");
 }
 
 // Pursue
@@ -123,13 +124,13 @@ void state_attack_orbit_update(state_machine_t *fsm){
     } else if (rs.inBallStrength < ORBIT_DIST){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
                  ORBIT_DIST);
-        // FSM_REVERT;
-        FSM_CHANGE_STATE(Pursue);
+        FSM_REVERT;
+        // FSM_CHANGE_STATE(Pursue);
     } else if (rs.inBallStrength >= ORBIT_DIST && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
                 && is_angle_between(rs.inGoalAngle, 30, 330)){
         ESP_LOGD(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
-        " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE,
-        IN_FRONT_MAX_ANGLE);
+                " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE,
+                IN_FRONT_MAX_ANGLE);
         FSM_CHANGE_STATE(Dribble);
     }
 
@@ -153,17 +154,17 @@ void state_attack_dribble_update(state_machine_t *fsm){
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
         ESP_LOGD(TAG, "Ball not in front, reverting, angle: %d, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE);
-        // FSM_REVERT;
-        FSM_CHANGE_STATE(Orbit);
+        FSM_REVERT;
+        // FSM_CHANGE_STATE(Orbit);
     } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, thresh: %d", robotState.inBallStrength,
-        DRIBBLE_BALL_TOO_FAR);
-        // FSM_REVERT;
-        FSM_CHANGE_STATE(Orbit);
+                DRIBBLE_BALL_TOO_FAR);
+        FSM_REVERT;
+        // FSM_CHANGE_STATE(Orbit);
     } else if (rs.inGoalAngle > 30 || rs.inGoalAngle < 330){
         ESP_LOGD(TAG, "Not facing goal, reverting");
-        // FSM_REVERT;
-        FSM_CHANGE_STATE(Orbit);
+        FSM_REVERT;
+        // FSM_CHANGE_STATE(Orbit);
     }
 
     // linear acceleration to give robot time to goal correct and so it doesn't slip

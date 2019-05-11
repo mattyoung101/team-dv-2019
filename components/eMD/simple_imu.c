@@ -18,6 +18,8 @@ void simu_init(void){
     esp_hack(MPU9250_ADDRESS, 0x0A, 1, 0x16);
 
     previousTimeGyro = esp_timer_get_time();
+
+    ESP_LOGI("SIMU", "MPU9250 init OK");
 }
 
 // static float convertRawAcceleration(int raw) {
@@ -52,13 +54,19 @@ vec3d_t simu_read_gyro(void){
 }
 
 void simu_calibrate(void){
-    for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
-        float readingGyro = (float) simu_read_gyro().z;
-        calibrationGyro += readingGyro;
-        vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_TIME));
-    }
+    // for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
+    //     float readingGyro = (float) simu_read_gyro().z;
+    //     calibrationGyro += readingGyro;
+    //     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_TIME));
+    // }
 
-    calibrationGyro /= IMU_CALIBRATION_COUNT;
+    // calibrationGyro /= IMU_CALIBRATION_COUNT;
+    // ESP_LOGI("SimpleIMU", "Final calibration: %f", calibrationGyro);
+    
+    // value I got was -3.393250 at home, so just skip this calibration run
+    calibrationGyro = -3.393250;
+
+    ESP_LOGI("SIMU", "Calibration complete");
 }
 
 void simu_calc(){
