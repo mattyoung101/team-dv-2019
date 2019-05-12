@@ -2,7 +2,7 @@ import serial
 import pygame
 from numpy import interp
 
-ser = serial.Serial("COM5", 115200)
+ser = serial.Serial("COM3", 115200)
 # just pylint being a dumbass as usual, please ignore
 # pylint: disable=no-member
 pygame.init()
@@ -23,7 +23,7 @@ while running:
     line = ser.readline().decode("utf-8")
 
     if line.startswith("BEGIN"):
-        values = [int(interp(int(x), [0, 1023], [0, 255])) for x in line.split()[1:-1]]
+        values = [int(interp(int(x), [-2048, 2047], [0, 255])) for x in line.split()[1:-1]]
         rect_width = 1280 / 48
         for sensor in range(48):
             colour = values[sensor]

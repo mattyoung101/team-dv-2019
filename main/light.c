@@ -161,14 +161,14 @@ void lsarray_read(void){
 }
 
 void lsarray_debug(void){
-    ls_iterate(&ls_func_read);
+    // ls_iterate(&ls_func_read);
 
-    // Print raw values
-    printf("BEGIN ");
-    for (int i = 0; i < LS_NUM; i++){
-        printf("%d ", rawValues[i]);
-    }
-    printf("END\n");
+    // // Print raw values
+    // printf("BEGIN ");
+    // for (int i = 0; i < LS_NUM; i++){
+    //     printf("%d ", rawValues[i]);
+    // }
+    // printf("END\n");
 
     // Print on line values
     // printf("BEGIN ");
@@ -176,6 +176,9 @@ void lsarray_debug(void){
     //     printf("%d ", (uint8_t) readings[i].X);
     // }
     // printf("END\n");
+
+    mplexer_5bit_select(&lsMux0, 0);
+    printf("Value: %d\n", ads1015_read(0));
 }
 
 void lsarray_calc_vec(void){
