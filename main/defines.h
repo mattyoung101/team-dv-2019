@@ -160,6 +160,8 @@
 #define LS_NO_LINE_ANGLE 0xBAD
 #define LS_NO_LINE_SIZE 0xBAD
 #define ADC_SAMPLES 1
+#define LS_ES_DEFAULT 69
+#define LS_TIMER_PERIOD 1000 // microseconds
 
 // Line avoid settings
 #define LS_LINE_OVER_BUFFER 80
