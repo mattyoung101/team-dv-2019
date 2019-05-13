@@ -82,7 +82,6 @@ void master_task(void *pvParameter){
                                         + CAM_ANGLE_OFFSET;
                 robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
                 robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
-                
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
                 robotState.inX = robotX;
@@ -103,8 +102,8 @@ void master_task(void *pvParameter){
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
         // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
-        // printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, robotState.inGoalLength, robotState.inGoalDistance, 
-        // robotState.inGoalVisible);
+        // printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, 
+        // robotState.inGoalLength, robotState.inGoalDistance, robotState.inGoalVisible);
         // printf("Attacking? %d", robotState.outIsAttack);
         // printf("Xpos: %d, Ypos: %d\n", robotState.inX, robotState.inY);
 
@@ -123,9 +122,10 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
+    i2c_scanner();
+
     tsop_init();
     ls_init();
-    i2c_scanner();
     simu_init();
     simu_calibrate();
 

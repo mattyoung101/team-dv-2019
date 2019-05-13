@@ -10,7 +10,7 @@
 #include "esp_adc_cal.h"
 #include "ads1015.h"
 
-// Converted from LightSensor.cpp
+// Ported and adapted from LJStand's 2018 LightSensorArray.cpp
 
 // --- Light Sensors --- //
 
@@ -44,6 +44,8 @@ typedef struct {
     int16_t leftSensor;
     int16_t rightSensor;
 } ls_cluster;
+
+// TODO add more docs
 
 void cluster_update_left_right(ls_cluster *cluster);
 void cluster_update_length_centre(ls_cluster *cluster);

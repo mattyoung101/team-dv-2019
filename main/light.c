@@ -41,6 +41,7 @@ uint16_t ls_read(uint8_t mux){
     return ads1015_read(mux);
 }
 
+// calibrate each sensor
 static void ls_func_calibrate(light_sensor* ls, uint8_t mux){
     float defaultValue = (float) ls_read(mux);
     uint16_t buffer = mux == 0 ? LS_MUX0_BUFFER : LS_MUX1_BUFFER; // detect which mux we're reading from
@@ -73,7 +74,8 @@ void ls_iterate(ls_func_t func){
     }   
 }
 
-///////// CLUSTER ////////
+////////////////////////////// CLUSTER //////////////////////////////
+
 void cluster_update_left_right(ls_cluster *cluster){
     cluster->leftSensor = mod(cluster->centre - ((cluster->length - 1) / 2.0f), LS_NUM);
     cluster->rightSensor = mod(cluster->centre + ((cluster->length - 1) / 2.0f), LS_NUM);
@@ -130,7 +132,7 @@ float cluster_get_right_angle(ls_cluster *cluster){
     return cluster->rightSensor / (float) LS_NUM * 360.0f;
 }
 
-////////// LIGHT SENSOR ARRAY //////////
+////////////////////////////// LIGHT SENSOR ARRAY //////////////////////////////
 
 void ls_init(void){
     mplexer_5bit_init(&lsMux0);
@@ -154,8 +156,6 @@ void ls_init(void){
     ESP_LOGI(TAG, "Light sensor init OK");
 }
 
-////////////////////////////// LIGHT SENSOR ARRAY //////////////////////////////
-
 void lsarray_read(void){
     ls_iterate(&ls_func_read);
 }
@@ -177,7 +177,9 @@ void lsarray_debug(void){
     // }
     // printf("END\n");
 
+    // Select MUX 1 LS 0
     mplexer_5bit_select(&lsMux0, 0);
+    // Read ADC channel 1
     printf("Value: %d\n", ads1015_read(0));
 }
 
