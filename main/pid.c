@@ -1,4 +1,8 @@
 #include "pid.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/timers.h"
+#include <inttypes.h>
 
 static int64_t lastTime = 0;
 static float integral = 0;
@@ -12,11 +16,10 @@ float pid_update(pid_config_t *conf, float input, float setpoint, float modulus)
     float elapsedTime = (float) (currentTime - lastTime) / 1000000.0f;
     lastTime = currentTime;
 
-    integral += lastTime * error;
+    integral += elapsedTime * error;
 
-    if (modulus != 0.0){
+    if (modulus != 0.0f){
         float difference = (input - lastInput);
-        
         if (difference < -modulus) {
             difference += modulus;
         } else if (difference > modulus) {
@@ -30,6 +33,6 @@ float pid_update(pid_config_t *conf, float input, float setpoint, float modulus)
 
     lastInput = input;
 
-    double correction = conf->kp * error + conf->ki * integral - conf->kd * derivative;
+    double correction = (conf->kp * error) + (conf->ki * integral) - (conf->kd * derivative);
     return conf->absMax == 0 ? correction : constrain(correction, -conf->absMax, conf->absMax);
 }

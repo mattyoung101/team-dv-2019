@@ -3,7 +3,7 @@
 static uint8_t m_i2cAddress = ADS1015_ADDRESS;
 static uint8_t m_conversionDelay = ADS1115_CONVERSIONDELAY / 2;
 static uint8_t m_bitShift = 4;
-static adsGain_t m_gain = GAIN_SIXTEEN;
+static adsGain_t m_gain = GAIN_EIGHT;
 
 static const char *TAG = "ADS1015";
 
@@ -33,7 +33,7 @@ int16_t ads1015_read(uint8_t channel){
                     ADS1015_REG_CONFIG_CLAT_NONLAT  | // Non-latching (default val)
                     ADS1015_REG_CONFIG_CPOL_ACTVLOW | // Alert/Rdy active low   (default val)
                     ADS1015_REG_CONFIG_CMODE_TRAD   | // Traditional comparator (default val)
-                    ADS1015_REG_CONFIG_DR_3300SPS   | // 1600 samples per second (default)
+                    ADS1015_REG_CONFIG_DR_490SPS   | // 1600 samples per second (default)
                     ADS1015_REG_CONFIG_MODE_SINGLE;   // Single-shot mode (default)
 
     // Set PGA/voltage range

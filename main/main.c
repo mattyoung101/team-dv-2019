@@ -56,7 +56,7 @@ void master_task(void *pvParameter){
     xSemaphoreGive(robotStateSem);
 
     // we do it like this to make sure that pursue_enter is called
-    fsm_change_state(&stateMachine, &stateAttackPursue);
+    fsm_change_state(&stateMachine, &stateAttackIdle);
 
     esp_task_wdt_add(NULL);
 
@@ -101,7 +101,7 @@ void master_task(void *pvParameter){
         // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
-        printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
+        // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
         // printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, 
         // robotState.inGoalLength, robotState.inGoalDistance, robotState.inGoalVisible);
         // printf("Attacking? %d", robotState.outIsAttack);
@@ -112,7 +112,7 @@ void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(15));
+        vTaskDelay(pdMS_TO_TICKS(10));
     }
 }
 

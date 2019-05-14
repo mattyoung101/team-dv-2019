@@ -104,13 +104,13 @@ void ls_init(void){
     ls_iterate(&ls_func_calibrate);
 
     // create LS timer
-    esp_timer_create_args_t args = {
-        .callback = ls_timer_callback,
-        .arg = NULL,
-        .name = "LSTimer"
-    };
-    ESP_ERROR_CHECK(esp_timer_create(&args, lsTimer));
-    ESP_ERROR_CHECK(esp_timer_start_periodic(*lsTimer, LS_TIMER_PERIOD));
+    // esp_timer_create_args_t args = {
+    //     .callback = ls_timer_callback,
+    //     .arg = NULL,
+    //     .name = "LSTimer"
+    // };
+    // ESP_ERROR_CHECK(esp_timer_create(&args, lsTimer));
+    // ESP_ERROR_CHECK(esp_timer_start_periodic(*lsTimer, LS_TIMER_PERIOD));
 
     ESP_LOGI(TAG, "Light sensor init OK");
 }

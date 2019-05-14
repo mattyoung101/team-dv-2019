@@ -65,7 +65,7 @@ bool is_angle_between(float target, float angle1, float angle2){
 }
 
 void imu_correction(robot_state_t *robotState){
-    if (robotState->outSpeed == 0){
+    if (robotState->outSpeed <= 10){
         robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
                                 + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
         // printf("IDLE PID");
