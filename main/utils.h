@@ -9,6 +9,7 @@
 #include "driver/i2c.h"
 #include "pid.h"
 #include "states.h"
+#include "cam.h"
 // literally the world's stupidest fucking hack to make it compile
 #ifdef HANDMADE_MATH_IMPLEMENTATION
     #undef HANDMADE_MATH_IMPLEMENTATION
@@ -98,3 +99,19 @@ void orbit(robot_state_t *robotState);
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec);
 /** Converts a 2D cartesian vector to polar **/
 hmm_vec2 vec2_cartesian_to_polar(hmm_vec2 vec);
+
+// --- DEBUG FUNCTIONS --- //
+/** A bunch of functions which just spit relevant information.
+ * Just stops me from having to manually typing out the prints.
+ * Also looks neater. I think. **/
+
+/** Display ball data **/
+void print_ball_data(robot_state_t *robotState);
+/** Display line data **/
+void print_line_data(robot_state_t *robotState);
+/** Display goal data **/
+void print_goal_data();
+/** Display position data **/
+void print_position_data(robot_state_t *robotState);
+/** Display motion data **/
+void print_motion_data(robot_state_t *robotState);

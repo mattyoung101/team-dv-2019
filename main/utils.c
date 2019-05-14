@@ -184,3 +184,31 @@ void i2c_scanner(){
 	}
 	printf("\n");
 }
+
+void print_ball_data(robot_state_t *robotState){
+    static const char *TAG = "BallDebug";
+    ESP_LOGD(TAG, "Ball angle: %d, Ball strength: %d", robotState->inBallAngle, robotState->inBallStrength);
+}
+
+void print_line_data(robot_state_t *robotState){
+    static const char *TAG = "LineDebug";
+    ESP_LOGD(TAG, "Line angle: %f, Line size: %f, On line: %d, Over line: %d, Last angle: %f", robotState->inLineAngle, 
+    robotState->inLineSize, robotState->inOnLine, robotState->inLineOver, robotState->inlastAngle);
+}
+
+void print_goal_data(){
+    static const char *TAG = "GoalDebug";
+    ESP_LOGD(TAG, "Yellow - Angle: %d, Length: %f, Distance: %d | Blue - Angle: %d, Length: %f, Distance: %d", goalYellow.angle, 
+    goalYellow.length, goalYellow.distance, goalBlue.angle, goalBlue.length, goalBlue.distance);
+}
+
+void print_position_data(robot_state_t *robotState){
+    static const char *TAG = "PositionDebug";
+    ESP_LOGD(TAG, "Xpos: %d, Ypos: %d, Heading: %f", robotState->inX, robotState->inY, robotState->inHeading);
+}
+
+void print_motion_data(robot_state_t *robotState){
+    static const char *TAG = "MotionDebug";
+    ESP_LOGD(TAG, "Speed: %d, Direction: %d, Orientation: %d, Should break: %d", robotState->outSpeed, robotState->outDirection, 
+    robotState->outOrientation, robotState->outShouldBrake);
+}

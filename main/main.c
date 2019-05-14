@@ -98,15 +98,6 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(&stateMachine);
 
-        // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
-        // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
-        // printf("Heading: %f\n", robotState.inHeading);
-        // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
-        // printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, 
-        // robotState.inGoalLength, robotState.inGoalDistance, robotState.inGoalVisible);
-        // printf("Attacking? %d", robotState.outIsAttack);
-        // printf("Xpos: %d, Ypos: %d\n", robotState.inX, robotState.inY);
-
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
