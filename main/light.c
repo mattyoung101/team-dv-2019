@@ -3,20 +3,21 @@
 #include "simple_imu.h"
 #include "ads1015.h"
 
-static hmm_vec2 readings[LS_NUM] = {0};
+static bool readings[LS_NUM] = {0};
 static uint32_t rawValues[LS_NUM] = {0};
-static light_sensor *sensors[LS_NUM] = {0};;
-esp_adc_cal_characteristics_t *adc1_chars;
-
+static light_sensor *sensors[LS_NUM] = {0};
 static mplexer_5bit_t lsMux0 = {
     LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX0_OUT, LS_MUX_EN, LS_MUX_WR
 };
-
 static mplexer_5bit_t lsMux1 = {
     LS_MUX_S0, LS_MUX_S1, LS_MUX_S2, LS_MUX_S3, LS_MUX_S4, LS_MUX1_OUT, LS_MUX_EN, LS_MUX_WR
 };
-
-static ls_cluster cluster1, cluster2, cluster3;
+static bool data[LS_NUM] = {0};
+static bool filledInData[LS_NUM] = {0};
+static uint8_t starts[4] = {69};
+static uint8_t ends[4] = {69};
+static esp_timer_handle_t *lsTimer = NULL;
+static const char *TAG = "LightSensor";
 
 float lineAngle = LS_NO_LINE_ANGLE;
 float lineSize = 0;
@@ -24,20 +25,8 @@ float lastAngle = LS_NO_LINE_ANGLE;
 bool isOnLine;
 bool lineOver;
 
-static const char *TAG = "LightSensor";
-
 ////////////////////////////// LIGHT SENSOR //////////////////////////////
 uint16_t ls_read(uint8_t mux){
-    // uint32_t reading = 0;
-    // for (int i = 0; i < ADC_SAMPLES; i++){
-    //     if (mux == 0){
-    //         reading += adc1_get_raw(LS_MUX0_OUT);
-    //     } else {
-    //         reading += adc1_get_raw(LS_MUX1_OUT);
-    //     }
-    // }
-    // return reading / ADC_SAMPLES;
-
     return ads1015_read(mux);
 }
 
@@ -55,11 +44,9 @@ static void ls_func_calibrate(light_sensor* ls, uint8_t mux){
 
 // read and put in array
 static void ls_func_read(light_sensor *ls, uint8_t mux){
-    // uint64_t begin = esp_timer_get_time();
     uint16_t reading = ls_read(mux);
-    readings[ls->pin].X = reading > ls->thresholdValue;
+    readings[ls->pin] = reading > ls->thresholdValue;
     rawValues[ls->pin] = reading;
-    // printf("Read time: %lld\n", esp_timer_get_time() - begin);
 }
 
 void ls_iterate(ls_func_t func){
@@ -74,65 +61,31 @@ void ls_iterate(ls_func_t func){
     }   
 }
 
-////////////////////////////// CLUSTER //////////////////////////////
-
-void cluster_update_left_right(ls_cluster *cluster){
-    cluster->leftSensor = mod(cluster->centre - ((cluster->length - 1) / 2.0f), LS_NUM);
-    cluster->rightSensor = mod(cluster->centre + ((cluster->length - 1) / 2.0f), LS_NUM);
-}
-
-void cluster_update_length_centre(ls_cluster *cluster){
-    if (cluster->leftSensor > cluster->rightSensor) {
-        cluster->centre = floatMod((-(LS_NUM - cluster->leftSensor) + cluster->rightSensor) / 2.0, LS_NUM);
-        cluster->length = (LS_NUM - (cluster->leftSensor - cluster->rightSensor)) + 1;
-    } else {
-        cluster->centre = (cluster->leftSensor + cluster->rightSensor) / 2.0;
-        cluster->length = (cluster->rightSensor - cluster->leftSensor) + 1;
-    }
-}
-
-void cluster_add_cluster(ls_cluster *cluster1, ls_cluster *cluster2){
-    int16_t leftOther = cluster2->leftSensor;
-    int16_t rightOther = cluster2->rightSensor;
-
-    if (mod(cluster1->rightSensor + 1, LS_NUM) == leftOther) {
-        cluster1->rightSensor = rightOther;
-    } else if (mod(rightOther + 1, LS_NUM) == cluster1->leftSensor) {
-        cluster1->leftSensor = leftOther;
-    } else {
-        // We're adding two non-adjacent clusters so we just do not apply any changes to the cluster.
-        return;
-    }
-
-    cluster_update_length_centre(cluster1);
-}
-
-void cluster_reset(ls_cluster *cluster){
-    cluster->centre = 0.0f;
-    cluster->length = 0;
-
-    cluster_update_left_right(cluster);
-}
-
-void cluster_add_clockwise(ls_cluster *cluster){
-    cluster->rightSensor = mod(cluster->rightSensor + 1, LS_NUM);
-    cluster_update_length_centre(cluster);
-}
-
-float cluster_get_angle(ls_cluster *cluster){
-    return cluster->centre / (float) LS_NUM * 360.0f;
-}
-
-float cluster_get_left_angle(ls_cluster *cluster){
-    return cluster->leftSensor / (float) LS_NUM * 360.0f;
-
-}
-
-float cluster_get_right_angle(ls_cluster *cluster){
-    return cluster->rightSensor / (float) LS_NUM * 360.0f;
-}
-
 ////////////////////////////// LIGHT SENSOR ARRAY //////////////////////////////
+static void reset_start_ends(void){
+    for (int i = 0; i < 4; i++) {
+        // just indicate it's invalid with a random number
+        starts[i] = 69;
+        ends[i] = 69;
+    }
+}
+
+static void fill_in_sensors(){
+    // "Filling in sensors" if an off sensor has two adjacent on sensors, it will be turned on
+    for (int i = 0; i < LS_NUM; i++) {
+        filledInData[i] = data[i];
+
+        if (!data[i] && data[mod(i - 1, LS_NUM)] && data[mod(i + 1, LS_NUM)]) {
+            filledInData[i] = true;
+        }
+    }
+
+    lsarray_calc_clusters(true);
+}
+
+static void ls_timer_callback(void *arg){
+
+}
 
 void ls_init(void){
     mplexer_5bit_init(&lsMux0);
@@ -143,21 +96,99 @@ void ls_init(void){
         light_sensor *sensor = calloc(1, sizeof(light_sensor));
         sensor->pin = i;
         sensors[i] = sensor;
-        readings[i].Y = i * (360.0f / (float) LS_NUM); // add angle to each sensor vector
+        readings[i] = false;
     }
 
     // calibrate ALL light sensors at once with ls_iterate
+    // TODO save these to NVS
     ls_iterate(&ls_func_calibrate);
 
-    cluster_reset(&cluster1);
-    cluster_reset(&cluster2);
-    cluster_reset(&cluster3);
+    // create LS timer
+    esp_timer_create_args_t args = {
+        .callback = ls_timer_callback,
+        .arg = NULL,
+        .name = "LSTimer"
+    };
+    ESP_ERROR_CHECK(esp_timer_create(&args, lsTimer));
+    ESP_ERROR_CHECK(esp_timer_start_periodic(*lsTimer, LS_TIMER_PERIOD));
 
     ESP_LOGI(TAG, "Light sensor init OK");
 }
 
 void lsarray_read(void){
     ls_iterate(&ls_func_read);
+}
+
+void lsarray_calc_clusters(bool doneFillInSensors){
+    reset_start_ends();
+
+    // Sensor index
+    uint8_t index = 0;
+    
+    // Previous sensor on/off value
+    bool previousValue = false;
+
+    // Loop through the sensors to find clusters
+    for (int i = 0; i < LS_NUM; i++) {
+        // Cluster start if sensors go off->on
+        if (readings[i] && !previousValue) {
+            starts[index] = i;
+        }
+
+        // Cluster end if sensors go on->off
+        if (!readings[i] && previousValue) {
+            ends[index] = i - 1;
+            index++;
+
+            if (index > 3) {
+                // Too many clusters
+                if (!doneFillInSensors) {
+                    // "Fill in" sensors
+                    fill_in_sensors();
+                } else {
+                    // Unrecognisable line
+                    reset_start_ends();
+                    numClusters = 0;
+                }
+
+                return;
+            }
+        }
+
+        previousValue = readings[i];
+    }
+
+    // Number of completed clusters
+    int tempNumClusters = (int)(starts[0] != LS_ES_DEFAULT) + (int)(starts[1] != LS_ES_DEFAULT) + (int)(starts[2] != LS_ES_DEFAULT) + (int)(starts[3] != LS_ES_DEFAULT);
+
+    if (tempNumClusters != index) {
+        // If the final cluster didn't end, index will be one less than tempNumClusters
+
+        if (starts[0] == 0) {
+            // If the first cluster starts at 0, then merge the first and last
+            starts[0] = starts[index];
+        } else {
+            // Otherwise, end the last cluster
+            ends[index] = LS_NUM - 1;
+            index++;
+
+            if (index > 3) {
+                // Too many clusters
+                if (!doneFillInSensors) {
+                    // "Fill in" sensors
+                    fill_in_sensors();
+                } else {
+                    // Unrecognisable line
+                    reset_start_ends();
+                    numClusters = 0;
+                }
+
+                return;
+            }
+        }
+    }
+
+    numClusters = index;
 }
 
 void lsarray_debug(void){
@@ -181,26 +212,4 @@ void lsarray_debug(void){
     mplexer_5bit_select(&lsMux0, 0);
     // Read ADC channel 1
     printf("Value: %d\n", ads1015_read(0));
-}
-
-void lsarray_calc_vec(void){
-    hmm_vec2 sum = {0};
-
-    for (int i = 0; i < LS_NUM; i++){
-        // convert vectors to cartesian
-        float r = readings[i].X;
-        float theta = readings[i].Y;
-        readings[i].X = r * cosfd(theta);
-        readings[i].Y = r * sinfd(theta);
-
-        // vector add all vectors
-        sum = HMM_AddVec2(sum, readings[i]);
-    }
-
-    // convert back to polar and scale between 1 and 0
-    float sumX = ((float) sum.X / (float) LS_NUM);
-    float sumY = sum.Y;
-
-    lineSize = sqrtf(sq(sumX) + sq(sumY));
-    lineAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
 }
