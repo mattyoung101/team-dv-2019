@@ -42,4 +42,18 @@ static void bt_init(){
         ESP_LOGE(TAG, "Bluedroid enable failed: %s", esp_err_to_name(ret));
         return;
     }
+
+    ESP_LOGI(TAG, "Bluetooth initialised");
+}
+
+// waits for connection, acceptor
+void comms_bt_init_master(){
+    bt_init();
+}
+
+// connects to master, initiator
+void comms_bt_init_slave(){
+    bt_init();
+
+    
 }

@@ -12,6 +12,7 @@
         "esp_utils.h": "c"
     },
     "cSpell.words": [
+        "Bluedroid",
         "GYRO",
         "LOGD",
         "LOGI",
