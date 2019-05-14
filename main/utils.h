@@ -58,7 +58,7 @@ extern pid_config_t forwardPID;
 /** Brake the motors in the FSM **/
 #define FSM_MOTOR_BRAKE do { \
     robotState.outSpeed = 0; \
-    robotState.outShouldBrake = true; \
+    robotState.outShouldBrake = false; \
     return; \
 } while (0);
 /** Switch to a state in attack FSM **/

@@ -101,7 +101,7 @@ void master_task(void *pvParameter){
         // printf("direction: %d, orientation: %d, speed: %d, shouldBrake: %d\n", robotState.outDirection, 
         // robotState.outOrientation, robotState.outSpeed, robotState.outShouldBrake);
         // printf("Heading: %f\n", robotState.inHeading);
-        // printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
+        printf("BallAngle: %d, BallStrength: %d\n", robotState.inBallAngle, robotState.inBallStrength);
         // printf("Goal - Angle: %d, Length: %d, Distance: %d, Visible %d\n", robotState.inGoalAngle, 
         // robotState.inGoalLength, robotState.inGoalDistance, robotState.inGoalVisible);
         // printf("Attacking? %d", robotState.outIsAttack);
@@ -138,8 +138,8 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        lsarray_read();
-        lsarray_debug();
+        // lsarray_read();
+        // lsarray_debug();
 
         simu_calc();
 

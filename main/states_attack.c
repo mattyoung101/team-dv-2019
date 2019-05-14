@@ -70,7 +70,17 @@ void state_attack_idle_update(state_machine_t *fsm){
         FSM_REVERT;
     }
 
-    // printf("In the idle state\n");
+    // float goalAngle = rs.inGoalAngle < 0.0f ? rs.inGoalAngle + 360.0f : rs.inGoalAngle;
+    // float goalAngle_ = fmodf(goalAngle + rs.inHeading, 360.0f);
+
+    // float verticalDistance = rs.inGoalLength * cosf(DEG_RAD * goalAngle_);
+    // float horizontalDistance = rs.inGoalLength * sinf(DEG_RAD * goalAngle_);
+
+    // float distanceMovement = pid_update(&forwardPID, verticalDistance, IDLE_DISTANCE, 0.0f);
+    // float sidewaysMovement = pid_update(&sidePID, horizontalDistance, IDLE_OFFSET, 0.0f);
+
+    // rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
+    // rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
 }
 
 // Pursue
@@ -85,13 +95,14 @@ void state_attack_pursue_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     imu_correction(&robotState);
 
-    IDLE_TIMER_CHECK;
+    // IDLE_TIMER_CHECK;
 
     // Check criteria:
     // Ball not visible (brake) and ball too close (switch to orbit)
     if (rs.inBallStrength <= 0.0f){
         ESP_LOGD(TAG, "Ball is not visible, braking");
         idle_timer_start();
+        // rs.outSpeed = 0;
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength >= ORBIT_DIST){
         ESP_LOGD(TAG, "Ball close enough, switching to orbit, strength: %d, orbit dist thresh: %d", rs.inBallStrength,
@@ -112,7 +123,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     goal_correction(&robotState);
 
-    IDLE_TIMER_CHECK;
+    // IDLE_TIMER_CHECK;
 
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
@@ -143,7 +154,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     goal_correction(&robotState);
     rs.outIsAttack = true;
 
-    IDLE_TIMER_CHECK;
+    // IDLE_TIMER_CHECK;
 
     // Check criteria:
     // Ball too far away, Ball not in front of us, Goal not visible, Ball not visible

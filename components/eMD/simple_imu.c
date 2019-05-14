@@ -54,17 +54,17 @@ vec3d_t simu_read_gyro(void){
 }
 
 void simu_calibrate(void){
-    // for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
-    //     float readingGyro = (float) simu_read_gyro().z;
-    //     calibrationGyro += readingGyro;
-    //     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_TIME));
-    // }
+    for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
+        float readingGyro = (float) simu_read_gyro().z;
+        calibrationGyro += readingGyro;
+        vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_TIME));
+    }
 
-    // calibrationGyro /= IMU_CALIBRATION_COUNT;
-    // ESP_LOGI("SimpleIMU", "Final calibration: %f", calibrationGyro);
+    calibrationGyro /= IMU_CALIBRATION_COUNT;
+    ESP_LOGI("SimpleIMU", "Final calibration: %f", calibrationGyro);
     
     // value I got was -3.393250 at home, so just skip this calibration run
-    calibrationGyro = -3.393250;
+    // calibrationGyro = -3.393250;
 
     ESP_LOGI("SIMU", "Calibration complete");
 }
