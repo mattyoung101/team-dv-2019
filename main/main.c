@@ -124,8 +124,11 @@ void slave_task(void *pvParameter){
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
 
+    puts("Initialising TSOP");
     tsop_init();
+    puts("Initialising LS");
     ls_init();
+    puts("Initialising IMU");
     simu_init();
     simu_calibrate();
 
