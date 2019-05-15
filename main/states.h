@@ -27,7 +27,7 @@ typedef struct {
     float inLineSize;
     bool inOnLine;
     bool inLineOver;
-    float inlastAngle;
+    float inLastAngle;
 
     // Outputs
     int16_t outSpeed;

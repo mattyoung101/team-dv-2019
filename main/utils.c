@@ -142,6 +142,40 @@ void orbit(robot_state_t *robotState){
     robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
 }
 
+void update_line(robot_state_t *robotState) {
+    if(robotState->inOnLine && robotState->inLastAngle != LS_NO_LINE_ANGLE) {
+        if(fabsf(robotState->inLineAngle - robotState->inLastAngle) > LS_LINE_OVER_BUFFER && 
+        fabsf(robotState->inLineAngle - robotState->inLastAngle) < (360 - LS_LINE_OVER_BUFFER)) robotState->inLineOver = true;
+        else robotState->inLineOver = false;
+    }
+
+    if(robotState->inOnLine || robotState->inLineOver) {
+        if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
+            if(robotState->inLineOver) {
+                robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLineAngle - robotState->inHeading, 360.0f) : 
+                fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+            } else {
+                robotState->outDirection = fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+            }
+            robotState->outSpeed = OVER_LINE_SPEED;
+        } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
+            if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
+                robotState->outDirection = fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+                robotState->outSpeed = 0;
+                robotState->outShouldBrake = true;
+            } else {
+                robotState->outSpeed = LINE_TRACK_SPEED;
+            }
+        } else {
+            if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
+        }
+    }
+
+    if(!robotState->inOnLine && !robotState->inLineOver) robotState->inLastAngle = LS_NO_LINE_ANGLE;
+
+    if(!robotState->inLineOver) robotState->inLastAngle = robotState->inLineAngle;
+}
+
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
     // r cos theta, r sin theta
     // where r = X, theta = Y
@@ -193,7 +227,7 @@ void print_ball_data(robot_state_t *robotState){
 void print_line_data(robot_state_t *robotState){
     static const char *TAG = "LineDebug";
     ESP_LOGD(TAG, "Line angle: %f, Line size: %f, On line: %d, Over line: %d, Last angle: %f", robotState->inLineAngle, 
-    robotState->inLineSize, robotState->inOnLine, robotState->inLineOver, robotState->inlastAngle);
+    robotState->inLineSize, robotState->inOnLine, robotState->inLineOver, robotState->inLastAngle);
 }
 
 void print_goal_data(){

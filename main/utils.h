@@ -94,7 +94,8 @@ float get_angle(int16_t x, int16_t y);
 void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);
 /** orbits around the ball **/
 void orbit(robot_state_t *robotState);
-
+/** Does line avoid calculations**/
+void update_line(robot_state_t *robotState);
 /** Converts a 2D polar vector to cartesian **/
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec);
 /** Converts a 2D cartesian vector to polar **/
