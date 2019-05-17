@@ -2,15 +2,15 @@
 
 // Hecking PIDs
 // Orientation Correction PIDs
-pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION};
-pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION};
-pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION};
-pid_config_t goaliePID = {GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX};
+pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION, 0.0f};
+pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION, 0.0f};
+pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION, 0.0f};
+pid_config_t goaliePID = {GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX, 0.0f};
 
 // Movement PIDs
-pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX};
-pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX};
-pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX};
+pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX, 0.0f};
+pid_config_t sidePID = {SIDE_KP, SIDE_KI, SIDE_KD, SIDE_MAX, 0.0f};
+pid_config_t forwardPID = {FORWARD_KP, FORWARD_KI, FORWARD_KD, FORWARD_MAX, 0.0f};
 
 int32_t mod(int32_t x, int32_t m){
     int32_t r = x % m;
@@ -65,15 +65,15 @@ bool is_angle_between(float target, float angle1, float angle2){
 }
 
 void imu_correction(robot_state_t *robotState){
-    if (robotState->outSpeed <= 10){
+    // if (robotState->outSpeed == 0){
         robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
-                                + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+                                + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f);
         // printf("IDLE PID");
-    } else {
-        robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
-                                + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
-        // printf("HEADING PID");
-    }
+    // } else {
+    //     robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+    //                             + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+    //     // printf("HEADING PID");
+    // }
     
     // printf("IMU Correcting: %d\n", robotState->outOrientation);
 }
@@ -133,9 +133,9 @@ void orbit(robot_state_t *robotState){
     int16_t tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0))));
+    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.15 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0))));
     float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1);
-    float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 3 * strengthFactor), 0, 1);
+    float distanceMultiplier = constrain(0.2 * strengthFactor * powf(E, 3 * strengthFactor), 0, 1);
     float angleAddition = ballAngleDifference * distanceMultiplier;
 
     robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);

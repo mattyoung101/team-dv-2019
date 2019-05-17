@@ -36,14 +36,14 @@
 #define HEADING_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3
+#define FORWARD_KP 10
 #define FORWARD_KI 0
-#define FORWARD_KD 0
+#define FORWARD_KD 0.01
 #define FORWARD_MAX 100
 
-#define SIDE_KP 3
+#define SIDE_KP 10
 #define SIDE_KI 0
-#define SIDE_KD 0
+#define SIDE_KD 0.01
 #define SIDE_MAX 100
 
 #define GOALIE_KP 0.3

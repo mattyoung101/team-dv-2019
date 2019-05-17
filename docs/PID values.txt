@@ -1,0 +1,9 @@
+Orig:
+Derivative: 0.000000, Error: -69.730011, elapsed time: 0.101565, integral: -233.067337, correction: -0.000000
+Derivative: 0.787580, Error: -69.809998, elapsed time: 0.101560, integral: -240.157242, correction: -0.157516
+Derivative: 0.403332, Error: -69.850006, elapsed time: 0.099195, integral: -247.086014, correction: -0.080666
+Derivative: 0.480976, Error: -69.899994, elapsed time: 0.103930, integral: -254.350723, correction: -0.096195
+
+Broke:
+Derivative: -53544.277344, Error: 19.829956, elapsed time: 0.001659, integral: 501.916687, correction: 10708.855469
+Derivative: -53645.148438, Error: 19.890015, elapsed time: 0.001657, integral: 461.325043, correction: 10729.030273

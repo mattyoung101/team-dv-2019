@@ -67,8 +67,8 @@ void state_attack_idle_update(state_machine_t *fsm){
     rs.outIsAttack = true;
 
     if (rs.inBallStrength > 0.0f){
-        // ESP_LOGD(TAG, "Ball is visible, reverting");
-        // FSM_REVERT;
+        ESP_LOGD(TAG, "Ball is visible, reverting");
+        FSM_REVERT;
     }
 
     float goalAngle = rs.inGoalAngle < 0.0f ? rs.inGoalAngle + 360.0f : rs.inGoalAngle;

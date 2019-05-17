@@ -56,7 +56,7 @@ void master_task(void *pvParameter){
     xSemaphoreGive(robotStateSem);
 
     // we do it like this to make sure that pursue_enter is called
-    fsm_change_state(&stateMachine, &stateAttackIdle);
+    fsm_change_state(&stateMachine, &stateAttackPursue);
 
     esp_task_wdt_add(NULL);
 
@@ -97,6 +97,10 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(&stateMachine);
+
+        // robotState.outSpeed = 0;
+
+        // print_motion_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
