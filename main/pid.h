@@ -11,7 +11,7 @@
 #endif
 
 typedef struct {
-    float kp, ki, kd, absMax;
+    float kp, ki, kd, absMax, lastInput;
 } pid_config_t;
 
-float pid_update(pid_config_t* conf, float input, float setpoint, float modulus);
+float pid_update(pid_config_t *conf, float input, float setpoint, float modulus);

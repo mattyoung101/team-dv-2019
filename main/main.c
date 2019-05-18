@@ -57,7 +57,7 @@ void master_task(void *pvParameter){
     xSemaphoreGive(robotStateSem);
 
     // we do it like this to make sure that pursue_enter is called
-    fsm_change_state(&stateMachine, &stateAttackIdle);
+    fsm_change_state(&stateMachine, &stateAttackPursue);
 
     // TODO decide which robot we are with a #define
     comms_bt_init_master();
@@ -101,6 +101,10 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(&stateMachine);
+
+        // robotState.outSpeed = 0;
+
+        // print_motion_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);

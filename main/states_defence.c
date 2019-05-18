@@ -26,7 +26,8 @@ void state_defence_reverse_update(state_machine_t *fsm){
     }
 
     if (rs.inBallStrength > 0.0f){ 
-        if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){
+        if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){ // Check if ball is behind
+            ESP_LOGD(TAG, "Ball is behind, orbiting");
             orbit(&robotState);
         } else {
             float distanceMovement = REVERSE_SPEED;
@@ -50,24 +51,29 @@ void state_defence_idle_update(state_machine_t *fsm){
     imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
-        ESP_LOGD(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
-        FSM_CHANGE_STATE_DEFENCE(Reverse);
+        // ESP_LOGD(TAG, "Goal not visible, switching to reverse");
+        ESP_LOGD(TAG, "Cancelling state change to reverse"); // No LRFs yet bois
+        // FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength > 0.0f){
         ESP_LOGD(TAG, "Ball is visible, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    float goalAngle = rs.inGoalAngle < 0.0f ? rs.inGoalAngle + 360.0f : rs.inGoalAngle;
-    float goalAngle_ = fmodf(goalAngle + rs.inHeading, 360.0f);
+    // NOTE: Keeping this here in case everything breaks :P
 
-    float verticalDistance = rs.inGoalLength * cosf(DEG_RAD * goalAngle_);
-    float horizontalDistance = rs.inGoalLength * sinf(DEG_RAD * goalAngle_);
+    // float goalAngle = rs.inGoalAngle < 0.0f ? rs.inGoalAngle + 360.0f : rs.inGoalAngle;
+    // float goalAngle_ = fmodf(goalAngle + rs.inHeading, 360.0f);
 
-    float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f);
-    float sidewaysMovement = pid_update(&sidePID, horizontalDistance, 0.0f, 0.0f);
+    // float verticalDistance = rs.inGoalLength * cosf(DEG_RAD * goalAngle_);
+    // float horizontalDistance = rs.inGoalLength * sinf(DEG_RAD * goalAngle_);
 
-    rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
-    rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+    // float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f);
+    // float sidewaysMovement = pid_update(&sidePID, horizontalDistance, 0.0f, 0.0f);
+
+    // rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
+    // rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+
+    position(&robotState, DEFEND_DISTANCE, 0.0f);
 }
 
  // Defend
@@ -76,7 +82,7 @@ void state_defence_idle_update(state_machine_t *fsm){
 
     rs.outIsAttack = false;
 
-    goal_correction(&robotState);
+    goal_correction(&robotState); // Face the back of the robot to the goal
 
     if (!rs.inGoalVisible){
         ESP_LOGD(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
@@ -90,10 +96,10 @@ void state_defence_idle_update(state_machine_t *fsm){
     }
 
     if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
-        orbit(&robotState);
+        orbit(&robotState); // Ball is behind, orbit so we don't score an own goal
     } else {
-        float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f);
-        float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f);
+        float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+        float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f); // Centre on the ball
 
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
         rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
@@ -114,6 +120,7 @@ void state_defence_surge_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
+    // ESP_LOGD(TAG, "Yeet");
     rs.outDirection = rs.inBallAngle;
     rs.outSpeed = SURGE_SPEED;
 }
