@@ -27,7 +27,8 @@ bool lineOver;
 
 ////////////////////////////// LIGHT SENSOR //////////////////////////////
 uint16_t ls_read(uint8_t mux){
-    return ads1015_read(mux);
+    // return ads1015_read(mux);
+    return 69;
 }
 
 // calibrate each sensor
@@ -211,5 +212,5 @@ void lsarray_debug(void){
     // Select MUX 1 LS 0
     mplexer_5bit_select(&lsMux0, 0);
     // Read ADC channel 1
-    printf("Value: %d\n", ads1015_read(0));
+    // printf("Value: %d\n", ads1015_read(0));
 }
