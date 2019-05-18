@@ -30,10 +30,16 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 4
+#define HEADING_KP 1
 #define HEADING_KI 0
 #define HEADING_KD 0.1
 #define HEADING_MAX_CORRECTION 100
+
+// --- Idle Correction --- //
+#define IDLE_KP 0.5
+#define IDLE_KI 0
+#define IDLE_KD 0.1
+#define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
 #define FORWARD_KP 10
@@ -68,12 +74,6 @@
 #define GOAL_KI 0
 #define GOAL_KD 0.06
 #define GOAL_MAX_CORRECTION 100
-
-// --- Idle Correction --- //
-#define IDLE_KP 0.9
-#define IDLE_KI 0
-#define IDLE_KD 0.1
-#define IDLE_MAX_CORRECTION 100
 
 // Maths
 #define PI 3.14159265358979323846
@@ -117,6 +117,7 @@
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000
+#define IDLE_MIN_SPEED 15
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
