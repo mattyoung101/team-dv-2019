@@ -122,11 +122,12 @@ void slave_task(void *pvParameter){
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
+    // comms_bt_init_master();
 
     tsop_init();
-    ls_init();
-    simu_init();
-    simu_calibrate();
+    // ls_init();
+    // simu_init();
+    // simu_calibrate();
 
     // TODO flash light once device is initialised
 
@@ -139,12 +140,9 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        // lsarray_read();
-        // lsarray_debug();
+        // simu_calc();
 
-        simu_calc();
-
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
+        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(0));

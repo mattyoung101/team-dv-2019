@@ -133,7 +133,7 @@ void orbit(robot_state_t *robotState){
     int16_t tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.15 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.05 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
     float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
     float distanceMultiplier = constrain(0.2 * strengthFactor * powf(E, 3 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
     float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
