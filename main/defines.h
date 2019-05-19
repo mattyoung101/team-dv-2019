@@ -30,13 +30,13 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 1
+#define HEADING_KP 0.8
 #define HEADING_KI 0
 #define HEADING_KD 0.1
 #define HEADING_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
-#define IDLE_KP 1.5
+#define IDLE_KP 0.8
 #define IDLE_KI 0
 #define IDLE_KD 0.1
 #define IDLE_MAX_CORRECTION 100
@@ -191,7 +191,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION 20 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION -30 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -226,7 +226,7 @@
 // Orbit
 #define BALL_FAR_STRENGTH 90
 #define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_SLOW 30
 #define ORBIT_SPEED_FAST 50
 
 // Attacker FSM defines
