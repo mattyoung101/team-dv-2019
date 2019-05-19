@@ -36,7 +36,7 @@
 #define HEADING_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
-#define IDLE_KP 0.4
+#define IDLE_KP 1.5
 #define IDLE_KI 0
 #define IDLE_KD 0.1
 #define IDLE_MAX_CORRECTION 100
