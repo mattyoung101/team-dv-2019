@@ -7,9 +7,10 @@ void setup() {
 }
 
 void requestEvent(){
-  Wire.write(0x69); // test byte
+  Wire.write(0x69);
 }
 
 void loop() {
   Serial.println("epic");
+//  Wire.write(0x69);
 }
