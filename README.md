@@ -7,6 +7,11 @@ For more information on our robot, please see our team's PowerPoint and poster.
 
 Contact Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns.
 
+### Important notice about IDF version
+Due to unrelated technical issues, this project currently targets exactly v3.2 of the IDF, meaning the latest commit on [this branch](https://github.com/espressif/esp-idf/tree/release/v3.2). Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
+
+In the future (once IT fixes my heckin' laptop), we do plan to upgrade to v3.3-beta3.
+
 ## Directory structure
 - components/
     - eMD: contains the Embedded MotionDriver from InvenSense, with improvements by our team allowing it run on the ESP32 and use 9-axis sensor fusion. Essentially, it processes our IMU (MPU9250) data.

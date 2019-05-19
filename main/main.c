@@ -26,6 +26,7 @@
 #include "pid.h"
 #include "vl53l0x_api.h"
 #include "ads1015.h"
+#include "comms_bluetooth.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -57,6 +58,9 @@ void master_task(void *pvParameter){
 
     // we do it like this to make sure that pursue_enter is called
     fsm_change_state(&stateMachine, &stateAttackPursue);
+
+    // TODO decide which robot we are with a #define
+    comms_bt_init_master();
 
     esp_task_wdt_add(NULL);
 
@@ -119,13 +123,12 @@ void slave_task(void *pvParameter){
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
 
-    puts("Initialising TSOP");
     tsop_init();
-    puts("Initialising LS");
     ls_init();
-    puts("Initialising IMU");
     simu_init();
     simu_calibrate();
+
+    // TODO flash light once device is initialised
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -149,6 +152,11 @@ void slave_task(void *pvParameter){
 }
 
 void app_main(){
+    puts("====================================================================================");
+    puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
+    puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
+    puts("====================================================================================\n");
+
     // Initialize NVS
     esp_err_t err = nvs_flash_init();
     if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND) {

@@ -68,6 +68,8 @@ extern pid_config_t forwardPID;
 #define FSM_CHANGE_STATE_DEFENCE(STATE) do { fsm_change_state(fsm, &stateDefence ##STATE); return; } while (0);
 /** Revert state in FSM **/
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
+/** printf with a newline automatically attached on the end **/
+#define printfln(format, __VA__ARGS__) do { printf(format "\n", ## __VA__ARGS__); } while(0);
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);

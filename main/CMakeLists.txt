@@ -17,7 +17,6 @@ set(COMPONENT_SRCS
                    "cam.c"
                    "music.c"
                    "mplexer.c"
-                   "comms_wifi.c"
                    "movavg.c"
                    "ads1015.c"
                    "comms_bluetooth.c"

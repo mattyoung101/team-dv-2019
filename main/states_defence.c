@@ -52,26 +52,12 @@ void state_defence_idle_update(state_machine_t *fsm){
 
     if (!rs.inGoalVisible){
         // ESP_LOGD(TAG, "Goal not visible, switching to reverse");
-        ESP_LOGD(TAG, "Cancelling state change to reverse"); // No LRFs yet bois
+        ESP_LOGD(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
         // FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength > 0.0f){
         ESP_LOGD(TAG, "Ball is visible, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
-
-    // NOTE: Keeping this here in case everything breaks :P
-
-    // float goalAngle = rs.inGoalAngle < 0.0f ? rs.inGoalAngle + 360.0f : rs.inGoalAngle;
-    // float goalAngle_ = fmodf(goalAngle + rs.inHeading, 360.0f);
-
-    // float verticalDistance = rs.inGoalLength * cosf(DEG_RAD * goalAngle_);
-    // float horizontalDistance = rs.inGoalLength * sinf(DEG_RAD * goalAngle_);
-
-    // float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f);
-    // float sidewaysMovement = pid_update(&sidePID, horizontalDistance, 0.0f, 0.0f);
-
-    // rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
-    // rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
 
     position(&robotState, DEFEND_DISTANCE, 0.0f);
 }
