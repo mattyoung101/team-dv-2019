@@ -49,7 +49,7 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-6.02073, -5.494869, 0.4617908))
+rgb_gain_db=(-6.02073, -6.02073, -1.557143))
 
 sensor.set_brightness(-3)
 sensor.set_contrast(3)

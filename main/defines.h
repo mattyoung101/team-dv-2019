@@ -36,20 +36,20 @@
 #define HEADING_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
-#define IDLE_KP 0.5
+#define IDLE_KP 0.4
 #define IDLE_KI 0
 #define IDLE_KD 0.1
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 10
+#define FORWARD_KP 5
 #define FORWARD_KI 0
-#define FORWARD_KD 0.01
+#define FORWARD_KD 0
 #define FORWARD_MAX 100
 
-#define SIDE_KP 10
+#define SIDE_KP 5
 #define SIDE_KI 0
-#define SIDE_KD 0.01
+#define SIDE_KD 0
 #define SIDE_MAX 100
 
 #define GOALIE_KP 0.3
@@ -113,11 +113,11 @@
 #define GOAL_OFF 2
 #define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
-#define IDLE_DISTANCE 40
+#define IDLE_DISTANCE 43
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000
-#define IDLE_MIN_SPEED 15
+#define IDLE_MIN_SPEED 20
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -203,7 +203,7 @@
 #define TSOP_MUX_WR 26
 
 // IMU
-#define IMU_CALIBRATION_COUNT 50
+#define IMU_CALIBRATION_COUNT 100
 #define IMU_CALIBRATION_TIME 50
 #define IMU_THRESHOLD 1000
 #define IMU_MULTIPLIER 100.0f
