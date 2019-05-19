@@ -102,7 +102,7 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(&stateMachine);
 
-        // robotState.outSpeed = 0;
+        robotState.outSpeed = 0;
 
         // print_motion_data(&robotState);
 
@@ -126,8 +126,8 @@ void slave_task(void *pvParameter){
 
     tsop_init();
     // ls_init();
-    // simu_init();
-    // simu_calibrate();
+    simu_init();
+    simu_calibrate();
 
     // TODO flash light once device is initialised
 
@@ -140,9 +140,9 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        // simu_calc();
+        simu_calc();
 
-        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(0));
