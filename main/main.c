@@ -56,7 +56,7 @@ void master_task(void *pvParameter){
     robotStateSem = xSemaphoreCreateMutex();
     xSemaphoreGive(robotStateSem);
 
-    // we do it like this to make sure that pursue_enter is called
+    // we do it like this (start out in nothing and switch to pursue) to make sure that pursue_enter is called
     fsm_change_state(&stateMachine, &stateAttackPursue);
 
     // TODO decide which robot we are with a #define
@@ -102,7 +102,7 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(&stateMachine);
 
-        robotState.outSpeed = 0;
+        robotState.outSpeed = 0; // TODO why is this here?
 
         // print_motion_data(&robotState);
 
@@ -126,23 +126,35 @@ void slave_task(void *pvParameter){
 
     tsop_init();
     // ls_init();
-    simu_init();
-    simu_calibrate();
+    // simu_init();
+    // simu_calibrate();
 
     // TODO flash light once device is initialised
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
+
+    uint8_t nanoData[1] = {0};
     
     while (true) {
+        // update TSOPs
         for (int i = 0; i < 255; i++){
             tsop_update(NULL);
         }
         tsop_calc();
 
-        simu_calc();
+        // get LS values from Nano and redirect to master
+        PERF_TIMER_START;
+        // sending lineAngle and lineSize, 16 bit ints each = 4 bytes over I2C
+        memset(nanoData, 0, 1);
+        nano_read(0x12, 1, nanoData);
+        printf("%d\n", nanoData[0]);
+        PERF_TIMER_STOP;
 
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
+        // simu_calc();
+
+        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, 
+        // (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(0));
@@ -169,17 +181,20 @@ void app_main(){
     nvs_handle storageHandle;
     ESP_ERROR_CHECK(nvs_open("RobotSettings", NVS_READWRITE, &storageHandle));
 
-    // if set, write out Master or Slave to NVS on first boot
+    // write master/slave/robot ID to NVS if configured
     #ifdef NVS_WRITE_MASTER
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_MASTER));
-        ESP_ERROR_CHECK(nvs_commit(storageHandle));
-        ESP_LOGE("AutoMode", "Successfully wrote Master to NVS.\n");
+        ESP_LOGE("AutoMode", "Successfully wrote Master to NVS.");
     #elif defined NVS_WRITE_SLAVE
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_SLAVE));
+        ESP_LOGE("AutoMode", "Successfully wrote Slave to NVS.");
+    #elif defined NVS_WRITE_ROBOTNUM
+        ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "RobotID", NVS_WRITE_ROBOTNUM));
+        ESP_LOGE("RobotNum", "Successfully wrote robot number to NVS.");
+    #endif
+
+    #ifdef NVS_WRITE_MASTER || defined NVS_WRITE_SLAVE || defined NVS_WRITE_ROBOTNUM
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
-        ESP_LOGE("AutoMode", "Successfully wrote Slave to NVS.\n");
-    #else
-        ESP_LOGI("AutoMode", "No read/write performed");
     #endif
 
     err = nvs_get_u8(storageHandle, "Mode", &mode);

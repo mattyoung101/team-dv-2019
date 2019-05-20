@@ -49,7 +49,7 @@ extern pid_config_t forwardPID;
 /** Starts counting on the performance timer. The variable "pfBegin" must be undefined **/
 #define PERF_TIMER_START int64_t pfBegin = esp_timer_get_time();
 /** Stops the performance timer and logs to UART. **/
-#define PERF_TIMER_STOP ESP_LOGD("PerfTimer", "%lld ms", (esp_timer_get_time() - pfBegin) / 1000);
+#define PERF_TIMER_STOP ESP_LOGD("PerfTimer", "%lld us", (esp_timer_get_time() - pfBegin));
 /** Cosine in degrees of x in degrees **/
 #define cosfd(x) (cosf(x * DEG_RAD) * RAD_DEG)
 /** Sin in degrees of x in degrees **/
@@ -84,6 +84,8 @@ int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t 
 float lerp(float fromValue, float toValue, float progress);
 
 void i2c_scanner();
+/** Reads a series of bytes from the Nano LS slave **/
+void nano_read(uint8_t addr, size_t size, uint8_t *data);
 /** Source: https://stackoverflow.com/a/11412077/5007892 **/
 bool is_angle_between(float target, float angle1, float angle2);
 /** Runs IMU correction **/

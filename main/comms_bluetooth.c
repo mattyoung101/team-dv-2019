@@ -101,9 +101,9 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
     switch (event) {
         case ESP_SPP_INIT_EVT:
             ESP_LOGI(TAGM, "ESP_SPP_INIT_EVT");
-            esp_bt_dev_set_device_name("DeusVult_Host");
+            esp_bt_dev_set_device_name("DeusVult_Robot0");
             esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-            esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 0x25, 0);
+            esp_spp_start_srv(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_SLAVE, 0, "DeusVult_SPP");
             break;
         case ESP_SPP_DISCOVERY_COMP_EVT:
             ESP_LOGI(TAGM, "ESP_SPP_DISCOVERY_COMP_EVT");

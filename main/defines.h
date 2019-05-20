@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = wifi host, 1 = wifi client
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor, 1 = bluetooth initiator
 
 // Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
 // Will probably slow down the robot, don't enable in competition!
@@ -18,6 +18,7 @@
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
+#define I2C_NANO_SLAVE_ADDR 0x12
 #define I2C_TIMEOUT 250 // ms
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
@@ -232,11 +233,11 @@
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 20
+#define IN_FRONT_MIN_ANGLE 20 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 340
 #define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball
-#define ACCEL_PROG 0.05
+#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
+#define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
