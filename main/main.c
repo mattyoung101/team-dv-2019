@@ -182,7 +182,7 @@ void app_main(){
     ESP_ERROR_CHECK(nvs_open("RobotSettings", NVS_READWRITE, &storageHandle));
 
     // write master/slave/robot ID to NVS if configured
-    #ifdef NVS_WRITE_MASTER
+    #if defined NVS_WRITE_MASTER
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "Mode", AUTOMODE_MASTER));
         ESP_LOGE("AutoMode", "Successfully wrote Master to NVS.");
     #elif defined NVS_WRITE_SLAVE
@@ -193,7 +193,7 @@ void app_main(){
         ESP_LOGE("RobotNum", "Successfully wrote robot number to NVS.");
     #endif
 
-    #ifdef NVS_WRITE_MASTER || defined NVS_WRITE_SLAVE || defined NVS_WRITE_ROBOTNUM
+    #if defined NVS_WRITE_MASTER || defined NVS_WRITE_SLAVE || defined NVS_WRITE_ROBOTNUM
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
     #endif
 

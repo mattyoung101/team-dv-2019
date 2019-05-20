@@ -85,7 +85,7 @@ float lerp(float fromValue, float toValue, float progress);
 
 void i2c_scanner();
 /** Reads a series of bytes from the Nano LS slave **/
-void nano_read(uint8_t addr, size_t size, uint8_t *data);
+uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data);
 /** Source: https://stackoverflow.com/a/11412077/5007892 **/
 bool is_angle_between(float target, float angle1, float angle2);
 /** Runs IMU correction **/

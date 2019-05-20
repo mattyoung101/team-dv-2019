@@ -167,7 +167,7 @@ void position(robot_state_t *robotState, float distance, float offset) {
 
 }
 
-void nano_read(uint8_t addr, size_t size, uint8_t *data) {
+uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     static const char *TAG = "NanoRead";
     
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
@@ -187,7 +187,7 @@ void nano_read(uint8_t addr, size_t size, uint8_t *data) {
     i2c_cmd_link_delete(cmd);
 
     I2C_ERR_CHECK(ret);
-    // ESP_LOGI(TAG, "Read successful");
+    return ESP_OK;
 }
 
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
