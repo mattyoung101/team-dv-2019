@@ -78,7 +78,7 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = (receivedData.tsopAngle - TSOP_CORRECTION) % 360;
+                robotState.inBallAngle = (receivedData.tsopAngle + TSOP_CORRECTION) % 360;
                 robotState.inBallStrength = receivedData.tsopStrength;
 
                 robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
@@ -102,9 +102,9 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(&stateMachine);
 
-        robotState.outSpeed = 0; // TODO why is this here?
+        // robotState.outSpeed = 0;
 
-        // print_motion_data(&robotState);
+        // print_ball_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
