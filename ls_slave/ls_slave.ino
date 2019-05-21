@@ -1,48 +1,39 @@
 #include <Wire.h>
+#include "LightSensorArray.h"
 
-#define LS_EN 2
-#define LS_S0 3
-#define LS_S1 4
-#define LS_S2 5
-#define LS_S3 6
-#define LS_S4 7
-#define LS_WR 8
+LightSensorArray ls = LightSensorArray();
 
 void setup() {
-  // init I2C and UART
-//  Wire.begin(0x12); // join bus on address 0x12 (in slave mode)
-//  Wire.onRequest(requestEvent);
+  Wire.begin(0x12); // join bus on address 0x12 (in slave mode)
+  Wire.onRequest(requestEvent);
   Serial.begin(9600);
 
-  // initialise the multiplexer
-  pinMode(A0, INPUT);
-  pinMode(A1, INPUT);
-  pinMode(LS_EN, OUTPUT);
-  pinMode(LS_S0, OUTPUT);
-  pinMode(LS_S1, OUTPUT);
-  pinMode(LS_S2, OUTPUT);
-  pinMode(LS_S3, OUTPUT);
-  pinMode(LS_S4, OUTPUT);
-  pinMode(LS_WR, OUTPUT);
+  // initialise LS library
+  ls.init();
+  ls.calibrate();
 }
 
 void loop() {
-  digitalWrite(LS_EN, LOW);
-  digitalWrite(LS_WR, LOW);
-  digitalWrite(LS_S0, HIGH);
-  digitalWrite(LS_S1, HIGH);
-  digitalWrite(LS_S2, HIGH);
-  digitalWrite(LS_S3, HIGH);
-  digitalWrite(LS_S4, LOW);
-  digitalWrite(LS_WR, HIGH);
-  Serial.print("A0: ");
-  Serial.println(analogRead(A0));
+//  digitalWrite(LS_EN, LOW);
+//  digitalWrite(LS_WR, LOW);
+//  digitalWrite(LS_S0, HIGH);
+//  digitalWrite(LS_S1, HIGH);
+//  digitalWrite(LS_S2, HIGH);
+//  digitalWrite(LS_S3, HIGH);
+//  digitalWrite(LS_S4, LOW);
+//  digitalWrite(LS_WR, HIGH);
+//  Serial.print("A0: ");
+//  Serial.println(analogRead(A0));
 //  Serial.print("A1: ");
 //  Serial.println(analogRead(A1));
+
+  ls.read();
+  ls.calculateClusters();
+  ls.calculateLine();
 }
 
 void requestEvent(){
-  Wire.write(0xB); // begin byte
-  // write out values 
+  Wire.write(0xB);
+  // TODO return the latest LS reading we got here (instant response time then) - clusters are updated in loop()
 }
 

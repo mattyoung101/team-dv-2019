@@ -44,6 +44,7 @@ static void comms_i2c_receive_task(void *pvParameters){
     }
 }
 
+/** sends/receives data from the Arduino Nano LS slave **/
 static void nano_comms_task(void *pvParameters){
     static const char *TAG = "NanoCommsTask";
     uint8_t buf[9] = {0};
@@ -138,6 +139,7 @@ static int comms_i2c_send_data(uint8_t *buf, size_t bufSize){
 
 int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize, uint16_t heading){
     // temp 11 byte buffer on the stack to expand out 5 16 bit integers into 10 8 bit integers + 1 start byte
+    // TODO use a static array and not alloca, saves memory concerns/stack overflow issues
     uint8_t *buf = alloca(11);
     buf[0] = I2C_BEGIN_DEFAULT;
     buf[1] = HIGH_BYTE_16(tsopAngle);
