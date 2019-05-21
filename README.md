@@ -8,14 +8,19 @@ For more information on our robot, please see our team's PowerPoint and poster.
 Contact Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns.
 
 ### Important notice about IDF version
-Due to unrelated technical issues, this project currently targets exactly v3.2 of the IDF, meaning the latest commit on [this branch](https://github.com/espressif/esp-idf/tree/release/v3.2). Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
+Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
+This project currently uses the **[v3.3 release branch](https://github.com/espressif/esp-idf/tree/release/v3.3) version** (i.e. the latest commit on origin/release/v3.3).
 
-In the future (once IT fixes my heckin' laptop), we do plan to upgrade to v3.3-beta3.
+Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/versions.html) for more information about IDF versions.
 
 ## Directory structure
+- .vscode: VSCode settings, mainly spellchecking. In order to create `c_cpp_properties.json` for the C/C++ extension (which is not synced on Git), please see `docs/c_properties_template.txt`.
 - components/
-    - eMD: contains the Embedded MotionDriver from InvenSense, with improvements by our team allowing it run on the ESP32 and use 9-axis sensor fusion. Essentially, it processes our IMU (MPU9250) data.
-- docs: contains various bits of documentation
+    - eMD: contains the Embedded Motion Driver, which is no longer used. All InvenSense files in this directory are licensed under their own license, the rest (e.g. simple_imu.*) are under the main repo's license.
+    - mpl: InvenSense Motion Processing Library, no longer used.
+    - vl53l0x: ST's VL53L0X LRF driver and docs, the [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x)
+- docs: contains various bits of documentation, templates, etc
+- ls_slave: contains the Arduino project which runs on the Arduino Nano light sensor slave device
 - main: contains the main code that runs on the ESPs
 - openmv: contains the code that runs on our camera, the OpenMV H7
 - scripts: contains various Python scripts for generating code and simple debugging
@@ -24,10 +29,10 @@ In the future (once IT fixes my heckin' laptop), we do plan to upgrade to v3.3-b
 ## License
 This code is currently proprietary and confidential to Brisbane Boys' College and Team Deus Vult. No redistribution or use outside BBC teams is permitted. 
 
-Note: At some point, the code may be re-licensed under the BSD 4-Clause or MPL.
+_At some point, the code may be re-licensed under the BSD 4-Clause or MPL._
 
-## Libraries used
-- ESP-IDF: Apache 2 license
+## Libraries and licenses
+- ESP-IDF: Apache 2
 - Embedded MotionDriver: see License.txt in components/eMD
 - DG_dynarr: Public Domain
 - HandmadeMath: Public Domain

@@ -1,0 +1,7 @@
+D2 => LS_EN
+D3 => LS_S0
+D4 => LS_S1
+D5 => LS_S2
+D6 => LS_S3
+D7 => LS_S4
+D8 => LS_WRITE

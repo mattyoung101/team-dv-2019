@@ -1,5 +1,6 @@
 #include "comms_i2c.h"
 #include "HandmadeMath.h"
+#include "states.h"
 
 SemaphoreHandle_t rdSem = NULL;
 i2c_data_t receivedData = {0};
@@ -43,6 +44,45 @@ static void comms_i2c_receive_task(void *pvParameters){
     }
 }
 
+static void nano_comms_task(void *pvParameters){
+    static const char *TAG = "NanoCommsTask";
+    uint8_t buf[9] = {0};
+    esp_task_wdt_add(NULL);
+    ESP_LOGI(TAG, "Nano comms task init OK");
+
+    while (true){
+        /*
+        float inLineAngle: 2 bytes
+        float inLineSize: 2 bytes
+        bool inOnLine: 1 byte
+        bool inLineOver: 1 byte
+        float inLastAngle: 2 bytes
+        = 8 bytes + 1 start byte 
+        = 9 bytes total
+        */
+        memset(buf, 0, 9);
+        nano_read(I2C_NANO_SLAVE_ADDR, 9, buf);
+
+        if (buf[0] == I2C_BEGIN_DEFAULT){
+            if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+                // buf[0] is the begin byte, so start from buf[1]
+                robotState.inLineAngle = UNPACK_16(buf[1], buf[2]) / IMU_MULTIPLIER;
+                robotState.inLineSize = UNPACK_16(buf[3], buf[4]) / IMU_MULTIPLIER;
+                robotState.inOnLine = (bool) buf[5];
+                robotState.inLineOver = (bool) buf[6];
+                robotState.inLastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
+                xSemaphoreGive(robotStateSem);
+            } else {
+                ESP_LOGW(TAG, "Failed to acquire robot state semaphore in time!");
+            }
+        } else {
+            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+        }
+
+        esp_task_wdt_reset();
+    }
+}
+
 void comms_i2c_init_master(i2c_port_t port){
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
@@ -56,6 +96,8 @@ void comms_i2c_init_master(i2c_port_t port){
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
+
+    xTaskCreate(nano_comms_task, "NanoCommsTask", 3048, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }

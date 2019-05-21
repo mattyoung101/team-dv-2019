@@ -43,10 +43,12 @@ static uint8_t mode = AUTOMODE_ILLEGAL;
 void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
 
+    gpio_set_direction(2, GPIO_MODE_OUTPUT); // set builtin LED direction
+    gpio_set_level(2, 0);
+
     // Initialise hardware
     motor_init();
     comms_i2c_init_slave();
-    // comms_wifi_init_host();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
@@ -59,8 +61,10 @@ void master_task(void *pvParameter){
     // we do it like this (start out in nothing and switch to pursue) to make sure that pursue_enter is called
     fsm_change_state(&stateMachine, &stateAttackPursue);
 
-    // TODO decide which robot we are with a #define
+    // TODO read NVS to check to init master or slave BT
     comms_bt_init_master();
+
+    gpio_set_level(2, 0);
 
     esp_task_wdt_add(NULL);
 
@@ -103,7 +107,6 @@ void master_task(void *pvParameter){
         fsm_update(&stateMachine);
 
         // robotState.outSpeed = 0;
-
         // print_ball_data(&robotState);
 
         // run motors
@@ -119,22 +122,23 @@ void master_task(void *pvParameter){
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
+    gpio_set_direction(2, GPIO_MODE_OUTPUT); // set builtin LED direction
+    gpio_set_level(2, 0);
+
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
-    // comms_bt_init_master();
+    comms_bt_init_master();
 
     tsop_init();
-    // ls_init();
-    // simu_init();
-    // simu_calibrate();
-
-    // TODO flash light once device is initialised
+    ls_init();
+    simu_init();
+    simu_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
 
-    uint8_t nanoData[1] = {0};
+    gpio_set_level(2, 1);
     
     while (true) {
         // update TSOPs
@@ -143,21 +147,13 @@ void slave_task(void *pvParameter){
         }
         tsop_calc();
 
-        // get LS values from Nano and redirect to master
-        PERF_TIMER_START;
-        // sending lineAngle and lineSize, 16 bit ints each = 4 bytes over I2C
-        memset(nanoData, 0, 1);
-        nano_read(0x12, 1, nanoData);
-        printf("%d\n", nanoData[0]);
-        PERF_TIMER_STOP;
+        simu_calc();
 
-        // simu_calc();
-
-        // comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, 
-        // (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
+        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, 
+        (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(0));
+        // vTaskDelay(pdMS_TO_TICKS(0));
     }
 }
 
@@ -165,6 +161,7 @@ void app_main(){
     puts("====================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
     puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
+    puts(" * IDF version: " IDF_VER);
     puts("====================================================================================\n");
 
     // Initialize NVS

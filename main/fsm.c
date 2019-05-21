@@ -9,7 +9,7 @@ void fsm_update(state_machine_t *fsm){
 }
 
 static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newState, bool pushToStack){
-    // ESP_LOGD(TAG, "internal_c/hange_state, changing to %s, push to stack? %d", newState->name, pushToStack);
+    // ESP_LOGD(TAG, "internal_change_state, changing to %s, push to stack? %d", newState->name, pushToStack);
     
     if (pushToStack) da_push(fsm->stateHistory, fsm->currentState);
     fsm->currentState->exit(fsm);

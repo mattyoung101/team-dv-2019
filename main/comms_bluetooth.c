@@ -24,7 +24,7 @@ static void bt_init(){
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
     esp_err_t ret = ESP_OK;
     if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
-        ESP_LOGE(TAG, "Controller init failed %s", esp_err_to_name(ret));
+        ESP_LOGE(TAG, "Controller init failed: %s", esp_err_to_name(ret));
         return;
     }
 
