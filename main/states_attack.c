@@ -148,7 +148,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
                  ORBIT_DIST);
         FSM_REVERT;
-        // FSM_CHANGE_STATE(Pursue);
+        FSM_CHANGE_STATE(Pursue);
     } else if (rs.inBallStrength >= ORBIT_DIST && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
                 && is_angle_between(rs.inGoalAngle, 30, 330)){
         ESP_LOGD(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
