@@ -64,6 +64,8 @@ static void nano_comms_task(void *pvParameters){
         memset(buf, 0, 9);
         nano_read(I2C_NANO_SLAVE_ADDR, 9, buf);
 
+        // TODO TODO TODO: DO NOT UNPACK HERE!!!! SEND TO MASTER!!!!! we are the SLAVE when this is running!!!
+
         if (buf[0] == I2C_BEGIN_DEFAULT){
             if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // buf[0] is the begin byte, so start from buf[1]
@@ -98,7 +100,7 @@ void comms_i2c_init_master(i2c_port_t port){
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 3048, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
@@ -116,8 +118,7 @@ void comms_i2c_init_slave(void){
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     // min size is of i2c fifo buffer is 100 bytes, so we use a 32 * 9 byte buffer
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 288, 288, 0));
-    // TODO decrease stack size?
-    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }

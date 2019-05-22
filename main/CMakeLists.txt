@@ -1,6 +1,6 @@
 # Edit following two lines to set component requirements (see docs)
 set(COMPONENT_REQUIRES )
-set(COMPONENT_PRIV_REQUIRES )
+set(COMPONENT_PRIV_REQUIRES "protobuf-c")
 
 set(COMPONENT_SRCS  
                    "main.c"
@@ -18,7 +18,6 @@ set(COMPONENT_SRCS
                    "music.c"
                    "mplexer.c"
                    "movavg.c"
-                   "ads1015.c"
                    "comms_bluetooth.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)

@@ -1,4 +1,4 @@
-Deus Vult ESP32 IDF
+Team Deus Vult (ESP32 IDF)
 ====================
 
 This repository contains the code powering Team Deus Vult's 2019 robot, competing in RoboCup Jr Soccer. It is written almost entirely in C, without some Python scripts for code generation and debugging.
@@ -18,10 +18,10 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
 - components/
     - eMD: contains the Embedded Motion Driver, which is no longer used. All InvenSense files in this directory are licensed under their own license, the rest (e.g. simple_imu.*) are under the main repo's license.
     - mpl: InvenSense Motion Processing Library, no longer used.
-    - vl53l0x: ST's VL53L0X LRF driver and docs, the [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x)
+    - vl53l0x: ST's VL53L0X LRF driver and docs. We use Kyle Hendrick's [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x).
 - docs: contains various bits of documentation, templates, etc
-- ls_slave: contains the Arduino project which runs on the Arduino Nano light sensor slave device
-- main: contains the main code that runs on the ESPs
+- ls_slave: contains the code which runs on the Arduino Nano light sensor slave device
+- main: contains the main code that runs on the master and slave ESP32
 - openmv: contains the code that runs on our camera, the OpenMV H7
 - scripts: contains various Python scripts for generating code and simple debugging
     - midis: contains MIDI files to be converted and played on the robot
@@ -33,6 +33,5 @@ _At some point, the code may be re-licensed under the BSD 4-Clause or MPL._
 
 ## Libraries and licenses
 - ESP-IDF: Apache 2
-- Embedded MotionDriver: see License.txt in components/eMD
 - DG_dynarr: Public Domain
 - HandmadeMath: Public Domain

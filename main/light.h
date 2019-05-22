@@ -8,7 +8,6 @@
 #include "math.h"
 #include "mplexer.h"
 #include "esp_adc_cal.h"
-#include "ads1015.h"
 
 // Ported and adapted from LJStand's 2018 LightSensorArray.cpp
 

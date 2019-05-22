@@ -1,7 +1,6 @@
 #include "light.h"
 #include "HandmadeMath.h"
 #include "simple_imu.h"
-#include "ads1015.h"
 
 static bool readings[LS_NUM] = {0};
 static uint32_t rawValues[LS_NUM] = {0};
