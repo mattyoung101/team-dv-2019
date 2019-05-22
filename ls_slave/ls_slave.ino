@@ -31,8 +31,6 @@ void loop() {
   ls.calculateClusters();
   ls.calculateLine();
 
-  ls.dump();
-
 //  Serial.print("lineAngle: ");
 //  Serial.print(ls.getLineAngle());
 //  Serial.print("\t");

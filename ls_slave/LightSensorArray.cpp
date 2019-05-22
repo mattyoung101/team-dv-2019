@@ -91,6 +91,13 @@ void LightSensorArray::read() {
     // Read all 48 sensors
     for (int i = 0; i < LS_NUM; i++) {
         data[i] = readSensor(i) > thresholds[i];
+        #if DEBUG_DATA
+            Serial.print(data[i]);
+            Serial.print("\t");
+        #elif DEBUG_RAW
+            Serial.print(readSensor(i));
+            Serial.print("\t");
+        #endif
     }
 }
 
@@ -241,13 +248,5 @@ double LightSensorArray::getLineAngle() {
 
 double LightSensorArray::getLineSize() {
     return size;
-}
-
-void LightSensorArray::dump() {
-    for(int i = 0; i < 48; i++) {
-        print(data[i]);
-        print("\t");
-    }
-    println();
 }
 

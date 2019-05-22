@@ -4,6 +4,8 @@
 #include <Arduino.h>
 #include "digitalWriteFast.h"
 #define LS_NUM 48
+#define DEBUG_DATA true
+#define DEBUG_RAW false
 
 // Array of light sensors
 class LightSensorArray {
@@ -25,8 +27,6 @@ public:
 
     double getLineAngle();
     double getLineSize();
-
-    void dump();
 
     bool data[LS_NUM]; // Array of if sensors see white or not
     bool filledInData[LS_NUM]; // Data after sensors are filled in (if an off sensor has two adjacent on sensors, it will be turned on)
