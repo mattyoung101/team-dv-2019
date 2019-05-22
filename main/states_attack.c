@@ -73,25 +73,6 @@ void state_attack_idle_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     }
 
-    // NOTE: Leaving this here in case everything breaks :P
-
-    // float goalAngle = rs.inGoalAngle < 0.0f ? rs.inGoalAngle + 360.0f : rs.inGoalAngle; // Convert to 0 - 360 range
-    // float goalAngle_ = fmodf(goalAngle + rs.inHeading, 360.0f); // Add the heading to counteract the rotation
-
-    // float verticalDistance = rs.inGoalLength * cosf(DEG_RAD * goalAngle_); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
-    // float horizontalDistance = rs.inGoalLength * sinf(DEG_RAD * goalAngle_);
-
-    // float distanceMovement = -pid_update(&forwardPID, verticalDistance, IDLE_DISTANCE, 0.0f); // Determine the speed for each component
-    // float sidewaysMovement = -pid_update(&sidePID, horizontalDistance, IDLE_OFFSET, 0.0f);
-
-    // rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f); // Use atan2 to find angle
-    // rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed
-
-    // rs.outSpeed = rs.outSpeed <= IDLE_MIN_SPEED ? 0 : rs.outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
-
-    // // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
-    // // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
-
     position(&robotState, IDLE_DISTANCE, IDLE_OFFSET);
 }
 

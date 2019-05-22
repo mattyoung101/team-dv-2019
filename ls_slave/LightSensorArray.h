@@ -7,6 +7,16 @@
 #define DEBUG_DATA true
 #define DEBUG_RAW false
 
+#define LS_CALIBRATION_COUNT 10
+#define LS_CALIBRATION_BUFFER 600
+#define LS_ES_DEFAULT 69
+#define NO_LINE_ANGLE 0xBAD
+#define NO_LINE_SIZE 0xBAD
+#define LS_NUM_MULTIPLIER 7.5 // 360 / LS_NUM
+
+#define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
+#define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
+    
 // Array of light sensors
 class LightSensorArray {
 public:
@@ -27,6 +37,15 @@ public:
 
     double getLineAngle();
     double getLineSize();
+
+    void updateLine(float angle, float size, float heading); // Function for updating variables
+    void lineCalc(); // Function for line tracking
+
+    bool isOnLine = false;
+    bool lineOver = false;
+    float lineAngle = NO_LINE_ANGLE;
+    float lineSize = NO_LINE_SIZE;
+    float firstAngle = NO_LINE_ANGLE;
 
     bool data[LS_NUM]; // Array of if sensors see white or not
     bool filledInData[LS_NUM]; // Data after sensors are filled in (if an off sensor has two adjacent on sensors, it will be turned on)

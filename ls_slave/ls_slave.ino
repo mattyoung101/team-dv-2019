@@ -3,9 +3,11 @@
 
 LightSensorArray ls = LightSensorArray();
 
+float heading;
+
 void setup() {
-  Wire.begin(0x12); // join bus on address 0x12 (in slave mode)
-  Wire.onRequest(requestEvent);
+//  Wire.begin(0x12); // join bus on address 0x12 (in slave mode)
+//  Wire.onRequest(requestEvent);
   Serial.begin(9600);
 
   // initialise LS library
@@ -14,22 +16,26 @@ void setup() {
 }
 
 void loop() {
-//  digitalWrite(LS_EN, LOW);
-//  digitalWrite(LS_WR, LOW);
-//  digitalWrite(LS_S0, HIGH);
-//  digitalWrite(LS_S1, HIGH);
-//  digitalWrite(LS_S2, HIGH);
-//  digitalWrite(LS_S3, HIGH);
-//  digitalWrite(LS_S4, LOW);
-//  digitalWrite(LS_WR, HIGH);
+//  digitalWrite(2, LOW);
+//  digitalWrite(8, LOW);
+//  digitalWrite(3, LOW);
+//  digitalWrite(4, LOW);
+//  digitalWrite(5, HIGH);
+//  digitalWrite(6, HIGH);
+//  digitalWrite(7, LOW);
+//  digitalWrite(8, HIGH);
 //  Serial.print("A0: ");
-//  Serial.println(analogRead(A0));
+//  Serial.print(analogRead(A0));
+//  Serial.print("\t");
 //  Serial.print("A1: ");
 //  Serial.println(analogRead(A1));
 
   ls.read();
   ls.calculateClusters();
   ls.calculateLine();
+
+  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
+  ls.lineCalc();
 
 //  Serial.print("lineAngle: ");
 //  Serial.print(ls.getLineAngle());

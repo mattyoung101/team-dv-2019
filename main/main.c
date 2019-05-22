@@ -42,9 +42,6 @@ static uint8_t mode = AUTOMODE_ILLEGAL;
 void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
 
-    gpio_set_direction(2, GPIO_MODE_OUTPUT); // set builtin LED direction
-    gpio_set_level(2, 0);
-
     // Initialise hardware
     motor_init();
     comms_i2c_init_slave();
@@ -62,8 +59,6 @@ void master_task(void *pvParameter){
 
     // TODO read NVS to check to init master or slave BT
     comms_bt_init_master();
-
-    gpio_set_level(2, 0);
 
     esp_task_wdt_add(NULL);
 
@@ -105,6 +100,8 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(&stateMachine);
 
+        // update_line(&robotState);
+
         // robotState.outSpeed = 0;
         // print_ball_data(&robotState);
 
@@ -113,16 +110,13 @@ void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(10));
+        vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
     }
 }
 
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
-
-    gpio_set_direction(2, GPIO_MODE_OUTPUT); // set builtin LED direction
-    gpio_set_level(2, 0);
 
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
@@ -136,8 +130,6 @@ void slave_task(void *pvParameter){
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
-
-    gpio_set_level(2, 1);
     
     while (true) {
         // update TSOPs

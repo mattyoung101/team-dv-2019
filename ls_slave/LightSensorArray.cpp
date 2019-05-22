@@ -9,16 +9,6 @@
 #define LS0 A0
 #define LS1 A1
 
-#define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 300
-#define LS_ES_DEFAULT 69
-#define NO_LINE_ANGLE 0xBAD
-#define NO_LINE_SIZE 0xBAD
-#define LS_NUM_MULTIPLIER 7.5 // 360 / LS_NUM
-
-#define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
-#define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
-
 static int32_t mod(int32_t x, int32_t m){
     int32_t r = x % m;
     return r < 0 ? r + m : r;
@@ -42,6 +32,7 @@ void LightSensorArray::init() {
     pinMode(MUX_WR, OUTPUT);
     pinMode(MUX_A0, OUTPUT);
     pinMode(MUX_A1, OUTPUT);
+    digitalWrite(MUX_WR, LOW);
     pinMode(MUX_A2, OUTPUT);
     pinMode(MUX_A3, OUTPUT);
     pinMode(MUX_A4, OUTPUT);
@@ -54,7 +45,6 @@ void LightSensorArray::init() {
 
 void LightSensorArray::changeMUXChannel(uint8_t channel) {
     // Change the multiplexer channel
-    digitalWrite(MUX_WR, LOW);
 
     digitalWrite(MUX_A0, channel & 0x1);
     digitalWrite(MUX_A1, (channel >> 1) & 0x1);
@@ -80,11 +70,11 @@ void LightSensorArray::calibrate() {
 }
 
 int LightSensorArray::readSensor(int sensor) {
-    // Unlike LJ, we always read off the mux
-    ////////////////// TODO ask Yellando why it's - 4 - 1
-    changeMUXChannel(muxChannels[sensor - 4] - 1);
-    ////////////////// TODO this will either be A0 or A1
-    return analogRead(A0);
+//    // Unlike LJ, we always read off the mux
+//    ////////////////// TODO ask Yellando why it's - 4 - 1
+//    changeMUXChannel(muxChannels[sensor - 4] - 1);
+//    ////////////////// TODO this will either be A0 or A1
+//    return analogRead(A0);
 }
 
 void LightSensorArray::read() {
@@ -250,3 +240,19 @@ double LightSensorArray::getLineSize() {
     return size;
 }
 
+void LightSensorArray::updateLine(float angle, float size, float heading) {
+  isOnLine = angle == NO_LINE_ANGLE ? false : true;
+  lineAngle = angle == NO_LINE_ANGLE ? angle : mod(angle + heading, 360);
+  if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
+  else lineSize = size;
+}
+
+void LightSensorArray::lineCalc() {
+  if(isOnLine && firstAngle != NO_LINE_ANGLE){ // Check if touching the line and not crossed over
+    if(abs(lineAngle-firstAngle)>80 && abs(lineAngle-firstAngle)<260) lineOver = true; // Detecting if the line angle has changed by a lot
+    else lineOver = false;
+  }
+
+  if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
+  if(!lineOver) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
+}

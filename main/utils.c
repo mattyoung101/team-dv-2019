@@ -190,13 +190,7 @@ uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     return ESP_OK;
 }
 
-void update_line(robot_state_t *robotState) { // Completely forgot how this all works
-    if(robotState->inOnLine && robotState->inLastAngle != LS_NO_LINE_ANGLE) {
-        if(fabsf(robotState->inLineAngle - robotState->inLastAngle) > LS_LINE_OVER_BUFFER && 
-        fabsf(robotState->inLineAngle - robotState->inLastAngle) < (360 - LS_LINE_OVER_BUFFER)) robotState->inLineOver = true;
-        else robotState->inLineOver = false;
-    }
-
+void update_line(robot_state_t *robotState) { 
     if(robotState->inOnLine || robotState->inLineOver) {
         if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
             if(robotState->inLineOver) {
@@ -218,10 +212,6 @@ void update_line(robot_state_t *robotState) { // Completely forgot how this all 
             if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
         }
     }
-
-    if(!robotState->inOnLine && !robotState->inLineOver) robotState->inLastAngle = LS_NO_LINE_ANGLE;
-
-    if(!robotState->inLineOver) robotState->inLastAngle = robotState->inLineAngle;
 }
 
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
