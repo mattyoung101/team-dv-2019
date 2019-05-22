@@ -30,6 +30,14 @@ void loop() {
   ls.read();
   ls.calculateClusters();
   ls.calculateLine();
+
+  ls.dump();
+
+//  Serial.print("lineAngle: ");
+//  Serial.print(ls.getLineAngle());
+//  Serial.print("\t");
+//  Serial.print("lineSize: ");
+//  Serial.print(ls.getLineSize());
 }
 
 void requestEvent(){

@@ -10,7 +10,7 @@
 #define LS1 A1
 
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 60
+#define LS_CALIBRATION_BUFFER 300
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 0xBAD
 #define NO_LINE_SIZE 0xBAD
@@ -242,3 +242,12 @@ double LightSensorArray::getLineAngle() {
 double LightSensorArray::getLineSize() {
     return size;
 }
+
+void LightSensorArray::dump() {
+    for(int i = 0; i < 48; i++) {
+        print(data[i]);
+        print("\t");
+    }
+    println();
+}
+

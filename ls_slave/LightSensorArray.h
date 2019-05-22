@@ -26,6 +26,8 @@ public:
     double getLineAngle();
     double getLineSize();
 
+    void dump();
+
     bool data[LS_NUM]; // Array of if sensors see white or not
     bool filledInData[LS_NUM]; // Data after sensors are filled in (if an off sensor has two adjacent on sensors, it will be turned on)
 
