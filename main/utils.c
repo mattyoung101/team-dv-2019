@@ -190,6 +190,23 @@ uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     return ESP_OK;
 }
 
+void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
+    static const char *TAG = "NVSGetU8";
+    nvs_handle storageHandle;
+
+    ESP_ERROR_CHECK(nvs_open(namespace, NVS_READWRITE, &storageHandle));
+    esp_err_t openErr = nvs_get_u8(storageHandle, key, value);
+    nvs_close(storageHandle);
+
+    if (openErr == ESP_ERR_NVS_NOT_FOUND){
+        ESP_LOGE(TAG, "Key not found! Please set it in NVS, see top of defines.h for help. Cannot continue.");
+        abort();
+    } else if (openErr != ESP_OK) {
+        ESP_LOGE(TAG, "Unexpected error reading key: %s. Cannot continue.", esp_err_to_name(openErr));
+        abort();
+    }
+}
+
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
     if(robotState->inOnLine && robotState->inLastAngle != LS_NO_LINE_ANGLE) {
         if(fabsf(robotState->inLineAngle - robotState->inLastAngle) > LS_LINE_OVER_BUFFER && 

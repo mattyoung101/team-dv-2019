@@ -41,9 +41,7 @@ static uint8_t mode = AUTOMODE_ILLEGAL;
 // like moving, finite state machines, Bluetooth, etc
 void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
-
-    gpio_set_direction(2, GPIO_MODE_OUTPUT); // set builtin LED direction
-    gpio_set_level(2, 0);
+    uint8_t robotId = 69;
 
     // Initialise hardware
     motor_init();
@@ -60,10 +58,13 @@ void master_task(void *pvParameter){
     // we do it like this (start out in nothing and switch to pursue) to make sure that pursue_enter is called
     fsm_change_state(&stateMachine, &stateAttackPursue);
 
-    // TODO read NVS to check to init master or slave BT
-    comms_bt_init_master();
-
-    gpio_set_level(2, 0);
+    // read robot ID from NVS and init Bluetooth
+    nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
+    if (robotId == 0){
+        comms_bt_init_master();
+    } else {
+        comms_bt_init_slave();
+    }
 
     esp_task_wdt_add(NULL);
 
@@ -121,9 +122,6 @@ void master_task(void *pvParameter){
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
 
-    gpio_set_direction(2, GPIO_MODE_OUTPUT); // set builtin LED direction
-    gpio_set_level(2, 0);
-
     // Initialise hardware
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
@@ -136,8 +134,6 @@ void slave_task(void *pvParameter){
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
-
-    gpio_set_level(2, 1);
     
     while (true) {
         // update TSOPs
@@ -186,7 +182,7 @@ void app_main(){
         ESP_LOGE("AutoMode", "Successfully wrote Slave to NVS.");
     #elif defined NVS_WRITE_ROBOTNUM
         ESP_ERROR_CHECK(nvs_set_u8(storageHandle, "RobotID", NVS_WRITE_ROBOTNUM));
-        ESP_LOGE("RobotNum", "Successfully wrote robot number to NVS.");
+        ESP_LOGE("RobotID", "Successfully wrote robot number to NVS.");
     #endif
 
     #if defined NVS_WRITE_MASTER || defined NVS_WRITE_SLAVE || defined NVS_WRITE_ROBOTNUM
@@ -197,7 +193,7 @@ void app_main(){
     nvs_close(storageHandle);
 
     if (err == ESP_ERR_NVS_NOT_FOUND){
-        ESP_LOGE("AutoMode", "Key not found! Please identify this device, see main.c for help. Cannot continue.");
+        ESP_LOGE("AutoMode", "Mode key not found! Please identify this device, see main.c for help. Cannot continue.");
         abort();
     } else if (err != ESP_OK) {
         ESP_LOGE("AutoMode", "Unexpected error reading key: %s. Cannot continue.", esp_err_to_name(err));

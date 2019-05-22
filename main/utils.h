@@ -106,6 +106,8 @@ void update_line(robot_state_t *robotState);
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec);
 /** Converts a 2D cartesian vector to polar **/
 hmm_vec2 vec2_cartesian_to_polar(hmm_vec2 vec);
+/** Reads a uint8_t from NVS and handles errors gracefully **/
+void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value);
 
 // --- DEBUG FUNCTIONS --- //
 /** A bunch of functions which just spit relevant information.
