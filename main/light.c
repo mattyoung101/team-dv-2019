@@ -15,7 +15,6 @@ static bool data[LS_NUM] = {0};
 static bool filledInData[LS_NUM] = {0};
 static uint8_t starts[4] = {69};
 static uint8_t ends[4] = {69};
-static esp_timer_handle_t *lsTimer = NULL;
 static const char *TAG = "LightSensor";
 
 float lineAngle = LS_NO_LINE_ANGLE;
@@ -83,10 +82,6 @@ static void fill_in_sensors(){
     lsarray_calc_clusters(true);
 }
 
-static void ls_timer_callback(void *arg){
-
-}
-
 void ls_init(void){
     mplexer_5bit_init(&lsMux0);
     mplexer_5bit_init(&lsMux1);
@@ -102,15 +97,6 @@ void ls_init(void){
     // calibrate ALL light sensors at once with ls_iterate
     // TODO save these to NVS
     ls_iterate(&ls_func_calibrate);
-
-    // create LS timer
-    // esp_timer_create_args_t args = {
-    //     .callback = ls_timer_callback,
-    //     .arg = NULL,
-    //     .name = "LSTimer"
-    // };
-    // ESP_ERROR_CHECK(esp_timer_create(&args, lsTimer));
-    // ESP_ERROR_CHECK(esp_timer_start_periodic(*lsTimer, LS_TIMER_PERIOD));
 
     ESP_LOGI(TAG, "Light sensor init OK");
 }
