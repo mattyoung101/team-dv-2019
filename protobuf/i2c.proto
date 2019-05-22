@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+// This file contains I2C messages
+
+// ESP32 RL slave (I2C master) to RL master (I2C slave) sensor update
+message SensorUpdate {
+    // TSOPs
+    uint32 tsopAngle = 1;
+    uint32 tsopStrength = 2;
+    
+    // Light sensor
+    float lineAngle = 3;
+    float lineSize = 4;
+    bool onLine = 5;
+    bool lineOver = 6;
+    float lastAngle = 7;
+
+    // IMU
+    float heading = 8;
+
+    // Junk "innovation" sensors
+    int32 temperature = 9; // screw accuracy
+    float voltage = 10; // ok I guess we need it here
+}
