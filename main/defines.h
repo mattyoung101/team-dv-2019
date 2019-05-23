@@ -243,6 +243,8 @@
 #define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
+#define GOAL_MIN_ANGLE 30
+#define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30

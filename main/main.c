@@ -26,6 +26,7 @@
 #include "pid.h"
 #include "vl53l0x_api.h"
 #include "comms_bluetooth.h"
+#include "pb_encode.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow

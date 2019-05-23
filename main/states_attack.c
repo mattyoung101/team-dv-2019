@@ -51,10 +51,11 @@ static void idle_timer_callback(TimerHandle_t timer){
     FSM_CHANGE_STATE(Idle);
 }
 
-/** instantiates the idle timer if it null **/
+/** instantiates the idle timer if it is null **/
 static void idle_timer_create_if_needed(state_machine_t *fsm){
     if (idleTimer == NULL){
         ESP_LOGI("CreateIdleTimer", "Creating idle timer");
+        // this is the hack mentioned above in practice: we pass *fsm as a void pointer
         idleTimer = xTimerCreate("IdleTimer", pdMS_TO_TICKS(IDLE_TIMEOUT), false, (void*) fsm, idle_timer_callback);
     }
 }
@@ -84,10 +85,10 @@ void state_attack_pursue_enter(state_machine_t *fsm){
 
 void state_attack_pursue_update(state_machine_t *fsm){
     static const char *TAG = "PursueState";
+    
     accelProgress = 0;
     rs.outIsAttack = true;
     imu_correction(&robotState);
-
     IDLE_TIMER_CHECK;
 
     // Check criteria:
@@ -112,29 +113,28 @@ void state_attack_pursue_update(state_machine_t *fsm){
 // Orbit
 void state_attack_orbit_update(state_machine_t *fsm){
     static const char *TAG = "OrbitState";
+
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
     goal_correction(&robotState);
-
     IDLE_TIMER_CHECK;
 
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
     if (rs.inBallStrength <= 0.0f){
         ESP_LOGD(TAG, "Ball not visible, braking, strength: %d", robotState.inBallStrength);
-        imu_correction(&robotState);
         idle_timer_start();
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength < ORBIT_DIST){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
                  ORBIT_DIST);
         FSM_REVERT;
-        FSM_CHANGE_STATE(Pursue);
     } else if (rs.inBallStrength >= ORBIT_DIST && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
-                && is_angle_between(rs.inGoalAngle, 30, 330)){
+                && is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE)){
         ESP_LOGD(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
-                " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE,
-                IN_FRONT_MAX_ANGLE);
+                " angle range: %d-%d, goal angle: %d, goal angle range: %d-%d", 
+                robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE,
+                robotState.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
         FSM_CHANGE_STATE(Dribble);
     }
 
@@ -144,13 +144,13 @@ void state_attack_orbit_update(state_machine_t *fsm){
 // Dribble
 void state_attack_dribble_update(state_machine_t *fsm){
     static const char *TAG = "DribbleState";
-    goal_correction(&robotState);
+    
     rs.outIsAttack = true;
-
+    goal_correction(&robotState);
     IDLE_TIMER_CHECK;
 
     // Check criteria:
-    // Ball too far away, Ball not in front of us, Goal not visible, Ball not visible
+    // Ball not visible, ball not in front, ball too far away, not facing goal
     if (robotState.inBallStrength <= 0.0f){
         ESP_LOGD(TAG, "Ball not visible, braking, strength: %d", robotState.inBallAngle);
         idle_timer_start();
@@ -159,23 +159,22 @@ void state_attack_dribble_update(state_machine_t *fsm){
         ESP_LOGD(TAG, "Ball not in front, reverting, angle: %d, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE);
         FSM_REVERT;
-        // FSM_CHANGE_STATE(Orbit);
     } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR){
         ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, thresh: %d", robotState.inBallStrength,
                 DRIBBLE_BALL_TOO_FAR);
         FSM_REVERT;
-        // FSM_CHANGE_STATE(Orbit);
-    } else if (rs.inGoalAngle > 30 || rs.inGoalAngle < 330){
-        ESP_LOGD(TAG, "Not facing goal, reverting");
+    } else if (rs.inGoalAngle > GOAL_MIN_ANGLE || rs.inGoalAngle < GOAL_MAX_ANGLE){
+        ESP_LOGD(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
         FSM_REVERT;
-        // FSM_CHANGE_STATE(Orbit);
     }
 
-    // ESP_LOGD(TAG, "Yeet");
-    robotState.outSpeed = lerp(ORBIT_SPEED_FAST, DRIBBLE_SPEED, accelProgress); // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outDirection = robotState.inBallAngle; // Just yeet towards the ball (which is forwards)
+    // Linear acceleration to give robot time to goal correct and so it doesn't slip
+    robotState.outSpeed = lerp(ORBIT_SPEED_FAST, DRIBBLE_SPEED, accelProgress); 
+    // Just yeet towards the ball (which is forwards)
+    robotState.outDirection = robotState.inBallAngle;
 
-    accelProgress += ACCEL_PROG; // Update progress for linear interpolation
+    // Update progress for linear interpolation
+    accelProgress += ACCEL_PROG;
 }
 
 // done with this macro

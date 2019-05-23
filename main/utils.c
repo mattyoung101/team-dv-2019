@@ -129,6 +129,7 @@ float lerp(float fromValue, float toValue, float progress){
     return fromValue + (toValue - fromValue) * progress;
 }
 
+// TODO put the comments in these two functions above the line
 void orbit(robot_state_t *robotState){
     // orbit requires angles in -180 to +180 range
     int16_t tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
