@@ -47,6 +47,8 @@ void LightSensorArray::init() {
 void LightSensorArray::changeMUXChannel(uint8_t channel) {
     // Change the multiplexer channel
 
+    digitalWrite(MUX_WR, LOW);
+
     digitalWrite(MUX_A0, channel & 0x1);
     digitalWrite(MUX_A1, (channel >> 1) & 0x1);
     digitalWrite(MUX_A2, (channel >> 2) & 0x1);
@@ -72,7 +74,7 @@ void LightSensorArray::calibrate() {
 
 int LightSensorArray::readSensor(int sensor) {
     // If pin is >= 24, we're on mux 1, otherwise mux 0
-    int mux = (sensor >= (LS_NUM / 24)) ? LS1 : LS0;
+    int mux = (sensor >= 24) ? LS1 : LS0;
 
     // This changes the pins on both multiplexers. I had some optimisations written up in the ESP32 version
     // to read both mux channels at once, but the Arduino IDE sucks and I got other shit to do.
@@ -87,10 +89,12 @@ void LightSensorArray::read() {
         data[i] = readSensor(i) > thresholds[i];
         #if DEBUG_DATA
             Serial.print(data[i]);
-            Serial.print("\t");
+//            Serial.print(" ");
         #elif DEBUG_RAW
-            Serial.print(readSensor(i));
-            Serial.print("\t");
+            if(i < 24){
+              Serial.print(readSensor(i));
+              Serial.print(" ");
+            }
         #endif
     }
 }

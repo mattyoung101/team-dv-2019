@@ -6,8 +6,8 @@ float heading = 0.0f;
 
 void setup() {
   // join bus on address 0x12 (in slave mode)
-  Wire.begin(0x12);
-  Wire.onRequest(requestEvent);
+//  Wire.begin(0x12);
+//  Wire.onRequest(requestEvent);
   Serial.begin(9600);
 
   // initialise LS library
@@ -28,6 +28,8 @@ void loop() {
 //  Serial.print("\t");
 //  Serial.print("lineSize: ");
 //  Serial.print(ls.getLineSize());
+//  Serial.print(ls.readSensor(45));
+  Serial.println();
 }
 
 void requestEvent(){
