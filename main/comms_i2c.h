@@ -19,8 +19,18 @@ typedef struct {
     uint16_t heading;
 } i2c_data_t;
 
+typedef struct {
+    float lineAngle;
+    float lineSize;
+    bool isOnLine;
+    bool isLineOver;
+    float lastAngle;
+} nano_data_t;
+
 /** data received over I2C **/
 extern i2c_data_t receivedData;
+/** data received from Nano **/
+extern nano_data_t nanoData;
 /** received data semaphore for the variable receivedData **/
 extern SemaphoreHandle_t rdSem;
 

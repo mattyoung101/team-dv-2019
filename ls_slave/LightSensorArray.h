@@ -2,7 +2,6 @@
 #define LIGHT_SENSOR_ARRAY_H
 
 #include <Arduino.h>
-#include "digitalWriteFast.h"
 #define LS_NUM 48
 #define DEBUG_DATA true
 #define DEBUG_RAW false
@@ -60,11 +59,13 @@ public:
 private:
     void resetClusters();
 
-    uint8_t muxChannels[32] = {12, 11, 10, 9, 13, 14, 15, 16, 32, 31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 1, 2, 3, 4, 5, 6, 7, 8}; // Multiplexer channels for each sensor (5-36)
+    // Index = LS num, value = mux binary
+    // >= 24, next mux
+    uint8_t muxLUT[LS_NUM] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, // mux 0
+                              0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}; // mux 1
 
     double angle; // Line angle
     double size; // Line size
 };
 
 #endif // LIGHT_SENSOR_ARRAY_H
-

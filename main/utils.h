@@ -84,9 +84,10 @@ int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t 
 float lerp(float fromValue, float toValue, float progress);
 
 void i2c_scanner();
-/** Reads a series of bytes from the Nano LS slave **/
+/** Reads a series of bytes from the Nano LS slave. Based on the code in esp_utils.c for the MPU **/
 uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data);
-/** Returns true if target is between angle1 and angle2. 
+/** 
+ * Returns true if target is between angle1 and angle2. 
  * Source: https://stackoverflow.com/a/11412077/5007892 
  **/
 bool is_angle_between(float target, float angle1, float angle2);

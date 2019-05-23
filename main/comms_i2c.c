@@ -4,6 +4,7 @@
 
 SemaphoreHandle_t rdSem = NULL;
 i2c_data_t receivedData = {0};
+nano_data_t nanoData = {0};
 static const char *TAG = "CommsI2C";
 
 static void comms_i2c_receive_task(void *pvParameters){
@@ -61,19 +62,17 @@ static void nano_comms_task(void *pvParameters){
         = 8 bytes + 1 start byte 
         = 9 bytes total
         */
-        memset(buf, 0, 9);
-        nano_read(I2C_NANO_SLAVE_ADDR, 9, buf);
-
-        // TODO TODO TODO: DO NOT UNPACK HERE!!!! SEND TO MASTER!!!!! we are the SLAVE when this is running!!!
+        memset(buf, 0, NANO_PACKET_SIZE);
+        nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf);
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
             if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // buf[0] is the begin byte, so start from buf[1]
-                robotState.inLineAngle = UNPACK_16(buf[1], buf[2]) / IMU_MULTIPLIER;
-                robotState.inLineSize = UNPACK_16(buf[3], buf[4]) / IMU_MULTIPLIER;
-                robotState.inOnLine = (bool) buf[5];
-                robotState.inLineOver = (bool) buf[6];
-                robotState.inLastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
+                nanoData.lineAngle = UNPACK_16(buf[1], buf[2]) / IMU_MULTIPLIER;
+                nanoData.lineSize = UNPACK_16(buf[3], buf[4]) / IMU_MULTIPLIER;
+                nanoData.isOnLine = (bool) buf[5];
+                nanoData.isLineOver = (bool) buf[6];
+                nanoData.lastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
                 xSemaphoreGive(robotStateSem);
             } else {
                 ESP_LOGW(TAG, "Failed to acquire robot state semaphore in time!");

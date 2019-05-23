@@ -6,6 +6,7 @@
 #define MUX_A3 6
 #define MUX_A4 7
 #define MUX_WR 8
+
 #define LS0 A0
 #define LS1 A1
 
@@ -70,11 +71,14 @@ void LightSensorArray::calibrate() {
 }
 
 int LightSensorArray::readSensor(int sensor) {
-//    // Unlike LJ, we always read off the mux
-//    ////////////////// TODO ask Yellando why it's - 4 - 1
-//    changeMUXChannel(muxChannels[sensor - 4] - 1);
-//    ////////////////// TODO this will either be A0 or A1
-//    return analogRead(A0);
+    // If pin is >= 24, we're on mux 1, otherwise mux 0
+    int mux = (sensor >= (LS_NUM / 24)) ? LS1 : LS0;
+
+    // This changes the pins on both multiplexers. I had some optimisations written up in the ESP32 version
+    // to read both mux channels at once, but the Arduino IDE sucks and I got other shit to do.
+    changeMUXChannel(sensor % 24);
+    
+    return analogRead(mux);
 }
 
 void LightSensorArray::read() {
@@ -135,7 +139,8 @@ void LightSensorArray::calculateClusters(bool doneFillInSensors) {
     }
 
     // Number of completed clusters
-    int tempNumClusters = (int)(starts[0] != LS_ES_DEFAULT) + (int)(starts[1] != LS_ES_DEFAULT) + (int)(starts[2] != LS_ES_DEFAULT) + (int)(starts[3] != LS_ES_DEFAULT);
+    int tempNumClusters = (int)(starts[0] != LS_ES_DEFAULT) + (int)(starts[1] != LS_ES_DEFAULT) 
+                          + (int)(starts[2] != LS_ES_DEFAULT) + (int)(starts[3] != LS_ES_DEFAULT);
 
     if (tempNumClusters != index) {
         // If the final cluster didn't end, index will be one less than tempNumClusters

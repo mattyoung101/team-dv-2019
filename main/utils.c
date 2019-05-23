@@ -173,7 +173,6 @@ uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
-    // first, send device address (indicating write) & register to be read
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE));
     // Send repeated start
     ESP_ERROR_CHECK(i2c_master_start(cmd));

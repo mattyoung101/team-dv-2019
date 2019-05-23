@@ -28,6 +28,7 @@
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
+#define NANO_PACKET_SIZE 9
 
 // Music
 #define MUSIC_BPM 100

@@ -2,12 +2,12 @@
 #include "LightSensorArray.h"
 
 LightSensorArray ls = LightSensorArray();
-
-float heading;
+float heading = 0.0f;
 
 void setup() {
-//  Wire.begin(0x12); // join bus on address 0x12 (in slave mode)
-//  Wire.onRequest(requestEvent);
+  // join bus on address 0x12 (in slave mode)
+  Wire.begin(0x12);
+  Wire.onRequest(requestEvent);
   Serial.begin(9600);
 
   // initialise LS library
@@ -16,20 +16,6 @@ void setup() {
 }
 
 void loop() {
-//  digitalWrite(2, LOW);
-//  digitalWrite(8, LOW);
-//  digitalWrite(3, LOW);
-//  digitalWrite(4, LOW);
-//  digitalWrite(5, HIGH);
-//  digitalWrite(6, HIGH);
-//  digitalWrite(7, LOW);
-//  digitalWrite(8, HIGH);
-//  Serial.print("A0: ");
-//  Serial.print(analogRead(A0));
-//  Serial.print("\t");
-//  Serial.print("A1: ");
-//  Serial.println(analogRead(A1));
-
   ls.read();
   ls.calculateClusters();
   ls.calculateLine();
@@ -45,7 +31,20 @@ void loop() {
 }
 
 void requestEvent(){
+  /*
+  float inLineAngle: 2 bytes
+  float inLineSize: 2 bytes
+  bool inOnLine: 1 byte
+  bool inLineOver: 1 byte
+  float inLastAngle: 2 bytes
+  = 8 bytes + 1 start byte 
+  = 9 bytes total
+  */
   Wire.write(0xB);
-  // TODO return the latest LS reading we got here (instant response time then) - clusters are updated in loop()
+  Wire.write(highByte((uint16_t) ls.getLineAngle()));
+  Wire.write(lowByte((uint16_t) ls.getLineAngle()));
+  Wire.write(highByte((uint16_t) ls.getLineSize()));
+  Wire.write(lowByte((uint16_t) ls.getLineSize()));
+  Wire.write(ls.isOnLine);
+  Wire.write(ls.lineOver);
 }
-
