@@ -1,8 +1,25 @@
 #define DG_DYNARR_IMPLEMENTATION
 #include "fsm.h"
+#include "states.h"
 
 // This file defines a very simple finite state machine (FSM) using function pointers
+
 static const char *TAG = "FSM";
+
+state_machine_t fsm_new(fsm_state_t *startState){
+    // TODO this is pretty hacky, should we check if it's already created first? 
+    // or move it elsewhere - this code should just handle FSMs, not other crap as well
+    if (robotStateSem == NULL){
+        robotStateSem = xSemaphoreCreateMutex();
+        xSemaphoreGive(robotStateSem);
+    }
+
+    state_machine_t* fsm = calloc(1, sizeof(state_machine_t));
+    fsm->currentState = &stateGeneralNothing;
+    // change into the start state, to make sure startState->enter is called
+    fsm_change_state(fsm, startState); 
+    return *fsm;
+}
 
 void fsm_update(state_machine_t *fsm){
     fsm->currentState->update(fsm);

@@ -99,7 +99,7 @@ void comms_i2c_init_master(i2c_port_t port){
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    // xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }

@@ -199,8 +199,9 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
     nvs_close(storageHandle);
 
     if (openErr == ESP_ERR_NVS_NOT_FOUND){
-        ESP_LOGE(TAG, "Key not found! Please set it in NVS, see top of defines.h for help. Cannot continue.");
-        abort();
+        ESP_LOGE(TAG, "Key \"%s\" not found in namespace %s! Please set it in NVS, see top of defines.h for help. "
+        "Cannot continue.", key, namespace);
+        abort(); // not very graceful lmao
     } else if (openErr != ESP_OK) {
         ESP_LOGE(TAG, "Unexpected error reading key: %s. Cannot continue.", esp_err_to_name(openErr));
         abort();

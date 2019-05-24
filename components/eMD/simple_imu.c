@@ -54,6 +54,8 @@ vec3d_t simu_read_gyro(void){
 }
 
 void simu_calibrate(void){
+    ESP_LOGI("SimpleIMU", "Calibration in progress...");
+    
     for (int i = 0; i < IMU_CALIBRATION_COUNT; i++) {
         float readingGyro = (float) simu_read_gyro().z;
         calibrationGyro += readingGyro;

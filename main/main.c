@@ -27,6 +27,8 @@
 #include "vl53l0x_api.h"
 #include "comms_bluetooth.h"
 #include "pb_encode.h"
+#include "pb_decode.h"
+#include "i2c.pb.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -44,20 +46,11 @@ void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
 
-    // Initialise hardware
+    // Initialise comms and hardware
     motor_init();
     comms_i2c_init_slave();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
-
-    // Initialise software controllers
-    state_machine_t stateMachine = {0};
-    stateMachine.currentState = &stateGeneralNothing;
-    robotStateSem = xSemaphoreCreateMutex();
-    xSemaphoreGive(robotStateSem);
-
-    // we do it like this (start out in nothing and switch to pursue) to make sure that pursue_enter is called
-    fsm_change_state(&stateMachine, &stateAttackPursue);
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
@@ -67,13 +60,16 @@ void master_task(void *pvParameter){
         comms_bt_init_slave();
     }
 
+    // Initialise FSM
+    state_machine_t fsm = fsm_new(&stateAttackPursue);
+
     esp_task_wdt_add(NULL);
 
     while (true){
         // update cam
         cam_calc();
 
-        // update values for FSM
+        // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
@@ -105,7 +101,7 @@ void master_task(void *pvParameter){
         }
 
         // update the actual FSM
-        fsm_update(&stateMachine);
+        fsm_update(&fsm);
 
         // update_line(&robotState);
 
@@ -124,12 +120,14 @@ void master_task(void *pvParameter){
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
+    static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
+    SensorUpdate msg = SensorUpdate_init_zero;
 
-    // Initialise hardware
+    // Initialise comms
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
-    comms_bt_init_master();
 
+    // Initialise hardware
     tsop_init();
     ls_init();
     simu_init();
@@ -144,19 +142,44 @@ void slave_task(void *pvParameter){
             tsop_update(NULL);
         }
         tsop_calc();
-
+        
+        // update IMU
         simu_calc();
+
+        // set up protobuf byte stream
+        memset(pbBuf, 0, PROTOBUF_SIZE);
+        pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
+        
+        // set the message's values
+        msg.heading = heading;
+        msg.lastAngle = 65.4f;//nanoData.lastAngle;
+        msg.lineAngle = 32.8f;//nanoData.lineAngle;
+        msg.lineOver = 69.9f;//nanoData.isLineOver;
+        msg.lineSize = 123.456f;//nanoData.lineSize;
+        msg.onLine = 400.0f;//nanoData.isOnLine;
+        msg.temperature = 0xBAD;
+        msg.tsopAngle = tsopAngle;
+        msg.tsopStrength = tsopStrength;
+        msg.voltage = 12.0f;
+
+        // encode and send it
+        if (pb_encode(&stream, SensorUpdate_fields, &msg)){
+            ESP_LOGD(TAG, "Encoded successfully, used %d bytes", stream.bytes_written);
+            ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
+            // send it here
+        } else {
+            ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
+        }
 
         comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, 
         (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
-        // vTaskDelay(pdMS_TO_TICKS(0));
     }
 }
 
 void app_main(){
-    puts("====================================================================================");
+    puts("==================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
     puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
     puts(" * IDF version: " IDF_VER);
@@ -192,6 +215,7 @@ void app_main(){
         ESP_ERROR_CHECK(nvs_commit(storageHandle));
     #endif
 
+    // we don't use nvs_get_u8_graceful, because its different here as we have the storage handle already open
     err = nvs_get_u8(storageHandle, "Mode", &mode);
     nvs_close(storageHandle);
 
@@ -210,9 +234,9 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
-        xTaskCreatePinnedToCore(master_task, "MasterTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
-        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 8192, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
+        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
     }
 }
