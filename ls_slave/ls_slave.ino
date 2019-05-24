@@ -1,13 +1,18 @@
 #include <Wire.h>
 #include "LightSensorArray.h"
 
+#define I2C_ON false
+
 LightSensorArray ls = LightSensorArray();
 float heading = 0.0f;
 
 void setup() {
   // join bus on address 0x12 (in slave mode)
-//  Wire.begin(0x12);
-//  Wire.onRequest(requestEvent);
+  #if I2C_ON
+    Wire.begin(0x12);
+    Wire.onRequest(requestEvent);
+  #endif
+  
   Serial.begin(9600);
 
   // initialise LS library
