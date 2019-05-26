@@ -71,7 +71,7 @@ void master_task(void *pvParameter){
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
-            xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
+            xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
             xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // reset out values
                 robotState.outShouldBrake = false;
@@ -79,8 +79,8 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = (receivedData.tsopAngle + TSOP_CORRECTION) % 360;
-                robotState.inBallStrength = receivedData.tsopStrength;
+                robotState.inBallAngle = (lastSensorUpdate.tsopAngle + TSOP_CORRECTION) % 360;
+                robotState.inBallStrength = lastSensorUpdate.tsopStrength;
 
                 robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
                 robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
@@ -88,13 +88,13 @@ void master_task(void *pvParameter){
                 robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
                 robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
-                robotState.inHeading = receivedData.heading / IMU_MULTIPLIER;
+                robotState.inHeading = lastSensorUpdate.heading;
                 robotState.inX = robotX;
                 robotState.inY = robotY;
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
-                xSemaphoreGive(rdSem);
+                xSemaphoreGive(pbSem);
                 xSemaphoreGive(goalDataSem);
         } else {
             ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
@@ -121,7 +121,6 @@ void master_task(void *pvParameter){
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
-    SensorUpdate msg = SensorUpdate_init_zero;
 
     // Initialise comms
     comms_i2c_init_master(I2C_NUM_0);
@@ -146,33 +145,30 @@ void slave_task(void *pvParameter){
         // update IMU
         simu_calc();
 
-        // set up protobuf byte stream
+        // setup protobuf byte stream - as far as I can tell, msg and stream will be disposed of after the loop ends
         memset(pbBuf, 0, PROTOBUF_SIZE);
+        SensorUpdate msg = SensorUpdate_init_zero;
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
         
         // set the message's values
         msg.heading = heading;
-        msg.lastAngle = 65.4f;//nanoData.lastAngle;
-        msg.lineAngle = 32.8f;//nanoData.lineAngle;
-        msg.lineOver = 69.9f;//nanoData.isLineOver;
-        msg.lineSize = 123.456f;//nanoData.lineSize;
-        msg.onLine = 400.0f;//nanoData.isOnLine;
-        msg.temperature = 0xBAD;
+        msg.lastAngle = nanoData.lastAngle;
+        msg.lineAngle = nanoData.lineAngle;
+        msg.lineOver = nanoData.isLineOver;
+        msg.lineSize = nanoData.lineSize;
+        msg.onLine = nanoData.isOnLine;
+        msg.temperature = 24;
         msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
         msg.voltage = 12.0f;
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
-            ESP_LOGD(TAG, "Encoded successfully, used %d bytes", stream.bytes_written);
-            ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
-            // send it here
+            // ESP_LOGD(TAG, "Encoded successfully, used %d bytes", stream.bytes_written);
+            comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
-
-        comms_i2c_send((uint16_t) tsopAngle, (uint16_t) tsopStrength, (uint16_t) LS_NO_LINE_ANGLE, 
-        (uint16_t) LS_NO_LINE_SIZE, (uint16_t) (heading * IMU_MULTIPLIER));
 
         esp_task_wdt_reset();
     }

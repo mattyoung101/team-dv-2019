@@ -1,44 +1,79 @@
 #include "comms_i2c.h"
 #include "HandmadeMath.h"
 #include "states.h"
+#include "pb_decode.h"
 
-SemaphoreHandle_t rdSem = NULL;
 i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
+SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
+SemaphoreHandle_t pbSem = NULL;
+
 static const char *TAG = "CommsI2C";
+
+// stupid hack to assign field given message ID as it's a fuckin const so we can't use an if statement
+static const pb_field_t* get_pb_fields(uint8_t msgId){
+    switch (msgId){
+        case MSG_SENSORUPDATE_ID:
+            return SensorUpdate_fields;
+        default:
+            ESP_LOGE(TAG, "Unknown message ID: %d", msgId);
+            return NULL;
+    }
+}
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
-    uint8_t *buf = calloc(11, sizeof(uint8_t));
-    rdSem = xSemaphoreCreateMutex();
-    xSemaphoreGive(rdSem);
+    uint8_t *buf = calloc(PROTOBUF_SIZE, sizeof(uint8_t));
+    pbSem = xSemaphoreCreateMutex();
+    xSemaphoreGive(pbSem);
 
     esp_task_wdt_add(NULL);
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
     while (true){
-        memset(buf, 0, 11);
-
+        memset(buf, 0, PROTOBUF_SIZE);
         esp_task_wdt_reset();
 
-        // wait slightly shorter than the task watchdog timeout for us to get some data
-        i2c_slave_read_buffer(I2C_NUM_0, buf, 11, pdMS_TO_TICKS(4000));
-        // ESP_LOG_BUFFER_HEX("I2C", buf, 11);
+        if (!xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
+        }
+        
+        // first, try to read in the header
+        i2c_slave_read_buffer(I2C_NUM_0, buf, 5, pdMS_TO_TICKS(4096));
 
-        if (buf[0] == I2C_BEGIN_DEFAULT){
-            // we got sensor data
-            if (xSemaphoreTake(rdSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                receivedData.tsopAngle = UNPACK_16(buf[1], buf[2]);
-                receivedData.tsopStrength = UNPACK_16(buf[3], buf[4]);
-                receivedData.lineAngle = UNPACK_16(buf[5], buf[6]);
-                receivedData.lineSize = UNPACK_16(buf[7], buf[8]);
-                receivedData.heading = UNPACK_16(buf[9], buf[10]);
-                xSemaphoreGive(rdSem);
-            } else {
-                ESP_LOGW(TAG, "Failed to acquire received data semaphore in time!");
+        // if it's a valid header it'll start with "HED" (0x48, 0x45, 0x44)
+        if (buf[0] == 0x48 && buf[0] == 0x45 && buf[2] == 0x44){
+            uint8_t msgId = buf[3];
+            uint8_t msgSize = buf[4];
+
+            memset(buf, 0, PROTOBUF_SIZE);
+            ESP_LOGD(TAG, "Got header, msg id: %d, msg size: %d", msgId, msgSize);
+
+            // now try to read in the actual protobuf byte stream and deserialise it
+            esp_task_wdt_reset();
+            i2c_slave_read_buffer(I2C_NUM_0, buf, msgSize, pdMS_TO_TICKS(4096));
+
+            pb_istream_t stream = pb_istream_from_buffer(buf, PROTOBUF_SIZE);
+            void *dest = NULL;
+
+            // assign destination struct based on message ID
+            switch (msgId){
+                case MSG_SENSORUPDATE_ID:
+                    dest = (void*) &lastSensorUpdate;
+                default:
+                    ESP_LOGE(TAG, "Unknown message ID: %d", msgId);
+                    return NULL;
             }
+
+            // decode the stream
+            if (!pb_decode(&stream, get_pb_fields(msgId), dest)){
+                ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
+            }
+
+            xSemaphoreGive(pbSem);
         } else {
-            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            ESP_LOGW(TAG, "Invalid header.");
+            ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
         }
 
         esp_task_wdt_reset();
@@ -99,7 +134,7 @@ void comms_i2c_init_master(i2c_port_t port){
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
 
-    // xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
@@ -117,18 +152,17 @@ void comms_i2c_init_slave(void){
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     // min size is of i2c fifo buffer is 100 bytes, so we use a 32 * 9 byte buffer
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 288, 288, 0));
-    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 8192, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
-/** Internal send data function **/
-static int comms_i2c_send_data(uint8_t *buf, size_t bufSize){
+static int write_buffer(uint8_t *buf, size_t size){
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ESP_SLAVE_ADDR << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
 
-    ESP_ERROR_CHECK(i2c_master_write(cmd, buf, bufSize, I2C_ACK_MODE));
+    ESP_ERROR_CHECK(i2c_master_write(cmd, buf, size, I2C_ACK_MODE));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
     I2C_ERR_CHECK(err);
@@ -137,21 +171,14 @@ static int comms_i2c_send_data(uint8_t *buf, size_t bufSize){
     return ESP_OK;
 }
 
-int comms_i2c_send(uint16_t tsopAngle, uint16_t tsopStrength, uint16_t lineAngle, uint16_t lineSize, uint16_t heading){
-    // temp 11 byte buffer on the stack to expand out 5 16 bit integers into 10 8 bit integers + 1 start byte
-    // TODO use a static array and not alloca, saves memory concerns/stack overflow issues
-    uint8_t *buf = alloca(11);
-    buf[0] = I2C_BEGIN_DEFAULT;
-    buf[1] = HIGH_BYTE_16(tsopAngle);
-    buf[2] = LOW_BYTE_16(tsopAngle);
-    buf[3] = HIGH_BYTE_16(tsopStrength);
-    buf[4] = LOW_BYTE_16(tsopStrength);
-    buf[5] = HIGH_BYTE_16(lineAngle);
-    buf[6] = LOW_BYTE_16(lineAngle);
-    buf[7] = HIGH_BYTE_16(lineSize);
-    buf[8] = LOW_BYTE_16(lineSize);
-    buf[9] = HIGH_BYTE_16(heading);
-    buf[10] = LOW_BYTE_16(heading);
+int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
+    // First, write header. The first three bytes are "HED" in ASCII so we can see that it's not a protocol buffer.
+    // Then we write out the msg's ID and size.
+    uint8_t header[] = {0x48, 0x45, 0x44, msgId, msgSize};
+    int status = write_buffer(header, 5);
 
-    return comms_i2c_send_data(buf, 11);
+    // Now write out the actual Protobuf data stream.
+    status += write_buffer(buf, msgSize);
+
+    return status;
 }

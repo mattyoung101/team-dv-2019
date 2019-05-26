@@ -29,7 +29,10 @@
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
 #define NANO_PACKET_SIZE 9
-#define PROTOBUF_SIZE 128
+
+// ProtoBuf
+#define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
+#define MSG_SENSORUPDATE_ID 0
 
 // Music
 #define MUSIC_BPM 100
