@@ -3,6 +3,7 @@
 #include "utils.h"
 
 // static pid_config_t lrfPID = {LRF_KP, LRF_KI, LRF_KD, LRF_MAX};
+static pid_config_t interceptPID = {INTERCEPT_KP, INTERCEPT_KI, INTERCEPT_KD, INTERCEPT_MAX};
 
 fsm_state_t stateDefenceReverse = {&state_nothing_enter, &state_nothing_exit, &state_defence_reverse_update, "DefenceReverse"};
 fsm_state_t stateDefenceIdle = {&state_nothing_enter, &state_nothing_exit, &state_defence_idle_update, "DefenceIdle"};
@@ -69,6 +70,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     rs.outIsAttack = false;
 
     goal_correction(&robotState); // Face the back of the robot to the goal
+    // imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
         ESP_LOGD(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
@@ -85,7 +87,7 @@ void state_defence_idle_update(state_machine_t *fsm){
         orbit(&robotState); // Ball is behind, orbit so we don't score an own goal
     } else {
         float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
-        float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f); // Centre on the ball
+        float sidewaysMovement = -pid_update(&interceptPID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f); // Centre on the ball
 
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
         rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);

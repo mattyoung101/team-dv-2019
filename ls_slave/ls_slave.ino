@@ -33,7 +33,8 @@ void loop() {
 //  Serial.print("\t");
 //  Serial.print("lineSize: ");
 //  Serial.print(ls.getLineSize());
-//  Serial.print(ls.readSensor(45));
+  
+//  Serial.print(analogRead(A1));
   Serial.println();
 }
 

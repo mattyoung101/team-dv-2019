@@ -88,7 +88,7 @@ void goal_correction(robot_state_t *robotState){
             // printf("Attack goal correction");
         } else {
             robotState->outOrientation = (int16_t) pid_update(&goaliePID, floatMod(floatMod((float)robotState->inGoalAngle, 360.0f)
-                                    + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Use goalie PID. Also I don't remember how the hell this works but apparently it did
+                                    , 360.0f) - 180.0f, 0.0f, 0.0f); // Use goalie PID. Also I don't remember how the hell this works but apparently it did
             // printf("Defend goal correction");
         }
     } else {
@@ -135,7 +135,7 @@ void orbit(robot_state_t *robotState){
     int16_t tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.3 * powf(E, 0.3 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.2 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
     float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
     float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 2 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
     float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
@@ -152,11 +152,13 @@ void position(robot_state_t *robotState, float distance, float offset) {
     float goalAngle = robotState->inGoalAngle < 0.0f ? robotState->inGoalAngle + 360.0f : robotState->inGoalAngle; // Convert to 0 - 360 range
     float goalAngle_ = fmodf(goalAngle + robotState->inHeading, 360.0f); // Add the heading to counteract the rotation
 
-    float verticalDistance = robotState->inGoalLength * cosf(DEG_RAD * goalAngle_); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
+    float verticalDistance = fabsf(robotState->inGoalLength * cosf(DEG_RAD * goalAngle_)); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
     float horizontalDistance = robotState->inGoalLength * sinf(DEG_RAD * goalAngle_);
 
     float distanceMovement = -pid_update(&forwardPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
     float sidewaysMovement = -pid_update(&sidePID, horizontalDistance, offset, 0.0f);
+
+    if(!robotState->outIsAttack) distanceMovement *= -1;
 
     robotState->outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f); // Use atan2 to find angle
     robotState->outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed
@@ -164,7 +166,7 @@ void position(robot_state_t *robotState, float distance, float offset) {
     robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
 
     // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
-    // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
+    printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
 
 }
 

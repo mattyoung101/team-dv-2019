@@ -6,7 +6,7 @@
 
 static const char *TAG = "FSM";
 
-state_machine_t fsm_new(fsm_state_t *startState){
+state_machine_t* fsm_new(fsm_state_t *startState){
     // TODO this is pretty hacky, should we check if it's already created first? 
     // or move it elsewhere - this code should just handle FSMs, not other crap as well
     if (robotStateSem == NULL){
@@ -18,7 +18,7 @@ state_machine_t fsm_new(fsm_state_t *startState){
     fsm->currentState = &stateGeneralNothing;
     // change into the start state, to make sure startState->enter is called
     fsm_change_state(fsm, startState); 
-    return *fsm;
+    return fsm;
 }
 
 void fsm_update(state_machine_t *fsm){
@@ -36,7 +36,7 @@ static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newStat
 }
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
-    ESP_LOGD(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);
+    // ESP_LOGD(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);
     fsm_internal_change_state(fsm, newState, true);
 }
 
