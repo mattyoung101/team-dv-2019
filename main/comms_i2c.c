@@ -37,13 +37,9 @@ static void comms_i2c_receive_task(void *pvParameters){
         // read in the whole byte stream
         i2c_slave_read_buffer(I2C_NUM_0, buf, PROTOBUF_SIZE, pdMS_TO_TICKS(4096));
 
-        if (buf[0] == 0xB){
-            ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
-        } else {
-            ESP_LOGE(TAG, "Invalid buffer: first byte is 0x%X", buf[0]);
-            ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
-            i2c_reset_rx_fifo(I2C_NUM_0);
-        }
+        
+        ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
+        printf("FUCK\n");
 
         // // if it's a valid header it'll start with "HED" (0x48, 0x45, 0x44)
         // if (buf[0] == 0x48 && buf[1] == 0x45 && buf[2] == 0x44){
@@ -200,7 +196,7 @@ int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ESP_SLAVE_ADDR << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
 
-    ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
+    // ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
     ESP_ERROR_CHECK(i2c_master_write(cmd, buf, msgSize, I2C_ACK_MODE)); // write buffer
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
