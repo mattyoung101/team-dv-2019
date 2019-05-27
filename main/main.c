@@ -63,10 +63,10 @@ void master_task(void *pvParameter){
     // Initialise FSM
     state_machine_t *fsm = fsm_new(&stateDefenceIdle);
 
-    esp_task_wdt_add(NULL);
-
     // Wait for the slave to calibrate IMU and send over the first packets
     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 25));
+
+    esp_task_wdt_add(NULL);
 
     while (true){
         // update cam
