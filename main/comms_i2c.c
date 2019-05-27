@@ -7,6 +7,7 @@ i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
 SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
 SemaphoreHandle_t pbSem = NULL;
+SemaphoreHandle_t nanoDataSem = NULL;
 
 static const char *TAG = "CommsI2C";
 
@@ -16,14 +17,14 @@ static const pb_field_t* get_pb_fields(uint8_t msgId){
         case MSG_SENSORUPDATE_ID:
             return SensorUpdate_fields;
         default:
-            ESP_LOGE(TAG, "Unknown message ID: %d", msgId);
+            ESP_LOGE(TAG, "get_pb_fields: Unknown message ID: %d", msgId);
             return NULL;
     }
 }
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
-    uint8_t *buf = calloc(PROTOBUF_SIZE, sizeof(uint8_t));
+    uint8_t buf[PROTOBUF_SIZE] = {0};
     pbSem = xSemaphoreCreateMutex();
     xSemaphoreGive(pbSem);
 
@@ -32,26 +33,26 @@ static void comms_i2c_receive_task(void *pvParameters){
 
     while (true){
         memset(buf, 0, PROTOBUF_SIZE);
-        esp_task_wdt_reset();
 
         if (!xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
+            ESP_LOGE(TAG, "Failed to unlock protobuf semaphore!");
+            continue;
         }
         
-        // first, try to read in the header
+        // first, try to read in the header, which is 5 bytes
         i2c_slave_read_buffer(I2C_NUM_0, buf, 5, pdMS_TO_TICKS(4096));
 
         // if it's a valid header it'll start with "HED" (0x48, 0x45, 0x44)
-        if (buf[0] == 0x48 && buf[0] == 0x45 && buf[2] == 0x44){
+        if (buf[0] == 0x48 && buf[1] == 0x45 && buf[2] == 0x44){
             uint8_t msgId = buf[3];
             uint8_t msgSize = buf[4];
 
             memset(buf, 0, PROTOBUF_SIZE);
-            ESP_LOGD(TAG, "Got header, msg id: %d, msg size: %d", msgId, msgSize);
+            // ESP_LOGD(TAG, "Got header, msg id: %d, msg size: %d", msgId, msgSize);
 
             // now try to read in the actual protobuf byte stream and deserialise it
-            esp_task_wdt_reset();
             i2c_slave_read_buffer(I2C_NUM_0, buf, msgSize, pdMS_TO_TICKS(4096));
+            // ESP_LOG_BUFFER_HEX("Protobuf raw", buf, PROTOBUF_SIZE);
 
             pb_istream_t stream = pb_istream_from_buffer(buf, PROTOBUF_SIZE);
             void *dest = NULL;
@@ -60,22 +61,28 @@ static void comms_i2c_receive_task(void *pvParameters){
             switch (msgId){
                 case MSG_SENSORUPDATE_ID:
                     dest = (void*) &lastSensorUpdate;
+                    break;
                 default:
-                    ESP_LOGE(TAG, "Unknown message ID: %d", msgId);
-                    return NULL;
+                    ESP_LOGE(TAG, "main task: Unknown message ID: %d", msgId);
+                    continue;
             }
 
             // decode the stream
             if (!pb_decode(&stream, get_pb_fields(msgId), dest)){
                 ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
+            } else {
+                ESP_LOGI(TAG, "Protobuf decode successful. Ball strength: %d, Ball dir: %d", lastSensorUpdate.tsopStrength,
+                lastSensorUpdate.tsopAngle);
             }
-
-            xSemaphoreGive(pbSem);
         } else {
-            ESP_LOGW(TAG, "Invalid header.");
-            ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
+            ESP_LOGE(TAG, "Invalid header.");
+            // ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
         }
 
+        xSemaphoreGive(pbSem);
+
+        // we only reset the watchdog timer once, because really if this is taking anything greater than like 5ms,
+        // something has gone wrong and we should be notified about it
         esp_task_wdt_reset();
     }
 }
@@ -84,6 +91,9 @@ static void comms_i2c_receive_task(void *pvParameters){
 static void nano_comms_task(void *pvParameters){
     static const char *TAG = "NanoCommsTask";
     uint8_t buf[9] = {0};
+    nanoDataSem = xSemaphoreCreateMutex();
+    xSemaphoreGive(nanoDataSem);
+
     esp_task_wdt_add(NULL);
     ESP_LOGI(TAG, "Nano comms task init OK");
 
@@ -101,19 +111,18 @@ static void nano_comms_task(void *pvParameters){
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf);
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
-            if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                // buf[0] is the begin byte, so start from buf[1]
+            if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 nanoData.lineAngle = UNPACK_16(buf[1], buf[2]) / IMU_MULTIPLIER;
                 nanoData.lineSize = UNPACK_16(buf[3], buf[4]) / IMU_MULTIPLIER;
                 nanoData.isOnLine = (bool) buf[5];
                 nanoData.isLineOver = (bool) buf[6];
                 nanoData.lastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
-                xSemaphoreGive(robotStateSem);
+                xSemaphoreGive(nanoDataSem);
             } else {
-                ESP_LOGW(TAG, "Failed to acquire robot state semaphore in time!");
+                ESP_LOGE(TAG, "Failed to unlock nano data semaphore!");
             }
         } else {
-            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
         }
 
         esp_task_wdt_reset();
@@ -133,6 +142,8 @@ void comms_i2c_init_master(i2c_port_t port){
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
+    // fuck this shit, stop timing out. default value is 1600.
+    ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFFF));
 
     xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
@@ -172,12 +183,12 @@ static int write_buffer(uint8_t *buf, size_t size){
 }
 
 int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
-    // First, write header. The first three bytes are "HED" in ASCII so we can see that it's not a protocol buffer.
-    // Then we write out the msg's ID and size.
+    // first, write header. The first three bytes are "HED" in ASCII so we can see that it's not a protocol buffer
+    // then we write out the msg's ID and size
     uint8_t header[] = {0x48, 0x45, 0x44, msgId, msgSize};
     int status = write_buffer(header, 5);
 
-    // Now write out the actual Protobuf data stream.
+    // now write out the actual protobuf data stream
     status += write_buffer(buf, msgSize);
 
     return status;

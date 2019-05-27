@@ -32,7 +32,7 @@
 
 // ProtoBuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
-#define MSG_SENSORUPDATE_ID 0
+#define MSG_SENSORUPDATE_ID 0 // should probably make these an enum
 
 // Music
 #define MUSIC_BPM 100

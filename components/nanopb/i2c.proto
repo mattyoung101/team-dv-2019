@@ -1,7 +1,5 @@
 syntax = "proto3";
 
-// This file contains I2C messages
-
 // ESP32 RL slave (I2C master) to RL master (I2C slave) sensor update
 message SensorUpdate {
     // TSOPs

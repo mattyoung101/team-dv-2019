@@ -34,10 +34,12 @@ extern SensorUpdate lastSensorUpdate;
 extern nano_data_t nanoData;
 /** Protobuf semaphore **/
 extern SemaphoreHandle_t pbSem;
+/** Nano data semaphore **/
+extern SemaphoreHandle_t nanoDataSem;
 
-/** Writes a buffer of bytes over I2C **/
+/** Writes a Protobuf message to I2C, by first writing the header then the byte stream. **/
 int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId);
-/** Real life slave. Sends sensor data to the master. AUTOMODE_SLAVE. **/
+/** Init real life slave. Sends sensor data to the master. AUTOMODE_SLAVE. **/
 void comms_i2c_init_master(i2c_port_t port);
-/** Real life master. Receives sensor data from the master. AUTOMODE_MASTER. **/
+/** Init real life master. Receives sensor data from the slave. AUTOMODE_MASTER. **/
 void comms_i2c_init_slave(void);

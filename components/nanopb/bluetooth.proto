@@ -1,3 +1,8 @@
 syntax = "proto3";
 
-// This file contains Bluetooth messages
+// Packet which gets sent over Bluetooth for inter-robot comms
+message BTUpdate {
+    int64 fsmState = 1; // djb2 hash of current FSM state name - or maybe string - depends on speed requirements
+    repeated float position = 2 [packed=true]; // 2 element list containg calculated x and y of robot
+    bool onLine = 3;
+}

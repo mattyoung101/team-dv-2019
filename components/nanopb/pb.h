@@ -11,7 +11,7 @@
  *****************************************************************/
 
 /* Enable support for dynamically allocated fields */
-/* #define PB_ENABLE_MALLOC 1 */
+#define PB_ENABLE_MALLOC 1
 
 /* Define this if your CPU / compiler combination does not support
  * unaligned memory access to packed structures. */
@@ -31,7 +31,7 @@
 /* #define PB_NO_ERRMSG 1 */
 
 /* Disable support for custom streams (support only memory buffers). */
-/* #define PB_BUFFER_ONLY 1 */
+#define PB_BUFFER_ONLY 1
 
 /* Switch back to the old-style callback function signature.
  * This was the default until nanopb-0.2.1. */

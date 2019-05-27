@@ -27,7 +27,6 @@
 #include "vl53l0x_api.h"
 #include "comms_bluetooth.h"
 #include "pb_encode.h"
-#include "pb_decode.h"
 #include "i2c.pb.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
@@ -97,7 +96,7 @@ void master_task(void *pvParameter){
                 xSemaphoreGive(pbSem);
                 xSemaphoreGive(goalDataSem);
         } else {
-            ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
+            ESP_LOGE(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
 
         // update the actual FSM
@@ -146,17 +145,23 @@ void slave_task(void *pvParameter){
         simu_calc();
 
         // setup protobuf byte stream - as far as I can tell, msg and stream will be disposed of after the loop ends
+        PERF_TIMER_START;
         memset(pbBuf, 0, PROTOBUF_SIZE);
         SensorUpdate msg = SensorUpdate_init_zero;
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
         
         // set the message's values
         msg.heading = heading;
-        msg.lastAngle = nanoData.lastAngle;
-        msg.lineAngle = nanoData.lineAngle;
-        msg.lineOver = nanoData.isLineOver;
-        msg.lineSize = nanoData.lineSize;
-        msg.onLine = nanoData.isOnLine;
+        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            msg.lastAngle = nanoData.lastAngle;
+            msg.lineAngle = nanoData.lineAngle;
+            msg.lineOver = nanoData.isLineOver;
+            msg.lineSize = nanoData.lineSize;
+            msg.onLine = nanoData.isOnLine;
+            xSemaphoreGive(nanoDataSem);
+        } else {
+            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        }
         msg.temperature = 24;
         msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
@@ -164,8 +169,9 @@ void slave_task(void *pvParameter){
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
-            // ESP_LOGD(TAG, "Encoded successfully, used %d bytes", stream.bytes_written);
+            ESP_LOGD(TAG, "Encoded successfully, used %d bytes", stream.bytes_written);
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
+            PERF_TIMER_STOP;
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
@@ -178,7 +184,6 @@ void app_main(){
     puts("==================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
     puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
-    puts(" * IDF version: " IDF_VER);
     puts("====================================================================================\n");
 
     // Initialize NVS
