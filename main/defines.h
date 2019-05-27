@@ -254,7 +254,7 @@
 #define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
-#define DEFEND_DISTANCE 38
+#define DEFEND_DISTANCE 35
 #define SURGE_DISTANCE 40
 #define SURGE_STRENGTH 170
 #define SURGE_SPEED 100

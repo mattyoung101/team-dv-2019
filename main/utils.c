@@ -158,7 +158,7 @@ void position(robot_state_t *robotState, float distance, float offset) {
     float distanceMovement = -pid_update(&forwardPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
     float sidewaysMovement = -pid_update(&sidePID, horizontalDistance, offset, 0.0f);
 
-    if(!robotState->outIsAttack) distanceMovement *= -1;
+    if(!robotState->outIsAttack) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
 
     robotState->outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f); // Use atan2 to find angle
     robotState->outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed
@@ -166,7 +166,7 @@ void position(robot_state_t *robotState, float distance, float offset) {
     robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
 
     // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
-    printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
+    // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
 
 }
 

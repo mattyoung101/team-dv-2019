@@ -78,9 +78,7 @@ int LightSensorArray::readSensor(int sensor) {
     // This changes the pins on both multiplexers. I had some optimisations written up in the ESP32 version
     // to read both mux channels at once, but the Arduino IDE sucks and I got other shit to do.
     changeMUXChannel(sensor % 24);
-
-    Serial.println(sensor % 24);
-    
+        
     return analogRead(mux);
 }
 
