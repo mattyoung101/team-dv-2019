@@ -33,53 +33,62 @@ static void comms_i2c_receive_task(void *pvParameters){
 
     while (true){
         memset(buf, 0, PROTOBUF_SIZE);
-
-        if (!xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            ESP_LOGE(TAG, "Failed to unlock protobuf semaphore!");
-            continue;
-        }
         
-        // first, try to read in the header, which is 5 bytes
-        i2c_slave_read_buffer(I2C_NUM_0, buf, 5, pdMS_TO_TICKS(4096));
+        // read in the whole byte stream
+        i2c_slave_read_buffer(I2C_NUM_0, buf, PROTOBUF_SIZE, pdMS_TO_TICKS(4096));
 
-        // if it's a valid header it'll start with "HED" (0x48, 0x45, 0x44)
-        if (buf[0] == 0x48 && buf[1] == 0x45 && buf[2] == 0x44){
-            uint8_t msgId = buf[3];
-            uint8_t msgSize = buf[4];
-
-            memset(buf, 0, PROTOBUF_SIZE);
-            // ESP_LOGD(TAG, "Got header, msg id: %d, msg size: %d", msgId, msgSize);
-
-            // now try to read in the actual protobuf byte stream and deserialise it
-            i2c_slave_read_buffer(I2C_NUM_0, buf, msgSize, pdMS_TO_TICKS(4096));
-            // ESP_LOG_BUFFER_HEX("Protobuf raw", buf, PROTOBUF_SIZE);
-
-            pb_istream_t stream = pb_istream_from_buffer(buf, PROTOBUF_SIZE);
-            void *dest = NULL;
-
-            // assign destination struct based on message ID
-            switch (msgId){
-                case MSG_SENSORUPDATE_ID:
-                    dest = (void*) &lastSensorUpdate;
-                    break;
-                default:
-                    ESP_LOGE(TAG, "main task: Unknown message ID: %d", msgId);
-                    continue;
-            }
-
-            // decode the stream
-            if (!pb_decode(&stream, get_pb_fields(msgId), dest)){
-                ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
-            } else {
-                ESP_LOGI(TAG, "Protobuf decode successful. Ball strength: %d, Ball dir: %d", lastSensorUpdate.tsopStrength,
-                lastSensorUpdate.tsopAngle);
-            }
+        if (buf[0] == 0xB){
+            ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
         } else {
-            ESP_LOGE(TAG, "Invalid header.");
-            // ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
+            ESP_LOGE(TAG, "Invalid buffer: first byte is 0x%X", buf[0]);
+            ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
+            i2c_reset_rx_fifo(I2C_NUM_0);
         }
 
-        xSemaphoreGive(pbSem);
+        // // if it's a valid header it'll start with "HED" (0x48, 0x45, 0x44)
+        // if (buf[0] == 0x48 && buf[1] == 0x45 && buf[2] == 0x44){
+        //     uint8_t msgId = buf[3];
+        //     uint8_t msgSize = buf[4];
+
+        //     memset(buf, 0, PROTOBUF_SIZE);
+        //     // ESP_LOGD(TAG, "Got header, msg id: %d, msg size: %d", msgId, msgSize);
+
+        //     // now try to read in the actual protobuf byte stream and deserialise it
+        //     i2c_slave_read_buffer(I2C_NUM_0, buf, msgSize, pdMS_TO_TICKS(4096));
+        //     // ESP_LOG_BUFFER_HEX("Protobuf raw", buf, PROTOBUF_SIZE);
+
+        //     pb_istream_t stream = pb_istream_from_buffer(buf, PROTOBUF_SIZE);
+        //     void *dest = NULL;
+
+        //     // assign destination struct based on message ID
+        //     switch (msgId){
+        //         case MSG_SENSORUPDATE_ID:
+        //             dest = (void*) &lastSensorUpdate;
+        //             break;
+        //         default:
+        //             ESP_LOGE(TAG, "main task: Unknown message ID: %d", msgId);
+        //             continue;
+        //     }
+
+        //     // semaphore required since we use the protobuf messages outside this thread
+        //     if (!xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //         ESP_LOGE(TAG, "Failed to unlock protobuf semaphore!");
+        //         continue;
+        //     }
+
+        //     // decode the stream
+        //     if (!pb_decode(&stream, get_pb_fields(msgId), dest)){
+        //         ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
+        //     } else {
+        //         ESP_LOGI(TAG, "Protobuf decode successful. Ball strength: %d, Ball dir: %d", lastSensorUpdate.tsopStrength,
+        //         lastSensorUpdate.tsopAngle);
+        //     }
+
+        //     xSemaphoreGive(pbSem);
+        // } else {
+        //     ESP_LOGE(TAG, "Invalid header.");
+        //     ESP_LOG_BUFFER_HEX("Invalid header", buf, 8);
+        // }
 
         // we only reset the watchdog timer once, because really if this is taking anything greater than like 5ms,
         // something has gone wrong and we should be notified about it
@@ -183,13 +192,21 @@ static int write_buffer(uint8_t *buf, size_t size){
 }
 
 int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
-    // first, write header. The first three bytes are "HED" in ASCII so we can see that it's not a protocol buffer
+    // header: the first three bytes are "HED" in ASCII so we can see that it's not a protocol buffer
     // then we write out the msg's ID and size
-    uint8_t header[] = {0x48, 0x45, 0x44, msgId, msgSize};
-    int status = write_buffer(header, 5);
+    uint8_t header[] = {0xB, 0xB, 0xB};
 
-    // now write out the actual protobuf data stream
-    status += write_buffer(buf, msgSize);
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (I2C_ESP_SLAVE_ADDR << 1) | I2C_MASTER_WRITE, I2C_ACK_MODE));
 
-    return status;
+    ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
+    ESP_ERROR_CHECK(i2c_master_write(cmd, buf, msgSize, I2C_ACK_MODE)); // write buffer
+
+    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+    esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    I2C_ERR_CHECK(err);
+
+    i2c_cmd_link_delete(cmd);
+    return ESP_OK;
 }

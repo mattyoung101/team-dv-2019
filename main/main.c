@@ -145,7 +145,6 @@ void slave_task(void *pvParameter){
         simu_calc();
 
         // setup protobuf byte stream - as far as I can tell, msg and stream will be disposed of after the loop ends
-        PERF_TIMER_START;
         memset(pbBuf, 0, PROTOBUF_SIZE);
         SensorUpdate msg = SensorUpdate_init_zero;
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
@@ -169,9 +168,8 @@ void slave_task(void *pvParameter){
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
-            ESP_LOGD(TAG, "Encoded successfully, used %d bytes", stream.bytes_written);
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            PERF_TIMER_STOP;
+            // PERF_TIMER_STOP;
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
