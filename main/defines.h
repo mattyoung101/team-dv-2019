@@ -60,10 +60,11 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 2.5
+#define INTERCEPT_KP 10
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 1
+#define INTERCEPT_KD 0.1
 #define INTERCEPT_MAX 100
+#define INTERCEPT_MIN 50
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -113,8 +114,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 75
-#define CAM_OFFSET_Y 55
+#define CAM_OFFSET_X 78
+#define CAM_OFFSET_Y 50
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -130,7 +131,7 @@
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000
-#define IDLE_MIN_SPEED 30
+#define IDLE_MIN_SPEED 50
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -254,8 +255,8 @@
 #define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
-#define DEFEND_DISTANCE 35
-#define SURGE_DISTANCE 40
+#define DEFEND_DISTANCE 30
+#define SURGE_DISTANCE 35
 #define SURGE_STRENGTH 170
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60

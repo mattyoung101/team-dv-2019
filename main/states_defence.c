@@ -88,6 +88,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     } else {
         float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         float sidewaysMovement = -pid_update(&interceptPID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f); // Centre on the ball
+        if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
 
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
         rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
