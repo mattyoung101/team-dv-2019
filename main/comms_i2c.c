@@ -11,7 +11,9 @@ SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
 SemaphoreHandle_t pbSem = NULL;
 SemaphoreHandle_t nanoDataSem = NULL;
 // semaphore which is locked while the while loop is processing data, the interrupt will try to unlock this
-SemaphoreHandle_t bufSem = NULL;
+static SemaphoreHandle_t bufSem = NULL;
+// current position in the buffer that the I2C interrupt is writing to, must only be modified by this interrupt
+static uint8_t bufI = 0;
 
 static const char *TAG = "CommsI2C";
 
@@ -29,8 +31,8 @@ static const pb_field_t* get_pb_fields(uint8_t msgId){
 /** used to fix problems with default interrupt in the I2C library that causes bytes to be out of order **/
 static void IRAM_ATTR i2c_interrupt(void *arg){
     uint32_t status = I2C0.int_status.val;
-    bool hpTaskAwokenUnlock = false;
-    bool hpTaskAwokenLock = false;
+    BaseType_t hpTaskAwokenUnlock = false;
+    BaseType_t hpTaskAwokenLock = false;
 
     // this semaphore is to check that the receive task is not currently processing/copy data right now and that
     // we're safe to refill the buffer
@@ -197,7 +199,7 @@ void comms_i2c_init_slave(void){
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     // min size is of i2c fifo buffer is 100 bytes, so we use a 32 * 9 byte buffer
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 512, 128, 0));
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 256, 128, 0));
     xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 8192, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
