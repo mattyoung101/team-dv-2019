@@ -128,8 +128,8 @@ void slave_task(void *pvParameter){
     // Initialise hardware
     tsop_init();
     ls_init();
-    simu_init();
-    simu_calibrate();
+    // simu_init();
+    // simu_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -142,7 +142,7 @@ void slave_task(void *pvParameter){
         tsop_calc();
         
         // update IMU
-        simu_calc();
+        // simu_calc();
 
         // setup protobuf byte stream - as far as I can tell, msg and stream will be disposed of after the loop ends
         memset(pbBuf, 0, PROTOBUF_SIZE);
@@ -150,21 +150,22 @@ void slave_task(void *pvParameter){
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
         
         // set the message's values
-        msg.heading = heading;
-        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            msg.lastAngle = nanoData.lastAngle;
-            msg.lineAngle = nanoData.lineAngle;
-            msg.lineOver = nanoData.isLineOver;
-            msg.lineSize = nanoData.lineSize;
-            msg.onLine = nanoData.isOnLine;
-            xSemaphoreGive(nanoDataSem);
-        } else {
-            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        }
+        msg.heading = 36.0f;//heading;
+        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            msg.lastAngle = 17.8f;//nanoData.lastAngle;
+            msg.lineAngle = 16.9f;//nanoData.lineAngle;
+            msg.lineOver = true;//nanoData.isLineOver;
+            msg.lineSize = 42.69f;//nanoData.lineSize;
+            msg.onLine = false;//nanoData.isOnLine;
+            // xSemaphoreGive(nanoDataSem);
+        // } else {
+            // ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        // }
         msg.temperature = 24;
-        msg.tsopAngle = tsopAngle;
-        msg.tsopStrength = tsopStrength;
-        msg.voltage = 12.0f;
+        // TODO make these a float
+        msg.tsopAngle = 69;//tsopAngle;
+        msg.tsopStrength = 32;//tsopStrength;
+        msg.voltage = 12.8f;
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
@@ -179,7 +180,7 @@ void slave_task(void *pvParameter){
 }
 
 void app_main(){
-    puts("==================================================================================");
+    puts("===================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
     puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
     puts("====================================================================================\n");

@@ -10,10 +10,12 @@ nano_data_t nanoData = {0};
 SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
 SemaphoreHandle_t pbSem = NULL;
 SemaphoreHandle_t nanoDataSem = NULL;
+// semaphore which is locked while the while loop is processing data, the interrupt will try to unlock this
+SemaphoreHandle_t bufSem = NULL;
 
 static const char *TAG = "CommsI2C";
 
-// stupid hack to assign field given message ID as it's a fuckin const so we can't use an if statement
+/** stupid hack to assign field given message ID as it's a fuckin const so we can't use an if statement **/
 static const pb_field_t* get_pb_fields(uint8_t msgId){
     switch (msgId){
         case MSG_SENSORUPDATE_ID:
@@ -24,10 +26,36 @@ static const pb_field_t* get_pb_fields(uint8_t msgId){
     }
 }
 
+/** used to fix problems with default interrupt in the I2C library that causes bytes to be out of order **/
+static void IRAM_ATTR i2c_interrupt(void *arg){
+    uint32_t status = I2C0.int_status.val;
+    bool hpTaskAwokenUnlock = false;
+    bool hpTaskAwokenLock = false;
+
+    // this semaphore is to check that the receive task is not currently processing/copy data right now and that
+    // we're safe to refill the buffer
+    if (xSemaphoreTakeFromISR(bufSem, &hpTaskAwokenLock)){
+        while (status != 0) {
+            status = I2C0.int_status.val;
+
+            // so the interrupts we care about are: 
+            // maybe we can listen for the begin event?????
+        }
+
+        xSemaphoreGiveFromISR(bufSem, &hpTaskAwokenUnlock);
+    }
+
+    if (hpTaskAwokenLock || hpTaskAwokenUnlock){
+        portYIELD_FROM_ISR();
+    }
+}
+
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
     uint8_t buf[PROTOBUF_SIZE] = {0};
     pbSem = xSemaphoreCreateMutex();
+    bufSem = xSemaphoreCreateMutex();
+    xSemaphoreGive(bufSem);
     xSemaphoreGive(pbSem);
 
     esp_task_wdt_add(NULL);
@@ -45,7 +73,9 @@ static void comms_i2c_receive_task(void *pvParameters){
         // to now expect the Protobuf data and read it in. HOWEVER, the max hardware limit of the buffer is 32 bytes and 
         // our buffers are gonna go way over that, and I can't be fucked to program some ringbuffer bullshit, 
         // so this will suffice.
-        i2c_slave_read_buffer(I2C_NUM_0, buf, PROTOBUF_SIZE, pdMS_TO_TICKS(5));
+        i2c_slave_read_buffer(I2C_NUM_0, buf, PROTOBUF_SIZE, pdMS_TO_TICKS(15));
+
+        ESP_LOG_BUFFER_HEX("I2C Buffer", buf, PROTOBUF_SIZE);
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
@@ -150,7 +180,7 @@ void comms_i2c_init_master(i2c_port_t port){
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFFF));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    // xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
