@@ -8,13 +8,14 @@
 i2c_data_t receivedData = {0};
 nano_data_t nanoData = {0};
 SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
+// Semaphore for Protobuf messages
 SemaphoreHandle_t pbSem = NULL;
 SemaphoreHandle_t nanoDataSem = NULL;
 // semaphore which is locked while the while loop is processing data, the interrupt will try to unlock this
 static SemaphoreHandle_t bufSem = NULL;
-// current position in the buffer that the I2C interrupt is writing to, must only be modified by this interrupt
+// current position in the buffer that the I2C interrupt is writing to, must only be modified by the interrupt
 static uint8_t bufPos = 0;
-// I2C buffer, only to be used by the slave receive task
+// I2C buffer
 uint8_t buf[PROTOBUF_SIZE] = {0};
 
 static const char *TAG = "CommsI2C";
@@ -30,44 +31,39 @@ static const pb_field_t* get_pb_fields(uint8_t msgId){
     }
 }
 
-/** runs inside interrupt to copy data from hardware FIFO into our buffer, based on https://git.io/fj0fl **/
-static bool IRAM_ATTR i2c_copy_fifo(){
-    bool hpTaskAwoken = false;
-    
-    // based on the interrupt in the driver: https://git.io/fj0fl
-    // TODO need to use bufI or could use Queue
-    memset(buf, 0, PROTOBUF_SIZE);
-
-    int rx_fifo_cnt = I2C0.status_reg.rx_fifo_cnt;
-    for (uint8_t idx = 0; idx < rx_fifo_cnt; idx++) {
-        buf[idx] = I2C0.fifo_data.data;
-    }
-
-    bufPos += rx_fifo_cnt;
-
-    return hpTaskAwoken;
-}
+// TODO: this isr needs to include bus errors as well and other handling stuff that's not included in it
 
 /** used to fix problems with default interrupt in the I2C library that causes bytes to be out of order **/
 static void IRAM_ATTR i2c_interrupt(void *arg){
-    uint32_t status = I2C0.int_status.val;
     BaseType_t hpTaskAwoken = false;
+    uint32_t status = I2C0.int_status.val;
 
-    while (status != 0) {
-        status = I2C0.int_status.val;
+    // TODO should use direct to task notifications
 
-        // note: we can print in here using ets_printf (https://esp32.com/viewtopic.php?f=13&t=3748&p=17131)
+    if (status & I2C_SLAVE_TRAN_COMP_INT_ST_M ){
+        ets_printf("\n[int] transmission complete\n");
+    }
 
-        if (status & I2C_SLAVE_TRAN_COMP_INT_ST_M){
-            I2C0.int_clr.slave_tran_comp = 1;
-            hpTaskAwoken = i2c_copy_fifo();
-            I2C0.int_clr.rx_fifo_full = 1; // don't know why we do this considering the rx_fifo intr hasn't gone off
-            // read has finished, it's safe for the i2c task to read the buffer now
-            xSemaphoreGiveFromISR(bufSem, &hpTaskAwoken); 
-        } else if (status & I2C_RXFIFO_FULL_INT_ST_M){
-            hpTaskAwoken = i2c_copy_fifo();
-            I2C0.int_clr.rx_fifo_full = 1;
+    if (status & I2C_SLAVE_TRAN_COMP_INT_ST_M || status & I2C_RXFIFO_FULL_INT_ST_M){
+        int rx_fifo_cnt = I2C0.status_reg.rx_fifo_cnt;
+        // ets_printf("\n[int] copying %d\n", rx_fifo_cnt);
+
+        // copy bytes from hardware FIFO, based on https://git.io/fj0fl
+        for (uint8_t i = 0; i < rx_fifo_cnt; i++) {
+            uint8_t byte = I2C0.fifo_data.data;
+            // ets_printf("\n[int] i: %d, bufpos: %d, byte: %d\n", i, bufPos, byte);
+            buf[i + bufPos++] = byte;
         }
+
+        // ets_printf("\n[int] clearing semaphore\n");
+        
+        I2C0.int_clr.slave_tran_comp = 1;
+        I2C0.int_clr.rx_fifo_full = 1;
+
+        // read has finished, it's safe for the i2c task to read the buffer now
+        // xSemaphoreGiveFromISR(bufSem, &hpTaskAwoken);
+
+        // ets_printf("\n[int] done\n");
     }
 
     if (hpTaskAwoken){
@@ -83,8 +79,10 @@ static void comms_i2c_receive_task(void *pvParameters){
     esp_task_wdt_add(NULL);
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
+    TASK_HALT;
+
     while (true){
-        // wait until the interrupt has finished reading in bytes
+        // take the semaphore to signify to the interrupt that we are processing data right now
         // keep in mind: the ISR works for US, so we have a right to take the semaphore, and it will have to skip bytes
         if (xSemaphoreTake(bufSem, portMAX_DELAY)){
             if (buf[0] == 0xB){
@@ -92,7 +90,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 uint8_t msgSize = buf[2];
 
                 // remove the header by copying from byte 3 onwards, using memmove to save creating a new buffer
-                // TODO is this ok for the ISR?
+                // TODO is this ok for the ISR? should be
                 memmove(&buf[3], buf, msgSize);
 
                 pb_istream_t stream = pb_istream_from_buffer(buf, PROTOBUF_SIZE);
@@ -110,7 +108,6 @@ static void comms_i2c_receive_task(void *pvParameters){
 
                 // semaphore required since we use the protobuf messages outside this thread
                 if (xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                    // decode the stream
                     if (!pb_decode(&stream, get_pb_fields(msgId), dest)){
                         ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
                     } else {
@@ -127,6 +124,7 @@ static void comms_i2c_receive_task(void *pvParameters){
 
             // reset stuff for ISR
             memset(buf, 0, PROTOBUF_SIZE);
+            bufPos = 0;
             xSemaphoreGive(bufSem);
         }
 
@@ -200,6 +198,12 @@ void comms_i2c_init_master(i2c_port_t port){
 }
 
 void comms_i2c_init_slave(void){
+    bufSem = xSemaphoreCreateBinary(); // mutexes are not allowed in ISR
+    xSemaphoreGive(bufSem);
+
+    intr_handle_t i2cInt;
+    ESP_ERROR_CHECK(i2c_isr_register(I2C_NUM_0, &i2c_interrupt, NULL, ESP_INTR_FLAG_LEVEL1 | ESP_INTR_FLAG_IRAM, &i2cInt));
+
     i2c_config_t conf = {
         .mode = I2C_MODE_SLAVE,
         .sda_io_num = 21,
@@ -211,15 +215,8 @@ void comms_i2c_init_slave(void){
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 256, 128, 0));
-    
-    bufSem = xSemaphoreCreateBinary(); // mutexes are not allowed in ISR
-    xSemaphoreGive(bufSem);
-
-    intr_handle_t i2cInt;
-    ESP_ERROR_CHECK(i2c_isr_register(I2C_NUM_0, i2c_interrupt, NULL, 0, &i2cInt));
 
     xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 8192, NULL, configMAX_PRIORITIES - 1, NULL);
-
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
