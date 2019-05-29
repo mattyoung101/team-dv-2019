@@ -26,6 +26,7 @@
         "WTYPE",
         "atten",
         "bluetooth",
+        "bstatus",
         "comms",
         "cosfd",
         "gpio",

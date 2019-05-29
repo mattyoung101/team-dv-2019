@@ -28,6 +28,16 @@ typedef struct {
     float lastAngle;
 } nano_data_t;
 
+typedef enum {
+    /** the task is working on the buffer, ISR must not access it **/
+    BS_TASK_WORKING = 0,
+    /** the ISR is using the buffer, the task must wait **/
+    BS_ISR_WORKING,
+    /** the buffer is available **/
+    BS_AVAILABLE
+
+} buffer_status_t;
+
 /** last SensorUpdate protobuf message from slave **/
 extern SensorUpdate lastSensorUpdate;
 /** data received from Nano **/
