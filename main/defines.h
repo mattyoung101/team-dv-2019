@@ -30,8 +30,9 @@
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
 #define NANO_PACKET_SIZE 9
 
-// ProtoBuf
+// Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
+#define I2C_BUF_SIZE 128 // size of I2C buffer
 #define MSG_SENSORUPDATE_ID 0 // should probably make these an enum
 
 // Music

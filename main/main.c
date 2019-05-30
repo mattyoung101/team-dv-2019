@@ -62,6 +62,8 @@ void master_task(void *pvParameter){
     // Initialise FSM
     state_machine_t fsm = fsm_new(&stateAttackPursue);
 
+    TASK_HALT; // TODO removing this causes core panic? think that goalDataSem is null?
+
     esp_task_wdt_add(NULL);
 
     while (true){
@@ -241,6 +243,6 @@ void app_main(){
         xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
-        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
+        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES - 1, NULL, APP_CPU_NUM);  
     }
 }

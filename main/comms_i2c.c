@@ -31,20 +31,18 @@ static void comms_i2c_receive_task(void *pvParameters){
         memset(msg, 0, PROTOBUF_SIZE);
 
         // attempt to read in bytes one by one
-        // TODO we may get stuck in an infinite loop here
         while (true){
-            i2c_slave_read_buffer(I2C_NUM_0, &byte, 1, pdMS_TO_TICKS(5));
+            i2c_slave_read_buffer(I2C_NUM_0, &byte, 1, portMAX_DELAY);
             buf[i++] = byte;
-            ESP_LOGI(TAG, "Received byte 0x%X i=%d", byte, i - 1);
+            // ESP_LOGI(TAG, "Received byte 0x%X i=%d", byte, i - 1);
 
             if (byte == 0xEE){
-                ESP_LOGD(TAG, "Byte %d is 0xEE, stopping!", i);
+                // ESP_LOGD(TAG, "Byte %d is 0xEE, stopping!", i);
                 break;
             }
         }
 
-        ESP_LOG_BUFFER_HEX("I2CFullBuf", buf, PROTOBUF_SIZE);
-        puts("");
+        // ESP_LOG_BUFFER_HEX_LEVEL("I2CFullBuf", buf, PROTOBUF_SIZE, ESP_LOG_DEBUG);
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
@@ -53,8 +51,7 @@ static void comms_i2c_receive_task(void *pvParameters){
             // remove the header by copying from byte 3 onwards
             memcpy(msg, buf + 3, msgSize - 1);
 
-            ESP_LOG_BUFFER_HEX("I2CMsgBuf", msg, msgSize);
-            puts("");
+            // ESP_LOG_BUFFER_HEX_LEVEL("I2CMsgBuf", msg, msgSize, ESP_LOG_DEBUG);
 
             pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
             void *dest = NULL;
@@ -85,8 +82,11 @@ static void comms_i2c_receive_task(void *pvParameters){
                 ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
             }
         } else {
-            ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+
+            // reset I2C and try to correct the issue by waiting
             i2c_reset_rx_fifo(I2C_NUM_0);
+            vTaskDelay(pdMS_TO_TICKS(10));
         }
 
         esp_task_wdt_reset();
@@ -167,9 +167,9 @@ void comms_i2c_init_slave(void){
         .slave.slave_addr = I2C_ESP_SLAVE_ADDR
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
-    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 256, 128, 0));
+    ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 512, 128, 0));
 
-    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 16384, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 16384, NULL, configMAX_PRIORITIES, NULL);
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
