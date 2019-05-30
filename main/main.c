@@ -48,7 +48,7 @@ void master_task(void *pvParameter){
     // Initialise comms and hardware
     motor_init();
     comms_i2c_init_slave();
-    // cam_init();
+    cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // read robot ID from NVS and init Bluetooth
@@ -61,8 +61,6 @@ void master_task(void *pvParameter){
 
     // Initialise FSM
     state_machine_t fsm = fsm_new(&stateAttackPursue);
-
-    TASK_HALT; // TODO removing this causes core panic? think that goalDataSem is null?
 
     esp_task_wdt_add(NULL);
 
@@ -130,8 +128,8 @@ void slave_task(void *pvParameter){
     // Initialise hardware
     tsop_init();
     ls_init();
-    // simu_init();
-    // simu_calibrate();
+    simu_init();
+    simu_calibrate();
 
     ESP_LOGI(TAG, "Slave hardware init OK");
     esp_task_wdt_add(NULL);
@@ -144,29 +142,29 @@ void slave_task(void *pvParameter){
         tsop_calc();
         
         // update IMU
-        // simu_calc();
+        simu_calc();
 
-        // setup protobuf byte stream - as far as I can tell, msg and stream will be disposed of after the loop ends
+        // setup protobuf byte stream, variables will be disposed of after loop ends (afaik)
         memset(pbBuf, 0, PROTOBUF_SIZE);
         SensorUpdate msg = SensorUpdate_init_zero;
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
         
         // set the message's values
-        msg.heading = 36.0f;//heading;
-        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            msg.lastAngle = 17.8f;//nanoData.lastAngle;
-            msg.lineAngle = 16.9f;//nanoData.lineAngle;
-            msg.lineOver = true;//nanoData.isLineOver;
-            msg.lineSize = 42.69f;//nanoData.lineSize;
-            msg.onLine = false;//nanoData.isOnLine;
-            // xSemaphoreGive(nanoDataSem);
-        // } else {
-            // ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        // }
+        msg.heading = heading;
+        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            msg.lastAngle = nanoData.lastAngle;
+            msg.lineAngle = nanoData.lineAngle;
+            msg.lineOver = nanoData.isLineOver;
+            msg.lineSize = nanoData.lineSize;
+            msg.onLine = nanoData.isOnLine;
+            xSemaphoreGive(nanoDataSem);
+        } else {
+            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        }
         msg.temperature = 24;
         // TODO make these a float
-        msg.tsopAngle = 69;//tsopAngle;
-        msg.tsopStrength = 32;//tsopStrength;
+        msg.tsopAngle = tsopAngle;
+        msg.tsopStrength = tsopStrength;
         msg.voltage = 12.8f;
 
         // encode and send it
@@ -175,8 +173,8 @@ void slave_task(void *pvParameter){
 
             ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
             ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
-            // TODO decrease this
-            vTaskDelay(pdMS_TO_TICKS(8)); // wait 8ms so that the slave realises we're not sending any more data
+            // TODO decrease this, will require testing
+            vTaskDelay(pdMS_TO_TICKS(8)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }

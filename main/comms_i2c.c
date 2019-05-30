@@ -34,23 +34,20 @@ static void comms_i2c_receive_task(void *pvParameters){
         while (true){
             i2c_slave_read_buffer(I2C_NUM_0, &byte, 1, portMAX_DELAY);
             buf[i++] = byte;
-            // ESP_LOGI(TAG, "Received byte 0x%X i=%d", byte, i - 1);
 
+            // if we've got the end byte (0xEE) then quit
             if (byte == 0xEE){
-                // ESP_LOGD(TAG, "Byte %d is 0xEE, stopping!", i);
                 break;
             }
         }
-
         // ESP_LOG_BUFFER_HEX_LEVEL("I2CFullBuf", buf, PROTOBUF_SIZE, ESP_LOG_DEBUG);
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
             uint8_t msgSize = buf[2];
 
-            // remove the header by copying from byte 3 onwards
+            // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
             memcpy(msg, buf + 3, msgSize - 1);
-
             // ESP_LOG_BUFFER_HEX_LEVEL("I2CMsgBuf", msg, msgSize, ESP_LOG_DEBUG);
 
             pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
@@ -142,7 +139,7 @@ void comms_i2c_init_master(i2c_port_t port){
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        // 0.5 MHz, max is 1 MHz, unit is Hz
+        // 0.4 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
         .master.clk_speed = 400000,
     };
@@ -151,7 +148,7 @@ void comms_i2c_init_master(i2c_port_t port){
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFFF));
 
-    // xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
