@@ -48,7 +48,7 @@ void master_task(void *pvParameter){
     // Initialise comms and hardware
     motor_init();
     comms_i2c_init_slave();
-    cam_init();
+    // cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // read robot ID from NVS and init Bluetooth
@@ -170,7 +170,11 @@ void slave_task(void *pvParameter){
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            // PERF_TIMER_STOP;
+
+            ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
+            ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
+            // TODO decrease this
+            vTaskDelay(pdMS_TO_TICKS(8)); // wait 8ms so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }

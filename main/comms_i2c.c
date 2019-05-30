@@ -11,135 +11,84 @@ SensorUpdate lastSensorUpdate = SensorUpdate_init_zero;
 // Semaphore for Protobuf messages
 SemaphoreHandle_t pbSem = NULL;
 SemaphoreHandle_t nanoDataSem = NULL;
-// current position in the buffer that the I2C interrupt is writing to, must only be modified by the interrupt
-static uint8_t bufPos = 0;
-// I2C buffer
-uint8_t buf[PROTOBUF_SIZE] = {0};
-static buffer_status_t bstatus = BS_AVAILABLE;
 
 static const char *TAG = "CommsI2C";
 
-static void IRAM_ATTR i2c_copy_buffer(){
-    int rx_fifo_cnt = I2C0.status_reg.rx_fifo_cnt;
-    // ets_printf("\n[int] copying %d\n", rx_fifo_cnt);
-
-    // copy bytes from hardware FIFO, based on https://git.io/fj0fl
-    for (uint8_t i = 0; i < rx_fifo_cnt; i++) {
-        uint8_t byte = I2C0.fifo_data.data;
-        // ets_printf("\n[int] i: %d, bufpos: %d, byte: %d\n", i, bufPos, byte);
-        buf[i + bufPos++] = byte;
-    }
-}
-
-static bool IRAM_ATTR acquire_buf(){
-    // ets_printf("\n[int] entering acquire_buf\n");
-    if (bstatus == BS_TASK_WORKING){
-        // task is currently working on the buffer, so skip the interrupt
-        ets_printf("\n[int] skipping\n");
-        return false;
-    } else if (bstatus == BS_AVAILABLE){
-        // claim the buffer for us
-        ets_printf("\n[int] acquiring buf\n");
-        bstatus = BS_ISR_WORKING;
-        return true;
-    } else {
-        // we already own the buffer
-        ets_printf("\n[int] already own buf\n");
-        return true;
-    }
-}
-
-// TODO: this isr needs to include bus errors, etc as the regular ISR isn't going off anymore
-// TODO: could we alleviate these problems by using two buffers and memcpying with a semaphore?
-
-/** used to fix problems with default interrupt in the I2C library that causes bytes to be out of order **/
-static void IRAM_ATTR i2c_interrupt(void *arg){
-    uint32_t status = I2C0.int_status.val;
-
-    // TODO why the fuck does this time out?
-    // I'm pretty sure it's to do with the fact that we need to service each and every single interrupt
-
-    ets_printf("\n[int] entering intr\n");
-
-    if (status & I2C_SLAVE_TRAN_COMP_INT_ST_M){
-        if (acquire_buf()){
-            ets_printf("\n[int] transmission complete\n");
-            i2c_copy_buffer();
-
-            // main task can safely read the buffer now
-            bstatus = BS_AVAILABLE;
-        }
-    } else if (status & I2C_RXFIFO_FULL_INT_ST_M){
-        if (acquire_buf()){
-            ets_printf("\n[int] rx fifo full\n");
-            i2c_copy_buffer();
-        }
-    }
-}
-
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
+    uint8_t buf[PROTOBUF_SIZE] = {0}; // TODO make this bigger
+    uint8_t msg[PROTOBUF_SIZE] = {0};
     pbSem = xSemaphoreCreateMutex();
     xSemaphoreGive(pbSem);
 
     esp_task_wdt_add(NULL);
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
-    // TASK_HALT;
-
     while (true){
-        if (bstatus == BS_AVAILABLE){
-            ESP_LOGD(TAG, "Buffer available, acquiring it");
-            bstatus = BS_TASK_WORKING;
+        uint8_t byte = 0;
+        uint8_t i = 0;
+        memset(buf, 0, PROTOBUF_SIZE);
+        memset(msg, 0, PROTOBUF_SIZE);
 
-            if (buf[0] == 0xB){
-                uint8_t msgId = buf[1];
-                uint8_t msgSize = buf[2];
+        // attempt to read in bytes one by one
+        // TODO we may get stuck in an infinite loop here
+        while (true){
+            i2c_slave_read_buffer(I2C_NUM_0, &byte, 1, pdMS_TO_TICKS(5));
+            buf[i++] = byte;
+            ESP_LOGI(TAG, "Received byte 0x%X i=%d", byte, i - 1);
 
-                // remove the header by copying from byte 3 onwards, using memmove to save creating a new buffer
-                memmove(&buf[3], buf, msgSize);
+            if (byte == 0xEE){
+                ESP_LOGD(TAG, "Byte %d is 0xEE, stopping!", i);
+                break;
+            }
+        }
 
-                ESP_LOG_BUFFER_HEX("I2CBuf", buf, PROTOBUF_SIZE);
+        ESP_LOG_BUFFER_HEX("I2CFullBuf", buf, PROTOBUF_SIZE);
+        puts("");
 
-                pb_istream_t stream = pb_istream_from_buffer(buf, PROTOBUF_SIZE);
-                void *dest = NULL;
-                void *msgFields = NULL;
+        if (buf[0] == 0xB){
+            uint8_t msgId = buf[1];
+            uint8_t msgSize = buf[2];
 
-                // assign destination struct based on message ID
-                switch (msgId){
-                    case MSG_SENSORUPDATE_ID:
-                        dest = (void*) &lastSensorUpdate;
-                        msgFields = (void*) &SensorUpdate_fields;
-                        break;
-                    default:
-                        ESP_LOGE(TAG, "main task: Unknown message ID: %d", msgId);
-                        continue;
-                }
+            // remove the header by copying from byte 3 onwards
+            memcpy(msg, buf + 3, msgSize - 1);
 
-                // semaphore required since we use the protobuf messages outside this thread
-                if (xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                    if (!pb_decode(&stream, msgFields, dest)){
-                        ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
-                    } else {
-                        ESP_LOGI(TAG, "Protobuf decode successful. Ball strength: %d, Ball dir: %d", lastSensorUpdate.tsopStrength,
-                        lastSensorUpdate.tsopAngle);
-                    }
-                    
-                    xSemaphoreGive(pbSem);
-                } else {
-                    ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
-                }
+            ESP_LOG_BUFFER_HEX("I2CMsgBuf", msg, msgSize);
+            puts("");
 
-                // reset buffer and position for ISR since we've read it
-                memset(buf, 0, PROTOBUF_SIZE);
-                bufPos = 0;
-            } else {
-                ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
+            void *dest = NULL;
+            void *msgFields = NULL;
+
+            // assign destination struct based on message ID
+            switch (msgId){
+                case MSG_SENSORUPDATE_ID:
+                    dest = (void*) &lastSensorUpdate;
+                    msgFields = (void*) &SensorUpdate_fields;
+                    break;
+                default:
+                    ESP_LOGE(TAG, "main task: Unknown message ID: %d", msgId);
+                    continue;
             }
 
-            bstatus = BS_AVAILABLE;
+            // semaphore required since we use the protobuf messages outside this thread
+            if (xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+                if (!pb_decode(&stream, msgFields, dest)){
+                    ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
+                } else {
+                    ESP_LOGI(TAG, "Protobuf decode successful. Ball strength: %d, Ball dir: %d", lastSensorUpdate.tsopStrength,
+                    lastSensorUpdate.tsopAngle);
+                }
+                
+                xSemaphoreGive(pbSem);
+            } else {
+                ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
+            }
+        } else {
+            ESP_LOGE(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            i2c_reset_rx_fifo(I2C_NUM_0);
         }
-        
+
         esp_task_wdt_reset();
     }
 }
@@ -208,9 +157,6 @@ void comms_i2c_init_master(i2c_port_t port){
 }
 
 void comms_i2c_init_slave(void){
-    intr_handle_t i2cInt;
-    ESP_ERROR_CHECK(i2c_isr_register(I2C_NUM_0, &i2c_interrupt, NULL, ESP_INTR_FLAG_LEVEL1 | ESP_INTR_FLAG_IRAM, &i2cInt));
-
     i2c_config_t conf = {
         .mode = I2C_MODE_SLAVE,
         .sda_io_num = 21,
@@ -223,12 +169,13 @@ void comms_i2c_init_slave(void){
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 256, 128, 0));
 
-    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 8192, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 16384, NULL, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
 int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
     uint8_t header[] = {0xB, msgId, msgSize};
+    uint8_t finish = 0xEE;
 
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
@@ -236,6 +183,7 @@ int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
 
     ESP_ERROR_CHECK(i2c_master_write(cmd, header, 3, I2C_ACK_MODE)); // write header
     ESP_ERROR_CHECK(i2c_master_write(cmd, buf, msgSize, I2C_ACK_MODE)); // write buffer
+    ESP_ERROR_CHECK(i2c_master_write(cmd, &finish, 1, I2C_ACK_MODE)); // write end byte
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
