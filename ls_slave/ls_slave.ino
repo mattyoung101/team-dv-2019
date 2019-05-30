@@ -1,7 +1,7 @@
 #include <Wire.h>
 #include "LightSensorArray.h"
 
-#define I2C_ON false
+#define I2C_ON true
 
 LightSensorArray ls = LightSensorArray();
 float heading = 0.0f;
@@ -16,25 +16,26 @@ void setup() {
   Serial.begin(9600);
 
   // initialise LS library
-  ls.init();
-  ls.calibrate();
+//  ls.init();
+//  ls.calibrate();
 }
 
 void loop() {
-  ls.read();
-  ls.calculateClusters();
-  ls.calculateLine();
+//  ls.read();
+//  ls.calculateClusters();
+//  ls.calculateLine();
 
-  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
-  ls.lineCalc();
+//  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
+//  ls.lineCalc();
 
 //  Serial.print("lineAngle: ");
 //  Serial.print(ls.getLineAngle());
 //  Serial.print("\t");
 //  Serial.print("lineSize: ");
 //  Serial.print(ls.getLineSize());
-//  Serial.print(ls.readSensor(45));
-  Serial.println();
+  
+//  Serial.print(analogRead(A1));
+//  Serial.println("fuck");
 }
 
 void requestEvent(){
@@ -48,10 +49,16 @@ void requestEvent(){
   = 9 bytes total
   */
   Wire.write(0xB);
-  Wire.write(highByte((uint16_t) ls.getLineAngle()));
-  Wire.write(lowByte((uint16_t) ls.getLineAngle()));
-  Wire.write(highByte((uint16_t) ls.getLineSize()));
-  Wire.write(lowByte((uint16_t) ls.getLineSize()));
-  Wire.write(ls.isOnLine);
-  Wire.write(ls.lineOver);
+//  Wire.write(highByte((uint16_t) ls.getLineAngle()));
+//  Wire.write(lowByte((uint16_t) ls.getLineAngle()));
+//  Wire.write(highByte((uint16_t) ls.getLineSize()));
+//  Wire.write(lowByte((uint16_t) ls.getLineSize()));
+//  Wire.write(ls.isOnLine);
+//  Wire.write(ls.lineOver);
+  Wire.write(highByte((uint16_t) 100));
+  Wire.write(lowByte((uint16_t) 100));
+  Wire.write(highByte((uint16_t) 8700));
+  Wire.write(lowByte((uint16_t) 8700));
+  Wire.write(0);
+  Wire.write(1);
 }

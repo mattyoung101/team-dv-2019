@@ -71,6 +71,7 @@ void state_attack_idle_update(state_machine_t *fsm){
         ESP_LOGD(TAG, "Ball is visible, reverting");
         FSM_REVERT;
     } else if (!rs.inGoalVisible) {
+        ESP_LOGD(TAG, "Goal not visible, braking");
         FSM_MOTOR_BRAKE;
     }
 

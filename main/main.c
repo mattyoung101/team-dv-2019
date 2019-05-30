@@ -60,7 +60,10 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    state_machine_t fsm = fsm_new(&stateAttackPursue);
+    state_machine_t *fsm = fsm_new(&stateDefenceIdle);
+
+    // Wait for the slave to calibrate IMU and send over the first packets
+    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 25));
 
     esp_task_wdt_add(NULL);
 
@@ -100,7 +103,7 @@ void master_task(void *pvParameter){
         }
 
         // update the actual FSM
-        fsm_update(&fsm);
+        fsm_update(fsm);
 
         // update_line(&robotState);
 

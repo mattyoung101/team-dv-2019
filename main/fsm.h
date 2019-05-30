@@ -30,7 +30,7 @@ struct state_machine_t {
 };
 
 /** Instantiates a new state machine, starting out in the given state **/
-state_machine_t fsm_new(fsm_state_t *startState);
+state_machine_t* fsm_new(fsm_state_t *startState);
 /** Updates the instance of the Finite State Machine **/
 void fsm_update(state_machine_t *fsm);
 /** Changes from one state to another **/

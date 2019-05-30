@@ -42,31 +42,37 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.8
+#define HEADING_KP 0.5
 #define HEADING_KI 0
-#define HEADING_KD 0.1
+#define HEADING_KD 0.042
 #define HEADING_MAX_CORRECTION 100
 
 // --- Idle Correction --- //
-#define IDLE_KP 0.8
+#define IDLE_KP 0.3
 #define IDLE_KI 0
-#define IDLE_KD 0.1
+#define IDLE_KD 0.042
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
 #define FORWARD_KP 5
 #define FORWARD_KI 0
-#define FORWARD_KD 0
+#define FORWARD_KD 0.0001
 #define FORWARD_MAX 100
 
-#define SIDE_KP 5
+#define SIDE_KP 3.2
 #define SIDE_KI 0
-#define SIDE_KD 0
+#define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define GOALIE_KP 0.3
+#define INTERCEPT_KP 10
+#define INTERCEPT_KI 0
+#define INTERCEPT_KD 0.1
+#define INTERCEPT_MAX 100
+#define INTERCEPT_MIN 50
+
+#define GOALIE_KP 1.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.03
+#define GOALIE_KD 0.15
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -112,8 +118,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 75
-#define CAM_OFFSET_Y 55
+#define CAM_OFFSET_X 78
+#define CAM_OFFSET_Y 50
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -123,13 +129,13 @@
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 #define HALFWAY_DISTANCE 45
 #define IDLE_DISTANCE 43
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000
-#define IDLE_MIN_SPEED 20
+#define IDLE_MIN_SPEED 50
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -238,14 +244,14 @@
 // Orbit
 #define BALL_FAR_STRENGTH 90
 #define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 30
-#define ORBIT_SPEED_FAST 50
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 60
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 20 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 340
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 355
 #define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
@@ -254,8 +260,8 @@
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
-#define SURGE_DISTANCE 40
-#define SURGE_STRENGTH 160
+#define SURGE_DISTANCE 35
+#define SURGE_STRENGTH 170
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
