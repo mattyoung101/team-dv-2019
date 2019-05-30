@@ -9,7 +9,6 @@ set(COMPONENT_SRCS
                    "tsop.c"
                    "motor.c"
                    "pid.c"
-                   "light.c"
                    "fsm.c"
                    "states_attack.c"
                    "states_defence.c"

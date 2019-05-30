@@ -16,7 +16,7 @@ static const char *TAG = "CommsI2C";
 
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
-    uint8_t buf[PROTOBUF_SIZE] = {0}; // TODO make this bigger
+    uint8_t buf[PROTOBUF_SIZE] = {0};
     uint8_t msg[PROTOBUF_SIZE] = {0};
     pbSem = xSemaphoreCreateMutex();
     xSemaphoreGive(pbSem);
@@ -40,7 +40,6 @@ static void comms_i2c_receive_task(void *pvParameters){
                 break;
             }
         }
-        // ESP_LOG_BUFFER_HEX_LEVEL("I2CFullBuf", buf, PROTOBUF_SIZE, ESP_LOG_DEBUG);
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
@@ -48,7 +47,6 @@ static void comms_i2c_receive_task(void *pvParameters){
 
             // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
             memcpy(msg, buf + 3, msgSize - 1);
-            // ESP_LOG_BUFFER_HEX_LEVEL("I2CMsgBuf", msg, msgSize, ESP_LOG_DEBUG);
 
             pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
             void *dest = NULL;

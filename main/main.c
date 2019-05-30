@@ -12,7 +12,6 @@
 #include "nvs_flash.h"
 #include <math.h>
 #include "motor.h"
-#include "light.h"
 #include "tsop.h"
 #include <str.h>
 #include "fsm.h"
@@ -130,7 +129,6 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     tsop_init();
-    ls_init();
     simu_init();
     simu_calibrate();
 
