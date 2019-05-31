@@ -131,7 +131,13 @@ void print_position_data(robot_state_t *robotState);
 /** Display motion data **/
 void print_motion_data(robot_state_t *robotState);
 
-/** Prints a messsage with ESP_LOGD if the message hasn't already been printed since the last call to log_once_reset() **/
-void log_once(char *tag, char *msg, va_list argp);
+#define LOG_ONCE(tag, fmt, ...) do { \
+    if (log_once_check(fmt)){ \
+        ESP_LOGD(tag, fmt, ##__VA_ARGS__); \
+    } \
+} while (0);
+
+/** Checks if a message has already been printed since the last call to log_once_reset() **/
+bool log_once_check(char *msg);
 /** Resets the list of already logged messages **/
 void log_once_reset();

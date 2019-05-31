@@ -322,26 +322,25 @@ uint32_t str_hash(char *str){
     return hash;
 }
 
-// log once stuff
 #define LOGGED_MSG_SIZE 16
-uint8_t msgIndex = 0;
+static uint8_t msgIndex = 0;
 // hash of messages which have already been logged, we use hash instead of strcmp for speed
-// yes, hash collisions are possible but this is unlikely
-uint32_t loggedMessages[LOGGED_MSG_SIZE] = {0};
+// yes, hash collisions are possible but this is unlikely/we don't care too much
+static uint32_t loggedMessages[LOGGED_MSG_SIZE] = {0};
 
-void log_once(char *tag, char *msg, va_list argp){
+bool log_once_check(char *msg){
     uint32_t hash = str_hash(msg);
 
-    // we compare messages before formatting
+    // we compare messages before formatting, dropping those which have already been printed
     for (int i = 0; i < LOGGED_MSG_SIZE; i++){
         if (loggedMessages[i] == hash){
-            return;
+            return false;
         }
     }
 
+    // the message hasn't been printed already, so add it to the list
     loggedMessages[msgIndex++] = hash;
-    // this isn't how you're supposed to invoke it, but it's the only way to
-    esp_log_write(ESP_LOG_DEBUG, tag, msg, argp);
+    return true;
 }
 
 void log_once_reset(){

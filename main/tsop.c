@@ -9,7 +9,9 @@ static mplexer_5bit_t tsopMux = {
 };
 // Index = TSOP number, Value = multiplexer pin
 static const gpio_num_t irTable[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 23, 22, 21, 20, 19, 18, 17, 16};
-static const char *TAG = "TSOP";
+#ifdef TSOP_DEBUG
+    static const char *TAG = "TSOP";
+#endif
 static movavg_t *angleAvg = NULL;
 static movavg_t *strengthAvg = NULL;
 float tsopAngle = 0.0f;

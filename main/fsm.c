@@ -1,6 +1,7 @@
 #define DG_DYNARR_IMPLEMENTATION
 #include "fsm.h"
 #include "states.h"
+#include "utils.h"
 
 // This file defines a very simple finite state machine (FSM) using function pointers
 
@@ -26,17 +27,16 @@ void fsm_update(state_machine_t *fsm){
 }
 
 static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newState, bool pushToStack){
-    // ESP_LOGD(TAG, "internal_change_state, changing to %s, push to stack? %d", newState->name, pushToStack);
-    
     if (pushToStack) da_push(fsm->stateHistory, fsm->currentState);
     fsm->currentState->exit(fsm);
     
     fsm->currentState = newState;
     fsm->currentState->enter(fsm);
+
+    log_once_reset();
 }
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
-    // ESP_LOGD(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);
     fsm_internal_change_state(fsm, newState, true);
 }
 
