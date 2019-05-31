@@ -266,3 +266,8 @@
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
+
+// RGB LEDs :D
+#define LED_ON true
+#define LED_PIN 13
+#define LED_NUM 12
