@@ -23,7 +23,7 @@ static bool timerRunning = false;
 /** start the idle timer if its not already started and has been instantiated **/
 static void idle_timer_start(){
     if (idleTimer != NULL && !timerRunning){
-        ESP_LOGD("IdleTimer", "Started idle timer!");
+        LOG_ONCE("IdleTimer", "Started idle timer!");
         xTimerReset(idleTimer, pdMS_TO_TICKS(10));
         xTimerStart(idleTimer, pdMS_TO_TICKS(10));
         timerRunning = true;
@@ -33,7 +33,7 @@ static void idle_timer_start(){
 /** stops the idle timer if it has been instantiated **/
 static void idle_timer_stop(){
     if (idleTimer != NULL){
-        ESP_LOGD("IdleTimer", "Stopping idle timer");
+        LOG_ONCE("IdleTimer", "Stopping idle timer");
         xTimerStop(idleTimer, pdMS_TO_TICKS(10));
         timerRunning = false;
     }
@@ -68,10 +68,10 @@ void state_attack_idle_update(state_machine_t *fsm){
     rs.outIsAttack = true;
 
     if (rs.inBallStrength > 0.0f) {
-        ESP_LOGD(TAG, "Ball is visible, reverting");
+        LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
     } else if (!rs.inGoalVisible) {
-        ESP_LOGD(TAG, "Goal not visible, braking");
+        LOG_ONCE(TAG, "Goal not visible, braking");
         FSM_MOTOR_BRAKE;
     }
 
@@ -95,17 +95,16 @@ void state_attack_pursue_update(state_machine_t *fsm){
     // Check criteria:
     // Ball not visible (brake) and ball too close (switch to orbit)
     if (rs.inBallStrength <= 0.0f){
-        // ESP_LOGD(TAG, "Ball is not visible, braking");
+        LOG_ONCE(TAG, "Ball is not visible, braking");
         idle_timer_start();
-        // rs.outSpeed = 0;
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength >= ORBIT_DIST){
-        ESP_LOGD(TAG, "Ball close enough, switching to orbit, strength: %d, orbit dist thresh: %d", rs.inBallStrength,
+        LOG_ONCE(TAG, "Ball close enough, switching to orbit, strength: %d, orbit dist thresh: %d", rs.inBallStrength,
         ORBIT_DIST);
         FSM_CHANGE_STATE(Orbit);
     }
 
-    // ESP_LOGD(TAG, "Ball is visible, pursuing");
+    // LOG_ONCE(TAG, "Ball is visible, pursuing");
     // Quickly approach the ball
     robotState.outSpeed = 100;
     robotState.outDirection = robotState.inBallAngle;
@@ -123,16 +122,16 @@ void state_attack_orbit_update(state_machine_t *fsm){
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
     if (rs.inBallStrength <= 0.0f){
-        ESP_LOGD(TAG, "Ball not visible, braking, strength: %d", robotState.inBallStrength);
+        LOG_ONCE(TAG, "Ball not visible, braking, strength: %d", robotState.inBallStrength);
         idle_timer_start();
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength < ORBIT_DIST){
-        ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
+        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %d, orbit dist thresh: %d", robotState.inBallStrength,
                  ORBIT_DIST);
         FSM_REVERT;
     } else if (rs.inBallStrength >= ORBIT_DIST && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
                 && is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE)){
-        ESP_LOGD(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
+        LOG_ONCE(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
                 " angle range: %d-%d, goal angle: %d, goal angle range: %d-%d", 
                 robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE,
                 robotState.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
@@ -153,19 +152,19 @@ void state_attack_dribble_update(state_machine_t *fsm){
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal
     if (robotState.inBallStrength <= 0.0f){
-        ESP_LOGD(TAG, "Ball not visible, braking, strength: %d", robotState.inBallAngle);
+        LOG_ONCE(TAG, "Ball not visible, braking, strength: %d", robotState.inBallAngle);
         idle_timer_start();
         FSM_MOTOR_BRAKE;
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
-        ESP_LOGD(TAG, "Ball not in front, reverting, angle: %d, range: %d-%d", robotState.inBallAngle,
+        LOG_ONCE(TAG, "Ball not in front, reverting, angle: %d, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE);
         FSM_REVERT;
     } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR){
-        ESP_LOGD(TAG, "Ball too far away, reverting, strength: %d, thresh: %d", robotState.inBallStrength,
+        LOG_ONCE(TAG, "Ball too far away, reverting, strength: %d, thresh: %d", robotState.inBallStrength,
                 DRIBBLE_BALL_TOO_FAR);
         FSM_REVERT;
     } else if (rs.inGoalAngle > GOAL_MIN_ANGLE || rs.inGoalAngle < GOAL_MAX_ANGLE){
-        ESP_LOGD(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
+        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
         FSM_REVERT;
     }
 

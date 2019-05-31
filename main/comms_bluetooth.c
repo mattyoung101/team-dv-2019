@@ -188,17 +188,16 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
     switch(event){
         case ESP_BT_GAP_DISC_RES_EVT:
             ESP_LOGI(TAGS, "ESP_BT_GAP_DISC_RES_EVT");
-            esp_log_buffer_hex(TAGS, param->disc_res.bda, ESP_BD_ADDR_LEN);
+            // esp_log_buffer_hex(TAGS, param->disc_res.bda, ESP_BD_ADDR_LEN);
 
             for (int i = 0; i < param->disc_res.num_prop; i++){
                 if (param->disc_res.prop[i].type == ESP_BT_GAP_DEV_PROP_EIR
                     && get_name_from_eir(param->disc_res.prop[i].val, peer_bdname, &peer_bdname_len)){
-                        ESP_LOGD(TAGS, "Peer name:");
-                        esp_log_buffer_char(TAGS, peer_bdname, peer_bdname_len);
+                        // ESP_LOGD(TAGS, "Peer name: %s", peer_bdname);
                     
                         if (strlen(remote_device_name) == peer_bdname_len
                             && strncmp(peer_bdname, remote_device_name, peer_bdname_len) == 0) {
-                                ESP_LOGI(TAGS, "Found other robot, ending discovery.");
+                                ESP_LOGI(TAGS, "Found other robot, starting SPP connection.");
                                 memcpy(peer_bd_addr, param->disc_res.bda, ESP_BD_ADDR_LEN);
                                 esp_spp_start_discovery(peer_bd_addr);
                                 esp_bt_gap_cancel_discovery();
@@ -258,47 +257,51 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
 
 static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param){
     switch (event) {
-    case ESP_SPP_INIT_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_INIT_EVT");
-        esp_bt_dev_set_device_name(ROBOT1_NAME);
-        esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
-        esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
-        break;
-    case ESP_SPP_DISCOVERY_COMP_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_DISCOVERY_COMP_EVT status=%d scn_num=%d",param->disc_comp.status, param->disc_comp.scn_num);
-        if (param->disc_comp.status == ESP_SPP_SUCCESS) {
-            esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
-        }
-        break;
-    case ESP_SPP_OPEN_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_OPEN_EVT");
-        // esp_spp_write(param->srv_open.handle, SPP_DATA_LEN, spp_data);
-        // gettimeofday(&time_old, NULL);
-        break;
-    case ESP_SPP_CLOSE_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_CLOSE_EVT");
-        break;
-    case ESP_SPP_START_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_START_EVT");
-        break;
-    case ESP_SPP_CL_INIT_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_CL_INIT_EVT");
-        break;
-    case ESP_SPP_DATA_IND_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_DATA_IND_EVT");
-        break;
-    case ESP_SPP_CONG_EVT:
-        break;
-    case ESP_SPP_WRITE_EVT:
-        // if (param->write.cong == 0) {
-        //     esp_spp_write(param->write.handle, SPP_DATA_LEN, spp_data);
-        // }
-        break;
-    case ESP_SPP_SRV_OPEN_EVT:
-        ESP_LOGI(TAGS, "ESP_SPP_SRV_OPEN_EVT");
-        break;
-    default:
-        break;
+        case ESP_SPP_INIT_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_INIT_EVT");
+            esp_bt_dev_set_device_name(ROBOT1_NAME);
+            esp_bt_gap_set_scan_mode(ESP_BT_SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+            esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
+            break;
+        case ESP_SPP_DISCOVERY_COMP_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_DISCOVERY_COMP_EVT status=%d scn_num=%d",param->disc_comp.status, param->disc_comp.scn_num);
+            
+            if (param->disc_comp.status == ESP_SPP_SUCCESS) {
+                ESP_LOGI(TAGS, "Connecting to SPP server");
+                esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
+            } else {
+                ESP_LOGW(TAGS, "Can't connect to SPP due to error, code: %d", param->disc_comp.status);
+            }
+            break;
+        case ESP_SPP_OPEN_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_OPEN_EVT");
+            // esp_spp_write(param->srv_open.handle, SPP_DATA_LEN, spp_data);
+            // gettimeofday(&time_old, NULL);
+            break;
+        case ESP_SPP_CLOSE_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_CLOSE_EVT");
+            break;
+        case ESP_SPP_START_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_START_EVT");
+            break;
+        case ESP_SPP_CL_INIT_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_CL_INIT_EVT");
+            break;
+        case ESP_SPP_DATA_IND_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_DATA_IND_EVT");
+            break;
+        case ESP_SPP_CONG_EVT:
+            break;
+        case ESP_SPP_WRITE_EVT:
+            // if (param->write.cong == 0) {
+            //     esp_spp_write(param->write.handle, SPP_DATA_LEN, spp_data);
+            // }
+            break;
+        case ESP_SPP_SRV_OPEN_EVT:
+            ESP_LOGI(TAGS, "ESP_SPP_SRV_OPEN_EVT");
+            break;
+        default:
+            break;
     }
 }
 
@@ -371,5 +374,5 @@ void comms_bt_init_slave(){
     esp_bt_pin_code_t pin_code;
     esp_bt_gap_set_pin(pin_type, 0, pin_code);
 
-    ESP_LOGI(TAGS, "Bluetooth master init OK");
+    ESP_LOGI(TAGS, "Bluetooth slave init OK");
 }

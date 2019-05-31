@@ -62,6 +62,7 @@ void master_task(void *pvParameter){
     state_machine_t *fsm = fsm_new(&stateDefenceIdle);
 
     // Wait for the slave to calibrate IMU and send over the first packets
+    ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 25));
 
     esp_task_wdt_add(NULL);
@@ -185,10 +186,10 @@ void slave_task(void *pvParameter){
 }
 
 void app_main(){
-    puts("===================================================================================");
+    puts("====================================================================================");
     puts(" * This ESP32 belongs to a robot from Team Deus Vult at Brisbane Boys' College.");
     puts(" * Software copyright (c) 2019 Team Deus Vult. All rights reserved.");
-    puts("====================================================================================\n");
+    puts("====================================================================================");
 
     // Initialize NVS
     esp_err_t err = nvs_flash_init();

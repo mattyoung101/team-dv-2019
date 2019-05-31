@@ -14,6 +14,7 @@ static void cam_receive_task(void *pvParameter){
     xSemaphoreGive(goalDataSem);
     
     uint8_t *buffer = calloc(CAM_BUF_SIZE, sizeof(uint8_t));
+    ESP_LOGI(TAG, "Cam receive task init OK");
     esp_task_wdt_add(NULL);
 
     while (true){

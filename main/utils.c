@@ -322,7 +322,7 @@ uint32_t str_hash(char *str){
     return hash;
 }
 
-#define LOGGED_MSG_SIZE 16
+#define LOGGED_MSG_SIZE 32
 static uint8_t msgIndex = 0;
 // hash of messages which have already been logged, we use hash instead of strcmp for speed
 // yes, hash collisions are possible but this is unlikely/we don't care too much
@@ -334,11 +334,13 @@ bool log_once_check(char *msg){
     // we compare messages before formatting, dropping those which have already been printed
     for (int i = 0; i < LOGGED_MSG_SIZE; i++){
         if (loggedMessages[i] == hash){
+            // printf("Found \"%s\" at %d (found hash: %d, my hash: %d)\n", msg, i, loggedMessages[i], hash);
             return false;
         }
     }
 
     // the message hasn't been printed already, so add it to the list
+    // printf("\"%s\" is not in array, hash %d added at %d\n", msg, hash, msgIndex);
     loggedMessages[msgIndex++] = hash;
     return true;
 }

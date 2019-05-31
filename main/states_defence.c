@@ -22,13 +22,13 @@ void state_defence_reverse_update(state_machine_t *fsm){
     imu_correction(&robotState);
 
     if (rs.inGoalVisible){
-        ESP_LOGD(TAG, "Goal is visible, switching to idle");
+        LOG_ONCE(TAG, "Goal is visible, switching to idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     }
 
     if (rs.inBallStrength > 0.0f){ 
         if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){ // Check if ball is behind
-            ESP_LOGD(TAG, "Ball is behind, orbiting");
+            LOG_ONCE(TAG, "Ball is behind, orbiting");
             orbit(&robotState);
         } else {
             float distanceMovement = REVERSE_SPEED;
@@ -52,11 +52,11 @@ void state_defence_idle_update(state_machine_t *fsm){
     imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
-        // ESP_LOGD(TAG, "Goal not visible, switching to reverse");
-        ESP_LOGD(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
+        // LOG_ONCE(TAG, "Goal not visible, switching to reverse");
+        LOG_ONCE(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
         // FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength > 0.0f){
-        ESP_LOGD(TAG, "Ball is visible, switching to defend");
+        LOG_ONCE(TAG, "Ball is visible, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
@@ -73,13 +73,13 @@ void state_defence_idle_update(state_machine_t *fsm){
     // imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
-        ESP_LOGD(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
+        LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
         FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength <= 0.0f){
-        ESP_LOGD(TAG, "Ball not visible, switching to idle");
+        LOG_ONCE(TAG, "Ball not visible, switching to idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
-        ESP_LOGD(TAG, "Ball is in capture zone and goal is nearby, switching to surge");
+        LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, switching to surge");
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 
@@ -102,14 +102,14 @@ void state_defence_surge_update(state_machine_t *fsm){
     rs.outIsAttack = false;
 
     if (rs.inGoalLength > SURGE_DISTANCE || !rs.inGoalVisible){
-        ESP_LOGD(TAG, "Too far from goal, switching to defend");
+        LOG_ONCE(TAG, "Too far from goal, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) || rs.inBallStrength < SURGE_STRENGTH){
-        ESP_LOGD(TAG, "Ball is not in capture zone, switching to defend");
+        LOG_ONCE(TAG, "Ball is not in capture zone, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    // ESP_LOGD(TAG, "Yeet");
+    // LOG_ONCE(TAG, "Yeet");
     rs.outDirection = rs.inBallAngle;
     rs.outSpeed = SURGE_SPEED;
 }
