@@ -83,6 +83,9 @@ int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t 
 /** lineraly interpolates between two values **/
 float lerp(float fromValue, float toValue, float progress);
 
+/** Implements Jenkins' One at a Time Hash to calculate the hash code of strings **/
+uint32_t str_hash(char *str);
+
 void i2c_scanner();
 /** Reads a series of bytes from the Nano LS slave. Based on the code in esp_utils.c for the MPU **/
 uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data);
@@ -127,3 +130,8 @@ void print_goal_data();
 void print_position_data(robot_state_t *robotState);
 /** Display motion data **/
 void print_motion_data(robot_state_t *robotState);
+
+/** Prints a messsage with ESP_LOGD if the message hasn't already been printed since the last call to log_once_reset() **/
+void log_once(char *tag, char *msg, va_list argp);
+/** Resets the list of already logged messages **/
+void log_once_reset();

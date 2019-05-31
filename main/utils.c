@@ -304,3 +304,49 @@ void print_motion_data(robot_state_t *robotState){
     ESP_LOGD(TAG, "Speed: %d, Direction: %d, Orientation: %d, Should break: %d", robotState->outSpeed, robotState->outDirection, 
     robotState->outOrientation, robotState->outShouldBrake);
 }
+
+// code adapted from: https://en.wikipedia.org/wiki/Jenkins_hash_function
+uint32_t str_hash(char *str){
+    size_t i = 0;
+    uint32_t hash = 0;
+    size_t length = strlen(str);
+
+    while (i != length) {
+        hash += str[i++];
+        hash += hash << 10;
+        hash ^= hash >> 6;
+    }
+    hash += hash << 3;
+    hash ^= hash >> 11;
+    hash += hash << 15;
+    return hash;
+}
+
+// log once stuff
+#define LOGGED_MSG_SIZE 16
+uint8_t msgIndex = 0;
+// hash of messages which have already been logged, we use hash instead of strcmp for speed
+// yes, hash collisions are possible but this is unlikely
+uint32_t loggedMessages[LOGGED_MSG_SIZE] = {0};
+
+void log_once(char *tag, char *msg, va_list argp){
+    uint32_t hash = str_hash(msg);
+
+    // we compare messages before formatting
+    for (int i = 0; i < LOGGED_MSG_SIZE; i++){
+        if (loggedMessages[i] == hash){
+            return;
+        }
+    }
+
+    loggedMessages[msgIndex++] = hash;
+    // this isn't how you're supposed to invoke it, but it's the only way to
+    esp_log_write(ESP_LOG_DEBUG, tag, msg, argp);
+}
+
+void log_once_reset(){
+    msgIndex = 0;
+    memset(loggedMessages, 0, LOGGED_MSG_SIZE);
+}
+
+#undef LOGGED_MSG_SIZE
