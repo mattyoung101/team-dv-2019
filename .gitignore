@@ -8,3 +8,6 @@ build/
 #sdkconfig files
 sdkconfig
 sdkconfig.old
+
+# mac junk
+.DS_Store

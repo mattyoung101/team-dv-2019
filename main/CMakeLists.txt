@@ -18,6 +18,7 @@ set(COMPONENT_SRCS
                    "mplexer.c"
                    "movavg.c"
                    "comms_bluetooth.c"
+                   "rgb_led.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")
