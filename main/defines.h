@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-#define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
 // Will probably slow down the robot, don't enable in competition!
@@ -67,9 +67,9 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 10
+#define INTERCEPT_KP 2
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.1
+#define INTERCEPT_KD 0
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 50
 
@@ -121,8 +121,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 78
-#define CAM_OFFSET_Y 50
+#define CAM_OFFSET_X 70
+#define CAM_OFFSET_Y 60
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -132,7 +132,7 @@
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
 #define IDLE_DISTANCE 43
 #define IDLE_OFFSET 0
@@ -145,7 +145,7 @@
 #define MOTOR_FL_IN1 27
 #define MOTOR_FL_IN2 32
 #define MOTOR_FL_ANGLE 300
-#define MOTOR_FL_REVERSED false
+#define MOTOR_FL_REVERSED true
 #define ENC_FL_IN1 1
 #define ENC_FL_IN2 0
 
@@ -212,7 +212,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION -30 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION -20 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -247,14 +247,14 @@
 // Orbit
 #define BALL_FAR_STRENGTH 90
 #define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 60
+#define ORBIT_SPEED_SLOW 20
+#define ORBIT_SPEED_FAST 30
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 355
+#define IN_FRONT_MIN_ANGLE 20 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 340
 #define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
@@ -262,7 +262,7 @@
 #define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
-#define DEFEND_DISTANCE 30
+#define DEFEND_DISTANCE 32
 #define SURGE_DISTANCE 35
 #define SURGE_STRENGTH 170
 #define SURGE_SPEED 100
@@ -274,3 +274,5 @@
 #define LED_ON true
 #define LED_PIN 13
 #define LED_NUM 12
+#define RAINBOW_ON_BOOT true
+#define DISPLAY_TSSP true

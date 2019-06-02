@@ -130,12 +130,12 @@ void state_attack_orbit_update(state_machine_t *fsm){
                  ORBIT_DIST);
         FSM_REVERT;
     } else if (rs.inBallStrength >= ORBIT_DIST && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
-                && is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE)){
+                /*&& is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE)*/){
         LOG_ONCE(TAG, "Ball and angle in correct spot, switching to dribble, strength: %d, angle: %d, orbit dist thresh: %d"
                 " angle range: %d-%d, goal angle: %d, goal angle range: %d-%d", 
                 robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE,
                 robotState.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
-        FSM_CHANGE_STATE(Dribble);
+        // FSM_CHANGE_STATE(Dribble);
     }
 
     orbit(&robotState);
@@ -164,8 +164,8 @@ void state_attack_dribble_update(state_machine_t *fsm){
                 DRIBBLE_BALL_TOO_FAR);
         FSM_REVERT;
     } else if (rs.inGoalAngle > GOAL_MIN_ANGLE || rs.inGoalAngle < GOAL_MAX_ANGLE){
-        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
-        FSM_REVERT;
+        // LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
+        // FSM_REVERT;
     }
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
