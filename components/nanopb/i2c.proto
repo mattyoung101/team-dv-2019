@@ -3,8 +3,8 @@ syntax = "proto3";
 // ESP32 RL slave (I2C master) to RL master (I2C slave) sensor update
 message SensorUpdate {
     // TSOPs
-    uint32 tsopAngle = 1;
-    uint32 tsopStrength = 2;
+    float tsopAngle = 1;
+    float tsopStrength = 2;
     
     // Light sensor
     float lineAngle = 3;
@@ -17,6 +17,6 @@ message SensorUpdate {
     float heading = 8;
 
     // Junk "innovation" sensors
-    int32 temperature = 9; // screw accuracy
-    float voltage = 10; // ok I guess we need it here
+    // int32 temperature = 9; // screw accuracy
+    // float voltage = 10; // ok I guess we need it here
 }

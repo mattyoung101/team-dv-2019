@@ -32,7 +32,7 @@ void state_defence_reverse_update(state_machine_t *fsm){
             orbit(&robotState);
         } else {
             float distanceMovement = REVERSE_SPEED;
-            float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f);
+            float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
 
             rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
             rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
@@ -90,7 +90,7 @@ void state_defence_idle_update(state_machine_t *fsm){
         float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
         float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
         float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
-        float sidewaysMovement = -pid_update(&interceptPID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f); // Centre on the ball
+        float sidewaysMovement = -pid_update(&interceptPID, fmodf(rs.inBallAngle + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Centre on the ball
         if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
         sidewaysMovement = 0;
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);

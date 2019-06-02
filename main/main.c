@@ -26,7 +26,9 @@
 #include "vl53l0x_api.h"
 #include "comms_bluetooth.h"
 #include "pb_encode.h"
+#include "pb_decode.h"
 #include "i2c.pb.h"
+#include "rgb_led.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -81,12 +83,13 @@ void master_task(void *pvParameter){
                 robotState.outDirection = 0;
 
                 // update
-                robotState.inBallAngle = (lastSensorUpdate.tsopAngle + TSOP_CORRECTION) % 360;
+                robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
                 robotState.inBallStrength = lastSensorUpdate.tsopStrength;
 
                 robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
                 robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
                                         + CAM_ANGLE_OFFSET;
+                // TODO make goal angle a float as well
                 robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
                 robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
@@ -109,7 +112,7 @@ void master_task(void *pvParameter){
         // update_line(&robotState);
 
         // robotState.outSpeed = 0;
-        print_motion_data(&robotState);
+        // print_motion_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -131,6 +134,7 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     tsop_init();
+    // rgb_led_init();
     simu_init();
     simu_calibrate();
 
@@ -154,22 +158,26 @@ void slave_task(void *pvParameter){
         
         // set the message's values
         msg.heading = heading;
-        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            msg.lastAngle = nanoData.lastAngle;
-            msg.lineAngle = nanoData.lineAngle;
-            msg.lineOver = nanoData.isLineOver;
-            msg.lineSize = nanoData.lineSize;
-            msg.onLine = nanoData.isOnLine;
-            xSemaphoreGive(nanoDataSem);
-        } else {
-            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        }
-        msg.temperature = 24;
-        // TODO make these a float
+        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //     msg.lastAngle = nanoData.lastAngle;
+        //     msg.lineAngle = nanoData.lineAngle;
+        //     msg.lineOver = nanoData.isLineOver;
+        //     msg.lineSize = nanoData.lineSize;
+        //     msg.onLine = nanoData.isOnLine;
+        //     xSemaphoreGive(nanoDataSem);
+        // } else {
+        //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        // }
+
+        msg.lastAngle = 69.0f;
+        msg.lineAngle = 42.69420f;
+        msg.lineOver = true;
+        msg.lineSize = 1.234f;
+        msg.onLine = false;
+        
         msg.tsopAngle = tsopAvgAngle;
         msg.tsopStrength = tsopStrength;
-        ESP_LOGD(TAG, "angle: %f, strength: %f", tsopAngle, tsopStrength);
-        msg.voltage = 12.8f;
+        ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
@@ -177,13 +185,36 @@ void slave_task(void *pvParameter){
 
             ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
             // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
-            // TODO decrease this, will require testing
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
 
+        // debugging some shit where the heading is zero
+        pb_istream_t newfuckingbuffer = pb_istream_from_buffer(pbBuf, PROTOBUF_SIZE);
+        SensorUpdate decoded = SensorUpdate_init_zero;
+        if (pb_decode(&newfuckingbuffer, SensorUpdate_fields, &decoded)){
+            ESP_LOGD(TAG, "Decoded the piece of shit, heading: %f", heading);
+        }
+
         esp_task_wdt_reset();
+    }
+}
+
+void motor_test_task(void *pvParameter){
+    static const char *TAG = "MotorTestTask";
+
+    motor_init();
+    ESP_LOGI(TAG, "Motor test init OK");
+
+    while (true){
+        motor_calc(0, 0, 75.0f);
+        motor_move(false);
+        vTaskDelay(pdMS_TO_TICKS(2500));
+        
+        motor_calc(180, 0, 75.0f);
+        motor_move(false);
+        vTaskDelay(pdMS_TO_TICKS(2500));
     }
 }
 
@@ -243,6 +274,7 @@ void app_main(){
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
         xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  

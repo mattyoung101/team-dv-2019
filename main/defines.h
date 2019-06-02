@@ -38,9 +38,6 @@
 // Music
 #define MUSIC_BPM 100
 
-// RGB LEDs
-#define RGB_LED_NUM 12
-
 // PIDs
 
 // --- IMU Correction --- //
@@ -270,9 +267,7 @@
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
 
-// RGB LEDs :D
-#define LED_ON true
+// RGB LEDs :)
 #define LED_PIN 13
 #define LED_NUM 12
-#define RAINBOW_ON_BOOT true
-#define DISPLAY_TSSP true
+#define RAINBOW_TRANSITION_TIME 0.1f // seconds

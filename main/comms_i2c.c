@@ -31,8 +31,6 @@ static void comms_i2c_receive_task(void *pvParameters){
         memset(msg, 0, PROTOBUF_SIZE);
 
         // attempt to read in bytes one by one
-
-        // PERF_TIMER_START;
         while (true){
             i2c_slave_read_buffer(I2C_NUM_0, &byte, 1, portMAX_DELAY);
             buf[i++] = byte;
@@ -42,7 +40,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 break;
             }
         }
-        // PERF_TIMER_STOP;
+        // ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
@@ -71,7 +69,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 if (!pb_decode(&stream, msgFields, dest)){
                     ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
                 } else {
-                    // ESP_LOGI(TAG, "Protobuf decode successful. Heading: %f", lastSensorUpdate.heading);
+                    ESP_LOGI(TAG, "Protobuf decode successful. Heading: %f", lastSensorUpdate.heading);
                 }
                 
                 xSemaphoreGive(pbSem);
@@ -149,7 +147,7 @@ void comms_i2c_init_master(i2c_port_t port){
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFFF));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    // xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }

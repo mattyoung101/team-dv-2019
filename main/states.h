@@ -20,8 +20,8 @@ typedef struct {
     // IMU Input
     float inHeading;
     // Ball Inputs
-    int16_t inBallAngle;
-    int16_t inBallStrength;
+    float inBallAngle;
+    float inBallStrength;
     // Line Inputs
     float inLineAngle;
     float inLineSize;

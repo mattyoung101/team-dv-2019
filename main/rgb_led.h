@@ -6,6 +6,7 @@
 #include "defines.h"
 #include "led_strip.h"
 #include "esp_task_wdt.h"
+#include "utils.h"
 
 typedef enum {
     /** rainbow that plays during the boot sequence and calibrations (also great for celebrating pride month with) **/

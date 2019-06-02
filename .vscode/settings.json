@@ -31,6 +31,8 @@
         "cosfd",
         "gpio",
         "interp",
+        "lerp",
+        "lerped",
         "lsarray",
         "mcpwm",
         "mplexer",

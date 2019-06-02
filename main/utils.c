@@ -129,12 +129,9 @@ float lerp(float fromValue, float toValue, float progress){
     return fromValue + (toValue - fromValue) * progress;
 }
 
-// TODO put the comments in these two functions above the line
 void orbit(robot_state_t *robotState){
     // orbit requires angles in -180 to +180 range
-    int16_t tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
-
-    printf("%d", tempAngle);
+    float tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
     float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.01 * powf(E, 0.2 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
@@ -281,7 +278,7 @@ void i2c_scanner(){
 
 void print_ball_data(robot_state_t *robotState){
     static const char *TAG = "BallDebug";
-    ESP_LOGD(TAG, "Ball angle: %d, Ball strength: %d", robotState->inBallAngle, robotState->inBallStrength);
+    ESP_LOGD(TAG, "Ball angle: %f, Ball strength: %f", robotState->inBallAngle, robotState->inBallStrength);
 }
 
 void print_line_data(robot_state_t *robotState){
