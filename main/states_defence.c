@@ -69,8 +69,8 @@ void state_defence_idle_update(state_machine_t *fsm){
 
     rs.outIsAttack = false;
 
-    goal_correction(&robotState); // Face the back of the robot to the goal
-    // imu_correction(&robotState);
+    // goal_correction(&robotState); // Face the back of the robot to the goal
+    imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
         LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
@@ -86,10 +86,13 @@ void state_defence_idle_update(state_machine_t *fsm){
     if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
         orbit(&robotState); // Ball is behind, orbit so we don't score an own goal
     } else {
-        float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+        float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 - 360 range
+        float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
+        float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
+        float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         float sidewaysMovement = -pid_update(&interceptPID, fmodf(rs.inBallAngle + 180, 360) - 180, 0.0f, 0.0f); // Centre on the ball
         if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
-
+        sidewaysMovement = 0;
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
         rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
     }

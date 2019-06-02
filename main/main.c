@@ -53,17 +53,17 @@ void master_task(void *pvParameter){
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     if (robotId == 0){
-        comms_bt_init_master();
+        // comms_bt_init_master();
     } else {
-        comms_bt_init_slave();
+        // comms_bt_init_slave();
     }
 
     // Initialise FSM
-    state_machine_t *fsm = fsm_new(&stateDefenceIdle);
+    state_machine_t *fsm = fsm_new(&stateAttackPursue);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
-    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 25));
+    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
 
     esp_task_wdt_add(NULL);
 
@@ -104,11 +104,12 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(fsm);
+        // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
 
         // update_line(&robotState);
 
         // robotState.outSpeed = 0;
-        // print_ball_data(&robotState);
+        print_motion_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -165,8 +166,9 @@ void slave_task(void *pvParameter){
         }
         msg.temperature = 24;
         // TODO make these a float
-        msg.tsopAngle = tsopAngle;
+        msg.tsopAngle = tsopAvgAngle;
         msg.tsopStrength = tsopStrength;
+        ESP_LOGD(TAG, "angle: %f, strength: %f", tsopAngle, tsopStrength);
         msg.voltage = 12.8f;
 
         // encode and send it
@@ -174,9 +176,9 @@ void slave_task(void *pvParameter){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
 
             ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
-            ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
+            // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
             // TODO decrease this, will require testing
-            vTaskDelay(pdMS_TO_TICKS(8)); // wait so that the slave realises we're not sending any more data
+            vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
@@ -243,6 +245,6 @@ void app_main(){
         xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
-        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES - 1, NULL, APP_CPU_NUM);  
+        xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
     }
 }

@@ -31,6 +31,8 @@ static void comms_i2c_receive_task(void *pvParameters){
         memset(msg, 0, PROTOBUF_SIZE);
 
         // attempt to read in bytes one by one
+
+        // PERF_TIMER_START;
         while (true){
             i2c_slave_read_buffer(I2C_NUM_0, &byte, 1, portMAX_DELAY);
             buf[i++] = byte;
@@ -40,6 +42,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 break;
             }
         }
+        // PERF_TIMER_STOP;
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
@@ -68,8 +71,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 if (!pb_decode(&stream, msgFields, dest)){
                     ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
                 } else {
-                    // ESP_LOGI(TAG, "Protobuf decode successful. Ball strength: %d, Ball dir: %d", lastSensorUpdate.tsopStrength,
-                    // lastSensorUpdate.tsopAngle);
+                    // ESP_LOGI(TAG, "Protobuf decode successful. Heading: %f", lastSensorUpdate.heading);
                 }
                 
                 xSemaphoreGive(pbSem);
@@ -81,7 +83,7 @@ static void comms_i2c_receive_task(void *pvParameters){
 
             // reset I2C and try to correct the issue by waiting
             i2c_reset_rx_fifo(I2C_NUM_0);
-            vTaskDelay(pdMS_TO_TICKS(10));
+            vTaskDelay(pdMS_TO_TICKS(15));
         }
 
         esp_task_wdt_reset();
@@ -118,6 +120,7 @@ static void nano_comms_task(void *pvParameters){
                 nanoData.isOnLine = (bool) buf[5];
                 nanoData.isLineOver = (bool) buf[6];
                 nanoData.lastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
+                // ESP_LOGI(TAG, "Nano read OK");
                 xSemaphoreGive(nanoDataSem);
             } else {
                 ESP_LOGE(TAG, "Failed to unlock nano data semaphore!");
@@ -139,7 +142,7 @@ void comms_i2c_init_master(i2c_port_t port){
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
         // 0.4 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
-        .master.clk_speed = 400000,
+        .master.clk_speed = 800000,
     };
     ESP_ERROR_CHECK(i2c_param_config(port, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(port, conf.mode, 0, 0, 0));
@@ -164,7 +167,7 @@ void comms_i2c_init_slave(void){
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 512, 128, 0));
 
-    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 16384, NULL, configMAX_PRIORITIES, NULL);
+    xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 16384, NULL, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI("CommsI2C_S", "I2C init OK as slave (RL master)");
 }
 
