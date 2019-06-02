@@ -38,6 +38,9 @@
 // Music
 #define MUSIC_BPM 100
 
+// RGB LEDs
+#define RGB_LED_NUM 12
+
 // PIDs
 
 // --- IMU Correction --- //

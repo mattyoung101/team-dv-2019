@@ -1,12 +1,11 @@
 #pragma once
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <soc/rmt_struct.h>
-#include <esp_system.h>
-#include <nvs_flash.h>
-#include <driver/gpio.h>
+#include "driver/gpio.h"
 #include <stdio.h>
 #include "defines.h"
+#include "led_strip.h"
+#include "esp_task_wdt.h"
 
 typedef enum {
     /** rainbow that plays during the boot sequence and calibrations (also great for celebrating pride month with) **/
@@ -27,4 +26,4 @@ typedef enum {
 /** Initialises the RGB LED controller task and driver **/
 void rgb_led_init();
 /** Changes RGB LED mode **/
-void rgb_led_change_mode(rgb_led_mode_t mode);
+void rgb_led_change_mode(rgb_led_mode_t mode_);
