@@ -55,9 +55,9 @@ void master_task(void *pvParameter){
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     if (robotId == 0){
-        // comms_bt_init_master();
+        comms_bt_init_master();
     } else {
-        // comms_bt_init_slave();
+        comms_bt_init_slave();
     }
 
     // Initialise FSM
@@ -89,7 +89,7 @@ void master_task(void *pvParameter){
                 robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
                 robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
                                         + CAM_ANGLE_OFFSET;
-                // TODO make goal angle a float as well
+                // TODO make these a float as well
                 robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
                 robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
                 // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
@@ -158,23 +158,16 @@ void slave_task(void *pvParameter){
         
         // set the message's values
         msg.heading = heading;
-        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-        //     msg.lastAngle = nanoData.lastAngle;
-        //     msg.lineAngle = nanoData.lineAngle;
-        //     msg.lineOver = nanoData.isLineOver;
-        //     msg.lineSize = nanoData.lineSize;
-        //     msg.onLine = nanoData.isOnLine;
-        //     xSemaphoreGive(nanoDataSem);
-        // } else {
-        //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        // }
-
-        msg.lastAngle = 69.0f;
-        msg.lineAngle = 42.69420f;
-        msg.lineOver = true;
-        msg.lineSize = 1.234f;
-        msg.onLine = false;
-        
+        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            msg.lastAngle = nanoData.lastAngle;
+            msg.lineAngle = nanoData.lineAngle;
+            msg.lineOver = nanoData.isLineOver;
+            msg.lineSize = nanoData.lineSize;
+            msg.onLine = nanoData.isOnLine;
+            xSemaphoreGive(nanoDataSem);
+        } else {
+            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        }
         msg.tsopAngle = tsopAvgAngle;
         msg.tsopStrength = tsopStrength;
         ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
@@ -188,13 +181,6 @@ void slave_task(void *pvParameter){
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
-        }
-
-        // debugging some shit where the heading is zero
-        pb_istream_t newfuckingbuffer = pb_istream_from_buffer(pbBuf, PROTOBUF_SIZE);
-        SensorUpdate decoded = SensorUpdate_init_zero;
-        if (pb_decode(&newfuckingbuffer, SensorUpdate_fields, &decoded)){
-            ESP_LOGD(TAG, "Decoded the piece of shit, heading: %f", heading);
         }
 
         esp_task_wdt_reset();

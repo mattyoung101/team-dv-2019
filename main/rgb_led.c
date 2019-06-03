@@ -63,22 +63,25 @@ static void rgb_led_task(void *pvParameters){
     while (true){
         switch (mode){
             case RGB_LED_MODE_RAINBOW: {
-                if (totalDelta > RAINBOW_TRANSITION_TIME){
-                    ESP_LOGI(TAG, "Updating rainbow array");
-                    array_rotate(rainbow, 6);
-                    totalDelta = 0.0f;
-                }
+                // if (totalDelta > RAINBOW_TRANSITION_TIME){
+                //     ESP_LOGI(TAG, "Updating rainbow array");
+                //     array_rotate(rainbow, 6);
+                //     totalDelta = 0.0f;
+                // }
 
-                // hop to every 2nd LED and set its colour. These LEDs are the "keyframes".
-                uint8_t rainbowIndex = 0;
-                for (int i = 0; i < LED_NUM; i += 2){
-                    led_strip_set_pixel_color(&led_strip, i, &rainbow[rainbowIndex++]);
-                }
+                // // hop to every 2nd LED and set its colour. These LEDs are the "keyframes".
+                // uint8_t rainbowIndex = 0;
+                // for (int i = 0; i < LED_NUM; i += 2){
+                //     led_strip_set_pixel_color(&led_strip, i, &rainbow[rainbowIndex++]);
+                // }
 
-                // interpolate the other LEDs
-                for (int i = 1; i < LED_NUM; i += 2){
-                    struct led_color_t lerped = lerp_colour(rainbow[i - 1], rainbow[(i + 1) % 6], totalDelta / 5.0f);
-                    led_strip_set_pixel_color(&led_strip, i, &lerped);
+                // // interpolate the other LEDs
+                // for (int i = 1; i < LED_NUM; i += 2){
+                //     struct led_color_t lerped = lerp_colour(rainbow[i - 1], rainbow[(i + 1) % 6], totalDelta / 5.0f);
+                //     led_strip_set_pixel_color(&led_strip, i, &lerped);
+                // }
+                for (int i = 0; i < LED_NUM; i++){
+                    led_strip_set_pixel_color(&led_strip, i, &rainbow[i % 6]);
                 }
                 break;
             }
