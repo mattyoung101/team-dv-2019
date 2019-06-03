@@ -69,7 +69,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 if (!pb_decode(&stream, msgFields, dest)){
                     ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
                 } else {
-                    ESP_LOGI(TAG, "Protobuf decode successful. Heading: %f", lastSensorUpdate.heading);
+                    // ESP_LOGI(TAG, "Protobuf decode successful. Heading: %f", lastSensorUpdate.heading);
                 }
                 
                 xSemaphoreGive(pbSem);

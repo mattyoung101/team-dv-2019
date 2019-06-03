@@ -209,7 +209,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION -20 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION 0 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -244,8 +244,8 @@
 // Orbit
 #define BALL_FAR_STRENGTH 90
 #define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 20
-#define ORBIT_SPEED_FAST 30
+#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_FAST 50
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble

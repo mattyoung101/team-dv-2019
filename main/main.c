@@ -111,8 +111,8 @@ void master_task(void *pvParameter){
 
         // update_line(&robotState);
 
-        // robotState.outSpeed = 0;
-        // print_motion_data(&robotState);
+        robotState.outSpeed = 0;
+        print_position_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -157,7 +157,7 @@ void slave_task(void *pvParameter){
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
         
         // set the message's values
-        msg.heading = heading;
+        
         // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         //     msg.lastAngle = nanoData.lastAngle;
         //     msg.lineAngle = nanoData.lineAngle;
@@ -169,6 +169,7 @@ void slave_task(void *pvParameter){
         //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
         // }
 
+        msg.heading = heading;
         msg.lastAngle = 69.0f;
         msg.lineAngle = 42.69420f;
         msg.lineOver = true;
@@ -183,7 +184,7 @@ void slave_task(void *pvParameter){
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
 
-            ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
+            // ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
             // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
@@ -194,11 +195,13 @@ void slave_task(void *pvParameter){
         pb_istream_t newfuckingbuffer = pb_istream_from_buffer(pbBuf, PROTOBUF_SIZE);
         SensorUpdate decoded = SensorUpdate_init_zero;
         if (pb_decode(&newfuckingbuffer, SensorUpdate_fields, &decoded)){
-            ESP_LOGD(TAG, "Decoded the piece of shit, heading: %f", heading);
+            // ESP_LOGD(TAG, "Decoded the piece of shit, heading: %f", heading);
         }
 
         esp_task_wdt_reset();
     }
+    // printf("%f\n", tsopAvgAngle);
+    // vTaskDelay(pdMS_TO_TICKS(100));
 }
 
 void motor_test_task(void *pvParameter){

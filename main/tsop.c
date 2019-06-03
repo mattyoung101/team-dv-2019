@@ -1,6 +1,8 @@
 #include "tsop.h"
 #include "HandmadeMath.h"
 
+// #define TSOP_DEBUG false
+
 static uint16_t tsopCounter = 0;
 // in polar form, so x = mag, y = theta
 static hmm_vec2 readings[TSOP_NUM] = {0};
