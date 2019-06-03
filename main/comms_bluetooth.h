@@ -16,6 +16,18 @@
 #include "defines.h"
 #include "utils.h"
 
+typedef enum {
+    BT_MSG_ACK = 0,
+    BT_MSG_OK,
+    BT_MSG_DENIED,
+    BT_MSG_UPDATE,
+    BT_MSG_REQUEST_SWITCH,
+    BT_MSG_SWITCH_COMPLETED,
+    BT_MSG_ENQUIRE_SEM_STATUS,
+    BT_MSG_TAKE_SEM,
+    BT_MSG_GIVE_SEM
+} bt_message_t;
+
 /** Initialises the Bluetooth stack as a slave, or initiator **/
 void comms_bt_init_slave();
 /** Initialises the Bluetooth stack as a master, or acceptor **/

@@ -14,28 +14,27 @@ static void bt_init(){
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-    esp_err_t ret = ESP_OK;
-    if ((ret = esp_bt_controller_init(&bt_cfg)) != ESP_OK) {
-        ESP_LOGE(TAG, "Controller init failed: %s", esp_err_to_name(ret));
-        return;
-    }
 
-    if ((ret = esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT)) != ESP_OK) {
-        ESP_LOGE(TAG, "Controller enable failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_bluedroid_init()) != ESP_OK) {
-        ESP_LOGE(TAG, "Bluedroid init failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_bluedroid_enable()) != ESP_OK) {
-        ESP_LOGE(TAG, "Bluedroid enable failed: %s", esp_err_to_name(ret));
-        return;
-    }
+    ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
+    ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
+    ESP_ERROR_CHECK(esp_bluedroid_init());
+    ESP_ERROR_CHECK(esp_bluedroid_enable());
 
     ESP_LOGI(TAG, "Bluetooth stack init OK");
+}
+
+/** Shutdown Bluetooth. Untested, may not work. **/
+static void bt_shutdown(){
+    esp_bluedroid_disable();
+    esp_bluedroid_deinit();
+    esp_bt_controller_disable();
+    // can't call deinit as apparently esp-bt_controller_init can't be called again
+}
+
+/** Shuts down then re-initialies Bluetooth (to fix issues) **/
+static void bt_restart(){
+    bt_shutdown();
+    bt_init();
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
@@ -207,7 +206,7 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                 ESP_LOGI(TAGS, "Authentication success: %s", param->auth_cmpl.device_name);
                 esp_log_buffer_hex(TAGS, param->auth_cmpl.bda, ESP_BD_ADDR_LEN);
             } else {
-                ESP_LOGE(TAGS, "Authentication failed, status:%d", param->auth_cmpl.stat);
+                ESP_LOGE(TAGS, "Authentication failed, status:% d", param->auth_cmpl.stat);
             }
             break;
         }
@@ -258,8 +257,10 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
                 ESP_LOGI(TAGS, "Connecting to SPP server...");
                 esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
             } else {
-                ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
-                // TODO restart entire bluetooth stack here, or at least try to disconnect then reconnect
+                ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d - restarting GAP discovery", param->disc_comp.status);
+                // restart GAP discovery
+                esp_bt_gap_cancel_discovery();
+                esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
             }
             break;
         case ESP_SPP_OPEN_EVT:
@@ -294,26 +295,12 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
     }
 }
 
-// waits for connection, acceptor
-void comms_bt_init_master(){
+static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     bt_init();
-
-    esp_err_t ret = ESP_OK;
-    if ((ret = esp_bt_gap_register_callback(esp_bt_gap_cb_master)) != ESP_OK) {
-        ESP_LOGE(TAGM, "GAP register failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_spp_register_callback(esp_spp_cb_master)) != ESP_OK) {
-        ESP_LOGE(TAGM, "SPP register failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_spp_init(ESP_SPP_MODE_CB)) != ESP_OK) {
-        ESP_LOGE(TAGM, "SPP init failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
+    ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
+    ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
+    ESP_ERROR_CHECK(esp_spp_init(ESP_SPP_MODE_CB));
+    
     /* Set default parameters for Secure Simple Pairing */
     esp_bt_sp_param_t param_type = ESP_BT_SP_IOCAP_MODE;
     esp_bt_io_cap_t iocap = ESP_BT_IO_CAP_IO;
@@ -326,42 +313,16 @@ void comms_bt_init_master(){
     esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_VARIABLE;
     esp_bt_pin_code_t pin_code;
     esp_bt_gap_set_pin(pin_type, 0, pin_code);
+}
 
+// waits for connection, acceptor
+void comms_bt_init_master(){
+    comms_bt_init_generic(esp_bt_gap_cb_master, esp_spp_cb_master);
     ESP_LOGI(TAGM, "Bluetooth master init OK");
 }
 
 // connects to master, initiator
 void comms_bt_init_slave(){
-    bt_init();
-
-    esp_err_t ret = ESP_OK;
-    if ((ret = esp_bt_gap_register_callback(esp_bt_gap_cb_slave)) != ESP_OK) {
-        ESP_LOGE(TAGS, "GAP register failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_spp_register_callback(esp_spp_cb_slave)) != ESP_OK) {
-        ESP_LOGE(TAGS, "SPP register failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    if ((ret = esp_spp_init(ESP_SPP_MODE_CB)) != ESP_OK) {
-        ESP_LOGE(TAGS, "SPP init failed: %s", esp_err_to_name(ret));
-        return;
-    }
-
-    /* Set default parameters for Secure Simple Pairing */
-    esp_bt_sp_param_t param_type = ESP_BT_SP_IOCAP_MODE;
-    esp_bt_io_cap_t iocap = ESP_BT_IO_CAP_IO;
-    esp_bt_gap_set_security_param(param_type, &iocap, sizeof(uint8_t));
-
-    /*
-     * Set default parameters for Legacy Pairing
-     * Use variable pin, input pin code when pairing
-     */
-    esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_VARIABLE;
-    esp_bt_pin_code_t pin_code;
-    esp_bt_gap_set_pin(pin_type, 0, pin_code);
-
+    comms_bt_init_generic(esp_bt_gap_cb_slave, esp_spp_cb_slave);
     ESP_LOGI(TAGS, "Bluetooth slave init OK");
 }
