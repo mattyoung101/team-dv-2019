@@ -21,7 +21,7 @@ static void comms_i2c_receive_task(void *pvParameters){
     pbSem = xSemaphoreCreateMutex();
     xSemaphoreGive(pbSem);
 
-    esp_task_wdt_add(NULL);
+    // esp_task_wdt_add(NULL);
     ESP_LOGI(TAG, "Slave I2C task init OK");
 
     while (true){

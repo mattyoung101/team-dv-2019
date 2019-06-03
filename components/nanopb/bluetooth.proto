@@ -1,8 +1,11 @@
 syntax = "proto3";
 
-// Packet which gets sent over Bluetooth for inter-robot comms
-message BTUpdate {
-    int64 fsmState = 1; // djb2 hash of current FSM state name - or maybe string - depends on speed requirements
-    repeated float position = 2 [packed=true]; // 2 element list containg calculated x and y of robot
-    bool onLine = 3;
+// Provide the other robot with some data
+message BTProvide {
+    string fsmState = 1;
+    float robotX = 2;
+    float robotY = 3;
+    bool onLine = 4;
 }
+
+// we won't have BTRequest because both robots can just spam each other with data

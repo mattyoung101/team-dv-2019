@@ -49,7 +49,7 @@ void master_task(void *pvParameter){
     // Initialise comms and hardware
     motor_init();
     comms_i2c_init_slave();
-    cam_init();
+    // cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // read robot ID from NVS and init Bluetooth
@@ -59,6 +59,11 @@ void master_task(void *pvParameter){
     } else {
         comms_bt_init_slave();
     }
+
+    TASK_HALT; // prevent the rest of the task from running as we are testing Bluetooth
+
+
+
 
     // Initialise FSM
     state_machine_t *fsm = fsm_new(&stateAttackPursue);
