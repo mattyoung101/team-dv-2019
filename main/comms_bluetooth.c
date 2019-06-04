@@ -9,6 +9,9 @@ static const char *TAG = "CommsBT";
 static uint8_t materData[] = {0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
 static uint8_t slaveData[] = {0xF, 0xE, 0xD, 0xC, 0xB, 0xA};
 
+static TaskHandle_t masterCtrlHandle = NULL;
+static TaskHandle_t slaveCtrlHandle = NULL;
+
 /** Initialises Bluetooth stack **/
 static void bt_init(){
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
@@ -23,18 +26,11 @@ static void bt_init(){
     ESP_LOGI(TAG, "Bluetooth stack init OK");
 }
 
-/** Shutdown Bluetooth. Untested, may not work. **/
-static void bt_shutdown(){
-    esp_bluedroid_disable();
-    esp_bluedroid_deinit();
-    esp_bt_controller_disable();
-    // can't call deinit as apparently esp-bt_controller_init can't be called again
-}
-
-/** Shuts down then re-initialies Bluetooth (to fix issues) **/
-static void bt_restart(){
-    bt_shutdown();
-    bt_init();
+/** restart GAP discovery **/
+static void bt_gap_restart_disc(){
+    esp_bt_gap_cancel_discovery();
+    esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
+    ESP_LOGI(TAG, "Restarting GAP discovery");
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
@@ -102,10 +98,13 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGD(TAGM, "ESP_SPP_DISCOVERY_COMP_EVT");
             break;
         case ESP_SPP_OPEN_EVT:
-            ESP_LOGI(TAGM, "SPP connection opened");
+            ESP_LOGI(TAGM, "SPP connection opened");;
             break;
         case ESP_SPP_CLOSE_EVT:
-            ESP_LOGI(TAGM, "SPP connection closed");
+            ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting controller task");
+            if (masterCtrlHandle != NULL){
+                vTaskDelete(masterCtrlHandle);
+            }
             break;
         case ESP_SPP_START_EVT:
             ESP_LOGI(TAGM, "SPP server started");
@@ -125,7 +124,9 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP write operation completed");
             break;
         case ESP_SPP_SRV_OPEN_EVT:
-            ESP_LOGI(TAGM, "SPP server opened");
+            ESP_LOGI(TAGM, "SPP server opened, starting controller task");
+            xTaskCreate(comms_bt_master_controller_task, "BTMasterCtrl", 4096, (void*) param->srv_open.handle,
+                         configMAX_PRIORITIES - 2, masterCtrlHandle);
             break;
         default:
             // ESP_LOGI(TAGM, "spp_cb event: %d", event);
@@ -258,17 +259,20 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
                 esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
             } else {
                 ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d - restarting GAP discovery", param->disc_comp.status);
-                // restart GAP discovery
-                esp_bt_gap_cancel_discovery();
-                esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
+                bt_gap_restart_disc();
             }
             break;
         case ESP_SPP_OPEN_EVT:
-            ESP_LOGI(TAGS, "SPP connection opened");
-            esp_spp_write(param->srv_open.handle, 6, slaveData);
+            ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
+            xTaskCreate(comms_bt_slave_controller_task, "BTSlaveCtrl", 4096, (void*) param->open.handle, 
+                        configMAX_PRIORITIES - 2, slaveCtrlHandle);
             break;
         case ESP_SPP_CLOSE_EVT:
-            ESP_LOGI(TAGS, "SPP connection closed");
+            ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting controller task");
+            if (slaveCtrlHandle != NULL){
+                vTaskDelete(slaveCtrlHandle);
+            }
+            bt_gap_restart_disc();
             break;
         case ESP_SPP_START_EVT:
             ESP_LOGI(TAGS, "SPP client started");

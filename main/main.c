@@ -163,19 +163,18 @@ void slave_task(void *pvParameter){
         
         // set the message's values
         msg.heading = heading;
-        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            msg.lastAngle = nanoData.lastAngle;
-            msg.lineAngle = nanoData.lineAngle;
-            msg.lineOver = nanoData.isLineOver;
-            msg.lineSize = nanoData.lineSize;
-            msg.onLine = nanoData.isOnLine;
-            xSemaphoreGive(nanoDataSem);
-        } else {
-            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        }
+        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //     msg.lastAngle = nanoData.lastAngle;
+        //     msg.lineAngle = nanoData.lineAngle;
+        //     msg.lineOver = nanoData.isLineOver;
+        //     msg.lineSize = nanoData.lineSize;
+        //     msg.onLine = nanoData.isOnLine;
+        //     xSemaphoreGive(nanoDataSem);
+        // } else {
+        //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        // }
         msg.tsopAngle = tsopAvgAngle;
         msg.tsopStrength = tsopStrength;
-        ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){

@@ -47,7 +47,7 @@ static void comms_i2c_receive_task(void *pvParameters){
             uint8_t msgSize = buf[2];
 
             // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
-            memcpy(msg, buf + 3, msgSize - 1);
+            memcpy(msg, buf + 3, msgSize);
 
             pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
             void *dest = NULL;
@@ -147,7 +147,7 @@ void comms_i2c_init_master(i2c_port_t port){
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFFF));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
+    // xTaskCreate(nano_comms_task, "NanoCommsTask", 3096, NULL, configMAX_PRIORITIES - 1, NULL);
 
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
