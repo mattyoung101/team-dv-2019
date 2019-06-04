@@ -111,8 +111,8 @@ void master_task(void *pvParameter){
 
         // update_line(&robotState);
 
-        robotState.outSpeed = 0;
-        print_position_data(&robotState);
+        // robotState.outSpeed = 0;
+        // print_position_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -183,19 +183,11 @@ void slave_task(void *pvParameter){
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-
-            // ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
-            // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
+            ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
+            ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
-        }
-
-        // debugging some shit where the heading is zero
-        pb_istream_t newfuckingbuffer = pb_istream_from_buffer(pbBuf, PROTOBUF_SIZE);
-        SensorUpdate decoded = SensorUpdate_init_zero;
-        if (pb_decode(&newfuckingbuffer, SensorUpdate_fields, &decoded)){
-            // ESP_LOGD(TAG, "Decoded the piece of shit, heading: %f", heading);
         }
 
         esp_task_wdt_reset();
@@ -276,8 +268,8 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
-        xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-        // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+        // xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  

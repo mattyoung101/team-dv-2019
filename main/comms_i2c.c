@@ -47,7 +47,9 @@ static void comms_i2c_receive_task(void *pvParameters){
             uint8_t msgSize = buf[2];
 
             // remove the header by copying from byte 3 onwards, excluding the end byte (0xEE)
-            memcpy(msg, buf + 3, msgSize - 1);
+            memcpy(msg, buf + 3, msgSize);
+
+            // ESP_LOG_BUFFER_HEX(TAG, msg, msgSize);
 
             pb_istream_t stream = pb_istream_from_buffer(msg, msgSize);
             void *dest = NULL;
