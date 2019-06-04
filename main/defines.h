@@ -118,8 +118,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 70
-#define CAM_OFFSET_Y 60
+#define CAM_OFFSET_X 77
+#define CAM_OFFSET_Y 52
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -209,7 +209,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION 0 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION -25 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -242,19 +242,19 @@
 #define DMP_RATE 200 // DMP update rate in Hz, max is 200
 
 // Orbit
-#define BALL_FAR_STRENGTH 90
-#define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 50
-#define ORBIT_SPEED_FAST 50
+#define BALL_FAR_STRENGTH 100
+#define BALL_CLOSE_STRENGTH 150
+#define ORBIT_SPEED_SLOW 30
+#define ORBIT_SPEED_FAST 60
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
-#define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
+#define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
+#define ORBIT_DIST 80 // switch from orbit to pursue if value is more than this
 #define IN_FRONT_MIN_ANGLE 20 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 340
 #define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
+#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 

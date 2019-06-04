@@ -135,7 +135,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
                 " angle range: %d-%d, goal angle: %d, goal angle range: %d-%d", 
                 robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE,
                 robotState.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
-        // FSM_CHANGE_STATE(Dribble);
+        FSM_CHANGE_STATE(Dribble);
     }
 
     orbit(&robotState);
@@ -164,14 +164,14 @@ void state_attack_dribble_update(state_machine_t *fsm){
                 DRIBBLE_BALL_TOO_FAR);
         FSM_REVERT;
     } else if (rs.inGoalAngle > GOAL_MIN_ANGLE || rs.inGoalAngle < GOAL_MAX_ANGLE){
-        // LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
-        // FSM_REVERT;
+        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
+        FSM_REVERT;
     }
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = lerp(ORBIT_SPEED_FAST, DRIBBLE_SPEED, accelProgress); 
+    robotState.outSpeed = lerp(ORBIT_SPEED_SLOW, DRIBBLE_SPEED, accelProgress); 
     // Just yeet towards the ball (which is forwards)
-    robotState.outDirection = robotState.inBallAngle;
+    robotState.outDirection = robotState.inGoalAngle;
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;
