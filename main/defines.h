@@ -170,6 +170,10 @@
 #define ENC_BR_IN1 7
 #define ENC_BR_IN2 6
 
+#define TORQUE_SCALAR 1
+#define FRONT_MOTOR_ANGLE 60
+#define BACK_MOTOR_ANGLE 45
+
 // Light sensor
 #define LS_CALIBRATION_COUNT 10
 #define LS_MUX0_BUFFER 200
