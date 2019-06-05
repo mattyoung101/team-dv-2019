@@ -78,7 +78,7 @@ void motor_calc(int16_t direction, int16_t orientation, float speed){
 }
 
 void motor_vec_calc(int16_t direction, int16_t orientation, float speed){
-    if(direction == -1){
+    if(speed == 0){
         flmotor_speed = orientation;
         frmotor_speed = orientation;
         blmotor_speed = orientation;
