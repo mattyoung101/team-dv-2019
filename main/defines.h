@@ -42,7 +42,7 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.5
+#define HEADING_KP 0.8
 #define HEADING_KI 0
 #define HEADING_KD 0.042
 #define HEADING_MAX_CORRECTION 100
@@ -118,7 +118,7 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 77
+#define CAM_OFFSET_X 66
 #define CAM_OFFSET_Y 52
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
@@ -247,7 +247,7 @@
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 150
+#define BALL_CLOSE_STRENGTH 140
 #define ORBIT_SPEED_SLOW 30
 #define ORBIT_SPEED_FAST 60
 
@@ -258,7 +258,7 @@
 #define IN_FRONT_MAX_ANGLE 340
 #define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick
+#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 

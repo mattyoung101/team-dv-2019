@@ -115,7 +115,8 @@ void master_task(void *pvParameter){
         // print_position_data(&robotState);
 
         // run motors
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
+        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code
+        // motor_vec_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Rob's motor code
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
