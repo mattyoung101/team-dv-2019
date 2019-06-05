@@ -88,7 +88,7 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.6
+#define GOAL_KP 1
 #define GOAL_KI 0
 #define GOAL_KD 0.06
 #define GOAL_MAX_CORRECTION 100
@@ -213,7 +213,7 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION -25 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION -30 // at 0 degrees TSOPs actually print a different value, so use this to correct it
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -247,16 +247,16 @@
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 140
-#define ORBIT_SPEED_SLOW 30
-#define ORBIT_SPEED_FAST 60
+#define BALL_CLOSE_STRENGTH 180
+#define ORBIT_SPEED_SLOW 40
+#define ORBIT_SPEED_FAST 70
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 80 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 20 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 340
-#define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
+#define IN_FRONT_MIN_ANGLE 25 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 335
+#define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick
 #define GOAL_MIN_ANGLE 30

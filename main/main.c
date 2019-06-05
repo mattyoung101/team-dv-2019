@@ -102,7 +102,7 @@ void master_task(void *pvParameter){
                 xSemaphoreGive(pbSem);
                 xSemaphoreGive(goalDataSem);
         } else {
-            ESP_LOGE(TAG, "Failed to acquire semaphores, cannot update FSM data.");
+            ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
 
         // update the actual FSM
@@ -112,7 +112,7 @@ void master_task(void *pvParameter){
         // update_line(&robotState);
 
         // robotState.outSpeed = 0;
-        // print_position_data(&robotState);
+        // print_ball_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code

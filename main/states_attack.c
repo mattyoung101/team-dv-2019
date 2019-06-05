@@ -117,9 +117,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
     // imu_correction(&robotState);
-    // goal_correction(&robotState);
-    if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
-    else imu_correction(&robotState);
+    goal_correction(&robotState);
+    // if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
+    // else imu_correction(&robotState);
     IDLE_TIMER_CHECK;
 
     // Check criteria:
