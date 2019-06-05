@@ -177,7 +177,7 @@ void slave_task(void *pvParameter){
         msg.lineSize = 1.234f;
         msg.onLine = false;
         
-        msg.tsopAngle = tsopAvgAngle;
+        msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
         ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
 

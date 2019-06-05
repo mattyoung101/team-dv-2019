@@ -37,6 +37,7 @@ static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newStat
 }
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
+    ESP_LOGD(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);
     fsm_internal_change_state(fsm, newState, true);
 }
 
