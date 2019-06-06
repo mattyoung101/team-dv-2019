@@ -134,8 +134,8 @@
 #define IDLE_DISTANCE 43
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
-#define GOAL_TRACK_DIST 10000
-#define IDLE_MIN_SPEED 50
+#define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
+#define IDLE_MIN_SPEED 30 // The lowest speed for which the robot will move while positioning
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -143,32 +143,24 @@
 #define MOTOR_FL_IN2 32
 #define MOTOR_FL_ANGLE 300
 #define MOTOR_FL_REVERSED true
-#define ENC_FL_IN1 1
-#define ENC_FL_IN2 0
 
 #define MOTOR_FR_PWM 23
 #define MOTOR_FR_IN1 4
 #define MOTOR_FR_IN2 5
 #define MOTOR_FR_ANGLE 60
 #define MOTOR_FR_REVERSED true
-#define ENC_FR_IN1 3
-#define ENC_FR_IN2 2
 
 #define MOTOR_BL_PWM 14
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
 #define MOTOR_BL_REVERSED false
-#define ENC_BL_IN1 5
-#define ENC_BL_IN2 4
 
 #define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 18
 #define MOTOR_BR_IN2 19
 #define MOTOR_BR_ANGLE 135
 #define MOTOR_BR_REVERSED false
-#define ENC_BR_IN1 7
-#define ENC_BR_IN2 6
 
 #define TORQUE_SCALAR 1
 #define FRONT_MOTOR_ANGLE 60
