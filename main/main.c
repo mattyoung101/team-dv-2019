@@ -85,14 +85,15 @@ void master_task(void *pvParameter){
                 // update
                 robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
                 robotState.inBallStrength = lastSensorUpdate.tsopStrength;
+                // ESP_LOGD(TAG, "Values of SensorUpdate: heading: %f, ball angle: %f, ball strength: %f",
+                // lastSensorUpdate.heading, lastSensorUpdate.tsopAngle, lastSensorUpdate.tsopStrength);
 
                 robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
                 robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
                                         + CAM_ANGLE_OFFSET;
                 // TODO make goal angle a float as well
-                robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : HOME_GOAL.length;
+                robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : (int16_t) HOME_GOAL.length;
                 robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
-                // hack to convert to IMU data to float by multiplying it by 100 before sending then diving it
                 robotState.inHeading = lastSensorUpdate.heading;
                 robotState.inX = robotX;
                 robotState.inY = robotY;
@@ -102,20 +103,16 @@ void master_task(void *pvParameter){
                 xSemaphoreGive(pbSem);
                 xSemaphoreGive(goalDataSem);
         } else {
-            ESP_LOGE(TAG, "Failed to acquire semaphores, cannot update FSM data.");
+            ESP_LOGW(TAG, "Failed to acquire semaphores, cannot update FSM data.");
         }
 
         // update the actual FSM
         fsm_update(fsm);
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
 
-        // update_line(&robotState);
-
-        // robotState.outSpeed = 0;
-        // print_position_data(&robotState);
-
         // run motors
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
+        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code
+        // motor_vec_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Rob's motor code
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
@@ -176,7 +173,7 @@ void slave_task(void *pvParameter){
         msg.lineSize = 1.234f;
         msg.onLine = false;
         
-        msg.tsopAngle = tsopAvgAngle;
+        msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
         ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
 
@@ -268,8 +265,8 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
-        // xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-        xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+        xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  
