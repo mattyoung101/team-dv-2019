@@ -116,10 +116,10 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
-    goal_correction(&robotState);
+    // goal_correction(&robotState);
     // imu_correction(&robotState);
-    // if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
-    // else imu_correction(&robotState);
+    if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
+    else imu_correction(&robotState);
     IDLE_TIMER_CHECK;
 
     // Check criteria:
@@ -157,13 +157,13 @@ void state_attack_dribble_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallAngle);
         idle_timer_start();
         FSM_MOTOR_BRAKE;
-    } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
+    } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 20, IN_FRONT_MAX_ANGLE - 20)){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
-                IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE);
+                IN_FRONT_MIN_ANGLE + 20, IN_FRONT_MAX_ANGLE - 20);
         FSM_REVERT;
-    } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR){
+    } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR - 30){
         LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, thresh: %d", robotState.inBallStrength,
-                DRIBBLE_BALL_TOO_FAR);
+                DRIBBLE_BALL_TOO_FAR - 30);
         FSM_REVERT;
     }
     /*} else if (!is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE) || !rs.inGoalVisible){
