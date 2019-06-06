@@ -64,12 +64,25 @@ static void comms_i2c_receive_task(void *pvParameters){
                     continue;
             }
 
+            SensorUpdate oldUpdate = lastSensorUpdate;
+
             // semaphore required since we use the protobuf messages outside this thread
             if (xSemaphoreTake(pbSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 if (!pb_decode(&stream, msgFields, dest)){
                     ESP_LOGE(TAG, "Protobuf decode error for message ID %d: %s", msgId, PB_GET_ERROR(&stream));
                 } else {
-                    // ESP_LOGI(TAG, "Protobuf decode successful. Heading: %f", lastSensorUpdate.heading);
+                    // to save the values from being 0, if heading or TSOP looks wrong, reject the message and restore
+                    // the last one
+                    // NOTE: this solution is far from ideal, but I'm in a rush and am unable to find whereabouts
+                    // or why the valid is being set to zero
+                    if (lastSensorUpdate.heading <= 0.01f && 
+                        (lastSensorUpdate.tsopStrength <= 0.01f || lastSensorUpdate.tsopAngle <= 0.01f)){
+                        ESP_LOGW(TAG, "Rejecting invalid message, restoring last message");
+                        lastSensorUpdate = oldUpdate;
+                    } else {
+                        // ESP_LOGI(TAG, "Message is valid: heading %f, strength: %f, angle: %f",
+                        // lastSensorUpdate.heading, lastSensorUpdate.tsopStrength, lastSensorUpdate.tsopAngle);
+                    }
                 }
                 
                 xSemaphoreGive(pbSem);
