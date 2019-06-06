@@ -248,8 +248,8 @@
 // Orbit
 #define BALL_FAR_STRENGTH 100
 #define BALL_CLOSE_STRENGTH 180
-#define ORBIT_SPEED_SLOW 20
-#define ORBIT_SPEED_FAST 20
+#define ORBIT_SPEED_SLOW 30
+#define ORBIT_SPEED_FAST 30
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 0 // if less than this, switch out of dribble
