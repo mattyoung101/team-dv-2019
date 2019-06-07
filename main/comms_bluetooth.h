@@ -15,18 +15,13 @@
 #include "esp_spp_api.h"
 #include "defines.h"
 #include "utils.h"
+#include "pb.h"
+#include "pb_encode.h"
+#include "pb_decode.h"
+#include "bluetooth.pb.h"
 
-typedef enum {
-    BT_MSG_ACK = 0,
-    BT_MSG_OK,
-    BT_MSG_DENIED,
-    BT_MSG_UPDATE,
-    BT_MSG_REQUEST_SWITCH,
-    BT_MSG_SWITCH_COMPLETED,
-    BT_MSG_ENQUIRE_SEM_STATUS,
-    BT_MSG_TAKE_SEM,
-    BT_MSG_GIVE_SEM
-} bt_message_t;
+/** received packets are pushed into this queue and read by the BT manager task in bluetooth_manager.c */
+extern QueueHandle_t packetQueue;
 
 /** Initialises the Bluetooth stack as a slave, or initiator **/
 void comms_bt_init_slave();

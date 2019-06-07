@@ -6,11 +6,9 @@ static const char *TAGM = "CommsBT_M";
 static const char *TAGS = "CommsBT_S";
 static const char *TAG = "CommsBT";
 
-static uint8_t materData[] = {0xA, 0xB, 0xC, 0xD, 0xE, 0xF};
-static uint8_t slaveData[] = {0xF, 0xE, 0xD, 0xC, 0xB, 0xA};
-
 static TaskHandle_t masterCtrlHandle = NULL;
 static TaskHandle_t slaveCtrlHandle = NULL;
+QueueHandle_t packetQueue = NULL;
 
 /** Initialises Bluetooth stack **/
 static void bt_init(){
@@ -31,6 +29,19 @@ static void bt_gap_restart_disc(){
     esp_bt_gap_cancel_discovery();
     esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
     ESP_LOGI(TAG, "Restarting GAP discovery");
+}
+
+/** decode data and push to packet queue */
+static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
+    BTProvide msg = BTProvide_init_zero;
+    pb_istream_t stream = pb_istream_from_buffer(data, size);
+
+    if (pb_decode(&stream, BTProvide_fields, &msg)){
+        ESP_LOGD(TAG, "Decoded protobuf msg successfully");
+        xQueueSendToBack(packetQueue, &msg, pdMS_TO_TICKS(250));
+    } else {
+        ESP_LOGE(TAG, "Protobuf decode error: %s", PB_GET_ERROR(&stream));
+    }
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
@@ -113,19 +124,15 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d",
-                    param->data_ind.len, param->data_ind.handle);
-            esp_log_buffer_hex("",param->data_ind.data,param->data_ind.len);
+            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
+            bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGM, "SPP congestion status changed");
-            break;
-        case ESP_SPP_WRITE_EVT:
-            ESP_LOGI(TAGM, "SPP write operation completed");
+            ESP_LOGI(TAGM, "SPP congestion status changed, now: %d", param->cong.cong);
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP server opened, starting controller task");
-            xTaskCreate(comms_bt_master_controller_task, "BTMasterCtrl", 4096, (void*) param->srv_open.handle,
+            xTaskCreate(comms_bt_master_controller_task, "BTMasterManager", 4096, (void*) param->srv_open.handle,
                          configMAX_PRIORITIES - 2, masterCtrlHandle);
             break;
         default:
@@ -193,15 +200,6 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                 }
             }
             break;
-        case ESP_BT_GAP_DISC_STATE_CHANGED_EVT:
-            // ESP_LOGI(TAGS, "ESP_BT_GAP_DISC_STATE_CHANGED_EVT");
-            break;
-        case ESP_BT_GAP_RMT_SRVCS_EVT:
-            // ESP_LOGI(TAGS, "ESP_BT_GAP_RMT_SRVCS_EVT");
-            break;
-        case ESP_BT_GAP_RMT_SRVC_REC_EVT:
-            // ESP_LOGI(TAGS, "ESP_BT_GAP_RMT_SRVC_REC_EVT");
-            break;
         case ESP_BT_GAP_AUTH_CMPL_EVT:{
             if (param->auth_cmpl.stat == ESP_BT_STATUS_SUCCESS) {
                 ESP_LOGI(TAGS, "Authentication success: %s", param->auth_cmpl.device_name);
@@ -258,13 +256,13 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
                 ESP_LOGI(TAGS, "Connecting to SPP server...");
                 esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
             } else {
-                ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d - restarting GAP discovery", param->disc_comp.status);
+                ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
                 bt_gap_restart_disc();
             }
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
-            xTaskCreate(comms_bt_slave_controller_task, "BTSlaveCtrl", 4096, (void*) param->open.handle, 
+            xTaskCreate(comms_bt_slave_controller_task, "BTSlaveManager", 4096, (void*) param->open.handle, 
                         configMAX_PRIORITIES - 2, slaveCtrlHandle);
             break;
         case ESP_SPP_CLOSE_EVT:
@@ -281,15 +279,11 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             ESP_LOGI(TAGS, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            ESP_LOGI(TAGS, "SPP data received");
+            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
+            bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGS, "SPP client congestion status changed");
-            break;
-        case ESP_SPP_WRITE_EVT:
-            if (param->write.cong == 0) {
-                esp_spp_write(param->write.handle, 6, slaveData);
-            }
+            ESP_LOGI(TAGS, "SPP congestion status changed, now: %d", param->cong.cong);
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP server opened");
@@ -305,18 +299,18 @@ static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
     ESP_ERROR_CHECK(esp_spp_init(ESP_SPP_MODE_CB));
     
-    /* Set default parameters for Secure Simple Pairing */
+    // Simple Secure Paring (SSP) params
     esp_bt_sp_param_t param_type = ESP_BT_SP_IOCAP_MODE;
     esp_bt_io_cap_t iocap = ESP_BT_IO_CAP_IO;
     esp_bt_gap_set_security_param(param_type, &iocap, sizeof(uint8_t));
 
-    /*
-     * Set default parameters for Legacy Pairing
-     * Use variable pin, input pin code when pairing
-     */
+    // legacy pairing params
     esp_bt_pin_type_t pin_type = ESP_BT_PIN_TYPE_VARIABLE;
     esp_bt_pin_code_t pin_code;
     esp_bt_gap_set_pin(pin_type, 0, pin_code);
+
+    // create the BT packet queue
+    packetQueue = xQueueCreate(PACKET_QUEUE_LENGTH, BTProvide_size);
 }
 
 // waits for connection, acceptor

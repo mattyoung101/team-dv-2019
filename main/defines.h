@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
 // Will probably slow down the robot, don't enable in competition!
@@ -20,6 +20,7 @@
 #define ROBOT0_NAME "DeusVult_Robot0"
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
+#define PACKET_QUEUE_LENGTH 16
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
