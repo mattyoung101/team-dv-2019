@@ -88,9 +88,9 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.6
+#define GOAL_KP 1
 #define GOAL_KI 0
-#define GOAL_KD 0.05
+#define GOAL_KD 0.1
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -154,7 +154,7 @@
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
-#define MOTOR_BL_REVERSED false
+#define MOTOR_BL_REVERSED true
 
 #define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 18
@@ -239,15 +239,15 @@
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 180
+#define BALL_CLOSE_STRENGTH 150
 #define ORBIT_SPEED_SLOW 50
-#define ORBIT_SPEED_FAST 70
+#define ORBIT_SPEED_FAST 80
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
 #define ORBIT_DIST 80 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 15 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 345
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 355
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick

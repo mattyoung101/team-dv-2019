@@ -14,6 +14,7 @@ fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &st
 
 static TimerHandle_t idleTimer = NULL;
 static float accelProgress = 0;
+static float accelBegin = 0;
 static bool timerRunning = false;
 #define IDLE_TIMER_CHECK do { if (robotState.inBallStrength > 0.0f) idle_timer_stop(); } while (0);
 
@@ -137,6 +138,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball and angle in correct spot, switching to dribble, strength: %f, angle: %f, orbit dist thresh: %d"
                 " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);
+        accelBegin = rs.outSpeed;
         FSM_CHANGE_STATE(Dribble);
     }
 
@@ -172,7 +174,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     }*/
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = lerp(ORBIT_SPEED_SLOW, DRIBBLE_SPEED, accelProgress); 
+    robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, accelProgress); 
     // Just yeet towards the ball (which is forwards)
     robotState.outDirection = robotState.inGoalAngle;
 
