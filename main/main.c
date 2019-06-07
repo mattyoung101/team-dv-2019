@@ -39,6 +39,7 @@
 #endif
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
+state_machine_t *stateMachine = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
@@ -60,13 +61,12 @@ void master_task(void *pvParameter){
         comms_bt_init_slave();
     }
 
-    TASK_HALT; // prevent the rest of the task from running as we are testing Bluetooth
-
-
-
-
     // Initialise FSM
-    state_machine_t *fsm = fsm_new(&stateAttackPursue);
+    stateMachine = fsm_new(&stateAttackPursue);
+    // TODO just testing bullshit for FSM
+    fsm_change_state(stateMachine, &stateAttackPursue);
+
+    TASK_HALT; // prevent the rest of the task from running as we are testing Bluetooth
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -111,7 +111,7 @@ void master_task(void *pvParameter){
         }
 
         // update the actual FSM
-        fsm_update(fsm);
+        fsm_update(stateMachine);
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
 
         // update_line(&robotState);

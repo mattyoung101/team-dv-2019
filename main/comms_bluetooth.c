@@ -132,7 +132,7 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP server opened, starting controller task");
-            xTaskCreate(comms_bt_master_controller_task, "BTMasterManager", 4096, (void*) param->srv_open.handle,
+            xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->srv_open.handle,
                          configMAX_PRIORITIES - 2, masterCtrlHandle);
             break;
         default:
@@ -262,7 +262,7 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
-            xTaskCreate(comms_bt_slave_controller_task, "BTSlaveManager", 4096, (void*) param->open.handle, 
+            xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->open.handle, 
                         configMAX_PRIORITIES - 2, slaveCtrlHandle);
             break;
         case ESP_SPP_CLOSE_EVT:
