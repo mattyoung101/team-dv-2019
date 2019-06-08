@@ -147,17 +147,17 @@ void orbit(robot_state_t *robotState){
     // strengthFactor, distanceMultiplier, angleAddition);
 }
 
-void position(robot_state_t *robotState, float distance, float offset) {
-    float goalAngle = robotState->inGoalAngle < 0.0f ? robotState->inGoalAngle + 360.0f : robotState->inGoalAngle; // Convert to 0 - 360 range
-    float goalAngle_ = fmodf(goalAngle + robotState->inHeading, 360.0f); // Add the heading to counteract the rotation
+void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed) {
+    float goalAngle_ = goalAngle < 0.0f ? goalAngle + 360.0f : goalAngle; // Convert to 0 - 360 range
+    float goalAngle__ = fmodf(goalAngle_ + robotState->inHeading, 360.0f); // Add the heading to counteract the rotation
 
-    float verticalDistance = fabsf(robotState->inGoalLength * cosf(DEG_RAD * goalAngle_)); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
-    float horizontalDistance = robotState->inGoalLength * sinf(DEG_RAD * goalAngle_);
+    float verticalDistance = fabsf(goalLength * cosf(DEG_RAD * goalAngle__)); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
+    float horizontalDistance = goalLength * sinf(DEG_RAD * goalAngle__);
 
     float distanceMovement = -pid_update(&forwardPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
     float sidewaysMovement = -pid_update(&sidePID, horizontalDistance, offset, 0.0f);
 
-    if(!robotState->outIsAttack) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
+    if(reversed) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
 
     robotState->outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f); // Use atan2 to find angle
     robotState->outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed

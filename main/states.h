@@ -11,10 +11,17 @@
 // Struct which holds highly processed info about the robot's state. Shared resource, should be synced with a mutex.
 typedef struct {
     // Goal Inputs
+    // Main goal in question (home goal for defender, enemy goal for attacker)
     bool inGoalVisible;
     int16_t inGoalAngle;
     int16_t inGoalLength;
     int16_t inGoalDistance;
+    // Other goal (home goal for attacker, enemy goal for defender)
+    bool inOtherGoalVisible;
+    int16_t inOtherGoalAngle;
+    int16_t inOtherGoalLength;
+    int16_t inOtherGoalDistance;
+    // Coordinate System
     int16_t inX;
     int16_t inY;
     // IMU Input
@@ -68,6 +75,10 @@ extern fsm_state_t stateAttackDribble;
 // Shoot state: NOTE this is not currently used since we don't have a kicker
 void state_attack_shoot_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackShoot;
+
+// Avoid double defence state: Does not move into the goalie box to avoid double defence
+void state_attack_doubledefence_update(state_machine_t *fsm);
+extern fsm_state_t stateAttackDoubleDefence;
 
 /////////// DEFENCE FSM /////////
 // Reverse state: reverse to the back wall when goal is not visible

@@ -11,6 +11,7 @@ fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state
 fsm_state_t stateAttackPursue = {&state_attack_pursue_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
 fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &state_attack_orbit_update, "AttackOrbit"};
 fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &state_attack_dribble_update, "AttackDribble"};
+fsm_state_t stateAttackDoubleDefence = {&state_nothing_enter, &state_nothing_exit, &state_attack_doubledefence_update, "AttackDoubleDefence"};
 
 static TimerHandle_t idleTimer = NULL;
 static float accelProgress = 0;
@@ -76,7 +77,7 @@ void state_attack_idle_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     }
 
-    position(&robotState, IDLE_DISTANCE, IDLE_OFFSET);
+    position(&robotState, IDLE_DISTANCE, IDLE_OFFSET, rs.inOtherGoalAngle, rs.inOtherGoalLength, true);
 }
 
 // Pursue
@@ -180,6 +181,23 @@ void state_attack_dribble_update(state_machine_t *fsm){
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;
+}
+
+// Avoid Double Defence
+// NOTE: DOES NOT SWITCH INTO THIS STATE YET
+void state_attack_doubledefence_update(state_machine_t *fsm){
+    static const char *TAG = "AvoidDoubleDefenceState";
+
+    rs.outIsAttack = true;
+    imu_correction(&robotState);
+    IDLE_TIMER_CHECK;
+
+    if(rs.inOtherGoalLength < GOAL_TOO_CLOSE){
+        float goalAngle = robotState.inOtherGoalAngle < 0.0f ? robotState.inOtherGoalAngle + 360.0f : robotState.inOtherGoalAngle; // Convert to 0 - 360 range
+        float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
+        float verticalDistance = fabsf(robotState.inOtherGoalLength * cosf(DEG_RAD * goalAngle_));
+        float distanceMovement = pid_update(&forwardPID, verticalDistance, GOAL_TOO_CLOSE + 10, 0.0f); // Stay a fixed distance from the goal
+    }
 }
 
 // done with this macro

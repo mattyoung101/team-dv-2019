@@ -60,7 +60,7 @@ void state_defence_idle_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    position(&robotState, DEFEND_DISTANCE, 0.0f);
+    position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
  // Defend

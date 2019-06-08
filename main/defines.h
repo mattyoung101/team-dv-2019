@@ -131,11 +131,13 @@
 #define GOAL_OFF 2
 #define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
-#define IDLE_DISTANCE 43
+#define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 30 // The lowest speed for which the robot will move while positioning
+
+#define GOAL_TOO_CLOSE 30
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
