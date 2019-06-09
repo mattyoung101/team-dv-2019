@@ -61,7 +61,7 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    state_machine_t *fsm = fsm_new(&stateAttackPursue);
+    state_machine_t *fsm = fsm_new(&stateDefenceIdle);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -132,7 +132,7 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(fsm);
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code
         // motor_vec_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Rob's motor code
@@ -196,7 +196,7 @@ void slave_task(void *pvParameter){
         msg.lineSize = 1.234f;
         msg.onLine = false;
         
-        msg.tsopAngle = tsopAvgAngle;
+        msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
         ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
 

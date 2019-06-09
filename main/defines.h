@@ -54,9 +54,9 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 5
+#define FORWARD_KP 8
 #define FORWARD_KI 0
-#define FORWARD_KD 0.0001
+#define FORWARD_KD 0.01
 #define FORWARD_MAX 100
 
 #define SIDE_KP 3.2
@@ -64,15 +64,15 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 10
+#define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0
+#define INTERCEPT_KD 0.01
 #define INTERCEPT_MAX 100
-#define INTERCEPT_MIN 0
+#define INTERCEPT_MIN 30
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.15
+#define GOALIE_KD 0.2
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -118,8 +118,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 83
-#define CAM_OFFSET_Y 41
+#define CAM_OFFSET_X 75
+#define CAM_OFFSET_Y 45
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -129,7 +129,7 @@
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 #define HALFWAY_DISTANCE 45
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
@@ -241,26 +241,26 @@
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 140
+#define BALL_CLOSE_STRENGTH 135
 #define ORBIT_SPEED_SLOW 40
 #define ORBIT_SPEED_FAST 60
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 160 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 155 // if less than this, switch out of dribble
 #define ORBIT_DIST 100 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 2 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 358
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 355
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define DRIBBLE_TIMEOUT 500 // ms, if robot sees ball in this position for this time it will switch to dribble state
+#define DRIBBLE_TIMEOUT 1000 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
-#define DEFEND_DISTANCE 32
-#define SURGE_DISTANCE 35
-#define SURGE_STRENGTH 170
+#define DEFEND_DISTANCE 30
+#define SURGE_DISTANCE 40
+#define SURGE_STRENGTH 155
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
