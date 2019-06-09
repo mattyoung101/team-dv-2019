@@ -86,15 +86,17 @@ void state_defence_idle_update(state_machine_t *fsm){
     if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
         orbit(&robotState); // Ball is behind, orbit so we don't score an own goal
     } else {
+        float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle;
         float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 - 360 range
         float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
         float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
         float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
-        float sidewaysMovement = -pid_update(&interceptPID, fmodf(rs.inBallAngle + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Centre on the ball
+        // float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+        float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Centre on the ball
         if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
-        sidewaysMovement = 0;
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
         rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+        // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, sidewaysMovement);
     }
 }
 
