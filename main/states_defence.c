@@ -60,7 +60,7 @@ void state_defence_idle_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    position(&robotState, DEFEND_DISTANCE, 0.0f);
+    position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
  // Defend
@@ -69,8 +69,8 @@ void state_defence_idle_update(state_machine_t *fsm){
 
     rs.outIsAttack = false;
 
-    // goal_correction(&robotState); // Face the back of the robot to the goal
-    imu_correction(&robotState);
+    goal_correction(&robotState); // Face the back of the robot to the goal
+    // imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
         LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet

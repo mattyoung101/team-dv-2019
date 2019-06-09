@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
 // Will probably slow down the robot, don't enable in competition!
@@ -43,7 +43,7 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.5
+#define HEADING_KP 0.8
 #define HEADING_KI 0
 #define HEADING_KD 0.042
 #define HEADING_MAX_CORRECTION 100
@@ -89,9 +89,9 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.6
+#define GOAL_KP 1
 #define GOAL_KI 0
-#define GOAL_KD 0.06
+#define GOAL_KD 0.1
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -119,8 +119,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 70
-#define CAM_OFFSET_Y 60
+#define CAM_OFFSET_X 66
+#define CAM_OFFSET_Y 52
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -132,11 +132,13 @@
 #define GOAL_OFF 2
 #define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
-#define IDLE_DISTANCE 43
+#define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
-#define GOAL_TRACK_DIST 10000
-#define IDLE_MIN_SPEED 50
+#define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
+#define IDLE_MIN_SPEED 30 // The lowest speed for which the robot will move while positioning
+
+#define GOAL_TOO_CLOSE 30
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -144,32 +146,28 @@
 #define MOTOR_FL_IN2 32
 #define MOTOR_FL_ANGLE 300
 #define MOTOR_FL_REVERSED true
-#define ENC_FL_IN1 1
-#define ENC_FL_IN2 0
 
 #define MOTOR_FR_PWM 23
 #define MOTOR_FR_IN1 4
 #define MOTOR_FR_IN2 5
 #define MOTOR_FR_ANGLE 60
 #define MOTOR_FR_REVERSED true
-#define ENC_FR_IN1 3
-#define ENC_FR_IN2 2
 
 #define MOTOR_BL_PWM 14
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
-#define MOTOR_BL_REVERSED false
-#define ENC_BL_IN1 5
-#define ENC_BL_IN2 4
+#define MOTOR_BL_REVERSED true
 
 #define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 18
 #define MOTOR_BR_IN2 19
 #define MOTOR_BR_ANGLE 135
 #define MOTOR_BR_REVERSED false
-#define ENC_BR_IN1 7
-#define ENC_BR_IN2 6
+
+#define TORQUE_SCALAR 1
+#define FRONT_MOTOR_ANGLE 60
+#define BACK_MOTOR_ANGLE 45
 
 // Light sensor
 #define LS_CALIBRATION_COUNT 10
@@ -243,17 +241,18 @@
 #define DMP_RATE 200 // DMP update rate in Hz, max is 200
 
 // Orbit
-#define BALL_FAR_STRENGTH 90
-#define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 20
-#define ORBIT_SPEED_FAST 30
+#define BALL_FAR_STRENGTH 100
+#define BALL_CLOSE_STRENGTH 150
+#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_FAST 80
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
-#define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 20 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 340
-#define IDLE_TIMEOUT 5000 // if ball is not visible for this length of time in ms or more, switch to idle state
+#define DRIBBLE_BALL_TOO_FAR 150 // if less than this, switch out of dribble
+#define ORBIT_DIST 80 // switch from orbit to pursue if value is more than this
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 355
+#define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
+#define DRIBBLE_TIMEOUT 500 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
 #define GOAL_MIN_ANGLE 30

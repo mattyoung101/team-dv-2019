@@ -77,6 +77,37 @@ void motor_calc(int16_t direction, int16_t orientation, float speed){
     brmotor_speed = speed == 0 ? brmotor_speed : (brmotor_speed / maxSpeed) * speed;
 }
 
+void motor_vec_calc(int16_t direction, int16_t orientation, float speed){
+    if(speed == 0){
+        flmotor_speed = orientation;
+        frmotor_speed = orientation;
+        blmotor_speed = orientation;
+        brmotor_speed = orientation;
+    } else {
+        float radAngle = DEG_RAD * ((float) direction + 180.0f);
+
+        float sinAngle = sinf(radAngle);
+        float cosAngle = cosf(radAngle);
+
+        float cosAlpha = cosf(DEG_RAD * (FRONT_MOTOR_ANGLE / 2.0));
+        float cosBeta = cosf(DEG_RAD * (BACK_MOTOR_ANGLE / 2.0));
+        float sinAlpha = sinf(DEG_RAD * (FRONT_MOTOR_ANGLE / 2.0));
+        float sinBeta = sinf(DEG_RAD * (BACK_MOTOR_ANGLE / 2.0));
+        float sin2Beta = sinf(DEG_RAD * (BACK_MOTOR_ANGLE));
+
+        brmotor_speed = 0.5 * (TORQUE_SCALAR * sinAngle / (sinAlpha + TORQUE_SCALAR * sinBeta) + (TORQUE_SCALAR * cosAngle + 2 * orientation * cosAlpha) / (cosAlpha + TORQUE_SCALAR * cosBeta));
+        frmotor_speed = (orientation - brmotor_speed) / TORQUE_SCALAR + sinAngle / (sinAlpha + TORQUE_SCALAR * sinBeta);
+        blmotor_speed = orientation - TORQUE_SCALAR * frmotor_speed;
+        flmotor_speed = (orientation - brmotor_speed) / TORQUE_SCALAR;
+
+        float ratio = speed / fmaxf(fabsf(frmotor_speed), fmaxf(fabsf(brmotor_speed), fmaxf(fabsf(blmotor_speed), fabsf(flmotor_speed))));
+        frmotor_speed *= ratio;
+        brmotor_speed *= ratio;
+        blmotor_speed *= ratio;
+        flmotor_speed *= ratio;
+    }
+}
+
 void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
                             bool reversed, bool brake){
         // constrained speed shorthand
