@@ -19,6 +19,7 @@ set(COMPONENT_SRCS
                    "movavg.c"
                    "comms_bluetooth.c"
                    "rgb_led.c"
+                   "bluetooth_manager.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")

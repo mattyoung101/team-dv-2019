@@ -1,0 +1,8 @@
+Bluetooth packet structure:
+[
+    begin byte (0xB),
+    size of Protobuf message, 0x0 if no message attached (then it's a simple message),
+    message ID if this packet is a simple message, 0xFF if no message,
+    bytes of the Protobuf message if there is one, otherwise none,
+    end byte (0xE)
+]
