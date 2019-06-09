@@ -249,6 +249,7 @@
 #define IN_FRONT_MIN_ANGLE 15 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 345
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
+#define DRIBBLE_TIMEOUT 500 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.05 // update the acceleration interpolation by this amount per tick
 #define GOAL_MIN_ANGLE 30

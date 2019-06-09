@@ -37,6 +37,11 @@ typedef struct {
     bool outIsAttack;
 } robot_state_t;
 
+typedef struct {
+    TimerHandle_t timer;
+    bool running;
+} dv_timer_t;
+
 extern SemaphoreHandle_t robotStateSem;
 extern robot_state_t robotState;
 
