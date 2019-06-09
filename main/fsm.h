@@ -29,6 +29,8 @@ struct state_machine_t {
     fsm_state_history_t stateHistory;
 };
 
+extern state_machine_t *stateMachine;
+
 /** Instantiates a new state machine, starting out in the given state **/
 state_machine_t* fsm_new(fsm_state_t *startState);
 /** Updates the instance of the Finite State Machine **/

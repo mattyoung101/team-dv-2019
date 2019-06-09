@@ -17,6 +17,7 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
 - .vscode: VSCode settings, mainly spellchecking. In order to create `c_cpp_properties.json` for the C/C++ extension (which is not synced on Git), please see `docs/c_properties_template.txt`.
 - components/
     - eMD: contains the Embedded Motion Driver, which is no longer used. All InvenSense files in this directory are licensed under their own license, the rest (e.g. simple_imu.*) are under the main repo's license.
+    - led_strip: ESP32 Addressable LED strip library: [https://github.com/Lucas-Bruder/ESP32_LED_STRIP](https://github.com/Lucas-Bruder/ESP32_LED_STRIP)
     - mpl: InvenSense Motion Processing Library, no longer used.
     - vl53l0x: ST's VL53L0X LRF driver and docs. We use Kyle Hendrick's [ESP32 port](https://github.com/kylehendricks/esp32-vl53l0x).
     - nanopb: A C library for encoding/decoding ProtoBuf data
@@ -37,3 +38,4 @@ _At some point, the code may be re-licensed under the BSD 4-Clause or MPL._
 - DG_dynarr: Public Domain
 - HandmadeMath: Public Domain
 - nanopb: zlib license
+- ESP32 LED_STRIP: Apache 2

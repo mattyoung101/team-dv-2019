@@ -39,6 +39,7 @@
 #endif
 
 static uint8_t mode = AUTOMODE_ILLEGAL;
+state_machine_t *stateMachine = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
@@ -55,13 +56,13 @@ void master_task(void *pvParameter){
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     if (robotId == 0){
-        // comms_bt_init_master();
+        comms_bt_init_master();
     } else {
-        // comms_bt_init_slave();
+        comms_bt_init_slave();
     }
 
     // Initialise FSM
-    state_machine_t *fsm = fsm_new(&stateDefenceIdle);
+    stateMachine = fsm_new(&stateAttackPursue);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -130,7 +131,7 @@ void master_task(void *pvParameter){
         }
 
         // update the actual FSM
-        fsm_update(fsm);
+        fsm_update(stateMachine);
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
         // print_ball_data(&robotState);
         // run motors
@@ -188,17 +189,8 @@ void slave_task(void *pvParameter){
         // } else {
         //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
         // }
-
-        msg.heading = heading;
-        msg.lastAngle = 69.0f;
-        msg.lineAngle = 42.69420f;
-        msg.lineOver = true;
-        msg.lineSize = 1.234f;
-        msg.onLine = false;
-        
-        msg.tsopAngle = tsopAngle;
+        msg.tsopAngle = tsopAvgAngle;
         msg.tsopStrength = tsopStrength;
-        ESP_LOGD(TAG, "angle: %f, strength: %f, heading: %f", tsopAngle, tsopStrength, heading);
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
