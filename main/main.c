@@ -88,12 +88,35 @@ void master_task(void *pvParameter){
                 // ESP_LOGD(TAG, "Values of SensorUpdate: heading: %f, ball angle: %f, ball strength: %f",
                 // lastSensorUpdate.heading, lastSensorUpdate.tsopAngle, lastSensorUpdate.tsopStrength);
 
-                robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
-                robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
-                                        + CAM_ANGLE_OFFSET;
-                // TODO make goal angle a float as well
-                robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : (int16_t) HOME_GOAL.length;
-                robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
+                if(robotState.outIsAttack){
+                    robotState.inGoalVisible = AWAY_GOAL.exists;
+                    robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
+                    robotState.inGoalDistance = AWAY_GOAL.distance;
+
+                    robotState.inOtherGoalVisible = HOME_GOAL.exists;
+                    robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
+                    robotState.inOtherGoalDistance = HOME_GOAL.distance;
+                } else {
+                    robotState.inOtherGoalVisible = AWAY_GOAL.exists;
+                    robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
+                    robotState.inOtherGoalDistance = AWAY_GOAL.distance;
+
+                    robotState.inGoalVisible = HOME_GOAL.exists;
+                    robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoalLength = (int16_t) HOME_GOAL.length;
+                    robotState.inGoalDistance = HOME_GOAL.distance;
+                }
+
+                // robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
+                // robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
+                //                         + CAM_ANGLE_OFFSET;
+                // // TODO make goal angle a float as well
+                // robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : (int16_t) HOME_GOAL.length;
+                // robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
+
                 robotState.inHeading = lastSensorUpdate.heading;
                 robotState.inX = robotX;
                 robotState.inY = robotY;
