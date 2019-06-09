@@ -50,7 +50,7 @@ void master_task(void *pvParameter){
     // Initialise comms and hardware
     motor_init();
     comms_i2c_init_slave();
-    // cam_init();
+    cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // read robot ID from NVS and init Bluetooth
@@ -63,10 +63,6 @@ void master_task(void *pvParameter){
 
     // Initialise FSM
     stateMachine = fsm_new(&stateAttackPursue);
-    // TODO just testing bullshit for FSM
-    fsm_change_state(stateMachine, &stateAttackPursue);
-
-    TASK_HALT; // prevent the rest of the task from running as we are testing Bluetooth
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
