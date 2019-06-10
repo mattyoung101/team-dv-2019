@@ -20,7 +20,7 @@
 #define ROBOT0_NAME "DeusVult_Robot0"
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
-#define PACKET_QUEUE_LENGTH 16
+#define PACKET_QUEUE_LENGTH 8
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
