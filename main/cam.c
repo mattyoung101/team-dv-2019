@@ -22,10 +22,10 @@ static void cam_receive_task(void *pvParameter){
         esp_task_wdt_reset();
 
         // wait slightly shorter than the watchdog timer for our bytes to come in
-        uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096));
+        uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096)); 
 
         if (buffer[0] == CAM_BEGIN_BYTE){
-            ESP_LOGW(TAG, "Found start byte %d", buffer[0]);
+            // ESP_LOGW(TAG, "Found start byte %d", buffer[0]);
             if (xSemaphoreTake(goalDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
                 // first byte is begin byte so skip that
                 goalBlue.exists = buffer[1];

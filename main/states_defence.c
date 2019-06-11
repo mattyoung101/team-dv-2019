@@ -89,8 +89,9 @@ void state_defence_defend_enter(state_machine_t *fsm){
 
     rs.outIsAttack = false;
 
-    goal_correction(&robotState); // Face the back of the robot to the goal
-    // imu_correction(&robotState);
+    // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
+    // else imu_correction(&robotState); // Face the back of the robot to the goal
+    goal_correction(&robotState);
 
     // check the timer conditions first, so that we don't get switched out of before we can check
     if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 30, IN_FRONT_MAX_ANGLE - 30) 
@@ -114,7 +115,6 @@ void state_defence_defend_enter(state_machine_t *fsm){
 
     if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
         orbit(&robotState); // Ball is behind, orbit so we don't score an own goal
-        imu_correction(&robotState);
     } else {
         float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle;
         float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 - 360 range

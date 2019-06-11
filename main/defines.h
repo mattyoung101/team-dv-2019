@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment ONE of these to identify the device as either a master or a slave.
-// #define NVS_WRITE_MASTER
+#define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
@@ -55,9 +55,9 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3
+#define FORWARD_KP 4
 #define FORWARD_KI 0
-#define FORWARD_KD 0
+#define FORWARD_KD 0.0001
 #define FORWARD_MAX 100
 
 #define SIDE_KP 3.2
@@ -65,11 +65,11 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 3.2
+#define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0.001
 #define INTERCEPT_MAX 100
-#define INTERCEPT_MIN 50
+#define INTERCEPT_MIN 40
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -119,8 +119,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 75
-#define CAM_OFFSET_Y 45
+#define CAM_OFFSET_X 89
+#define CAM_OFFSET_Y 51
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -266,7 +266,7 @@
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
-#define SURGE_TIMEOUT 1000 // ms, when the robot is in defend state and has the ball for this time, switch to surge
+#define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
 
 // RGB LEDs :)
 #define LED_PIN 13
