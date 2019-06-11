@@ -72,7 +72,7 @@ void master_task(void *pvParameter){
 
     while (true){
         // update cam
-        cam_calc();
+        // cam_calc();
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -133,9 +133,10 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(stateMachine);
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
-        // print_ball_data(&robotState);
+        // print_goal_data(&robotState);
+        // ESP_LOGI(TAG, "%d", goalYellow.angle);
         // run motors
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code
+        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
@@ -188,13 +189,14 @@ void slave_task(void *pvParameter){
         // } else {
         //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
         // }
+        msg.heading = heading;
         msg.tsopAngle = tsopAvgAngle;
         msg.tsopStrength = tsopStrength;
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
+            // ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
             ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
@@ -202,9 +204,11 @@ void slave_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
+
+        // printf("%f\n", tsopAvgAngle);
+        // ESP_LOGD(TAG, "%f", heading);
+        // vTaskDelay(pdMS_TO_TICKS(100));
     }
-    // printf("%f\n", tsopAvgAngle);
-    // vTaskDelay(pdMS_TO_TICKS(100));
 }
 
 void motor_test_task(void *pvParameter){
