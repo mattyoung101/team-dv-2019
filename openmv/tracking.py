@@ -6,7 +6,7 @@ import ucollections
 # Serial out format:
 # [42, bfound, bx, by, yfound, yx, yy, 0x0A] (6 bytes not including 0x0A)
 
-thresholds = [(32, 54, -5, 22, 22, 65)]  # yellow
+thresholds = [(28, 69, -18, 28, 23, 62)]  # yellow
              #(36, 52, -24, 4, -51, -11)] # blue
              #(46, 76, 27, 77, 9, 62)]    # orange
 
@@ -36,7 +36,7 @@ sensor.skip_frames(time=500)
 sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
-sensor.skip_frames(time = 1000)
+sensor.skip_frames(time=1000)
 #sensor.set_windowing((0, 0, 95, 95))
 
 # === GAIN ===
@@ -49,7 +49,7 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-6.02073, -6.02073, -1.557143))
+rgb_gain_db=(-6.02073, -5.368132, 1.022225))
 
 sensor.set_brightness(-3)
 sensor.set_contrast(3)

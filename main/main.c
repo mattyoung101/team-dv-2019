@@ -62,7 +62,7 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    stateMachine = fsm_new(&stateAttackPursue);
+    stateMachine = fsm_new(&stateDefenceDefend);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");

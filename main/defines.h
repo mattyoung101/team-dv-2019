@@ -55,9 +55,9 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 8
+#define FORWARD_KP 3
 #define FORWARD_KI 0
-#define FORWARD_KD 0.01
+#define FORWARD_KD 0
 #define FORWARD_MAX 100
 
 #define SIDE_KP 3.2
@@ -65,11 +65,11 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 4
+#define INTERCEPT_KP 3.2
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.01
+#define INTERCEPT_KD 0.001
 #define INTERCEPT_MAX 100
-#define INTERCEPT_MIN 30
+#define INTERCEPT_MIN 50
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -261,11 +261,12 @@
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
 #define SURGE_DISTANCE 40
-#define SURGE_STRENGTH 155
+#define SURGE_STRENGTH 140
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
+#define SURGE_TIMEOUT 1000 // ms, when the robot is in defend state and has the ball for this time, switch to surge
 
 // RGB LEDs :)
 #define LED_PIN 13

@@ -1,1 +1,3 @@
 espcoredump.py -p COM11 -b 921600 info_corefile C:/Users/25070/esp/deus_vult/build/app-template.elf
+
+espcoredump.py -p COM34 -b 921600 info_corefile C:/Users/20924/Documents/GitHub/deus-vult-esp32idf/build/app-template.elf
