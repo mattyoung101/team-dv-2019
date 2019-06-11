@@ -1,7 +1,7 @@
 #include "comms_bluetooth.h"
 
-// contains the logic which handles Bluetooth
-// TODO can these actually both be the same thing? we don't really have the concept of the master or slave
+// task which runs when a Bluetooth connection is established.
+// manages sending and receiving data as well as logic
 
 void comms_bt_logic_task(void *pvParameter){
     static const char *TAG = "BTManager";
@@ -12,9 +12,7 @@ void comms_bt_logic_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
-        //////////////////////
-        // SEND PACKET      //
-        //////////////////////
+        //////////////////////// SEND PACKET //////////////////////
         memset(buf, 0, PROTOBUF_SIZE);
 
         BTProvide msg = BTProvide_init_zero;
@@ -33,16 +31,12 @@ void comms_bt_logic_task(void *pvParameter){
             ESP_LOGE(TAG, "Error encoding Protobuf stream: %s", PB_GET_ERROR(&stream));
         }
 
-        /////////////////////////
-        // RECEIVE PACKET      //
-        ////////////////////////
+        //////////////////////// RECEIVE PACKET //////////////////////
         if (xQueueReceive(packetQueue, &msg, pdMS_TO_TICKS(15))){
             ESP_LOGD(TAG, "Received packet");
             ESP_LOGD(TAG, "Stuff in packet, state: %s, robotX: %f, robotY: %f", msg.fsmState, msg.robotX, msg.robotY);
         }
 
         esp_task_wdt_reset();
-
-        vTaskDelay(pdMS_TO_TICKS(15));
     }
 }
