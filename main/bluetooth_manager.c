@@ -14,22 +14,21 @@ void comms_bt_logic_task(void *pvParameter){
     esp_task_wdt_add(NULL);
 
     while (true){
+        //////////////////////// RECEIVE PACKET //////////////////////
         BTProvide recvMsg = BTProvide_init_zero;
 
-        //////////////////////// RECEIVE PACKET //////////////////////
-        if (xQueueReceive(packetQueue, &recvMsg, pdMS_TO_TICKS(15))){
-            ESP_LOGD(TAG, "Received packet");
-            ESP_LOGD(TAG, "Stuff in packet, state: %s, robotX: %f, robotY: %f", recvMsg.fsmState, recvMsg.robotX, 
-            recvMsg.robotY);
+        if (xQueueReceive(packetQueue, &recvMsg, pdMS_TO_TICKS(5))){
+            ESP_LOGD(TAG, "Received BT packet: state: %s, robotX: %f, robotY: %f, switch ok: %s", recvMsg.fsmState, recvMsg.robotX, 
+            recvMsg.robotY, recvMsg.switchOk ? "yes" : "no");
         }
 
         // decide if we should switch or not
         if (recvMsg.switchOk){
-            ESP_LOGI(TAG, "Other robot is willing to switch.");
+            ESP_LOGI(TAG, "Other robot is willing to switch");
             wasSwitchOk = true;
 
             if (robotState.outSwitchOk){
-                ESP_LOGI(TAG, "Switching NOW!");
+                ESP_LOGI(TAG, "I'm also willing to switch: switching NOW!");
                 esp_spp_write(handle, 6, switch_buffer);
                 // TODO do actual switch FSM bullshit whatever the fuck here
                 
@@ -37,6 +36,7 @@ void comms_bt_logic_task(void *pvParameter){
                 continue;
             }
         } else if (wasSwitchOk){
+            // if the other robot is not willing to switch, but was previously willing to switch
             ESP_LOGI(TAG, "Other robot is NO LONGER willing to switch.");
             wasSwitchOk = false;
         }
@@ -44,15 +44,15 @@ void comms_bt_logic_task(void *pvParameter){
         //////////////////////// SEND PACKET //////////////////////
         memset(buf, 0, PROTOBUF_SIZE);
 
-        BTProvide msg = BTProvide_init_zero;
-        msg.onLine = robotState.inOnLine;
-        strcpy(msg.fsmState, stateMachine->currentState->name);
-        msg.robotX = robotState.inX;
-        msg.robotY = robotState.inY;
-        msg.switchOk = robotState.outSwitchOk;
+        BTProvide sendMsg = BTProvide_init_zero;
+        sendMsg.onLine = robotState.inOnLine;
+        strcpy(sendMsg.fsmState, stateMachine->currentState->name);
+        sendMsg.robotX = robotState.inX;
+        sendMsg.robotY = robotState.inY;
+        sendMsg.switchOk = robotState.outSwitchOk;
 
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
-        if (pb_encode(&stream, BTProvide_fields, &msg)){
+        if (pb_encode(&stream, BTProvide_fields, &sendMsg)){
             ESP_LOGD(TAG, "Sending %d bytes", stream.bytes_written);
             // should probably check congestion status before write, but we don't have access to that here
             esp_spp_write(handle, stream.bytes_written, buf);

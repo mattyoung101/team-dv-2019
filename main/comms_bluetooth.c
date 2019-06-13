@@ -33,17 +33,18 @@ static void bt_gap_restart_disc(void){
 
 /** decode data and push to packet queue */
 static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
-    if (memcmp(data, switch_buffer, size)){
+    // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
+    if (memcmp(data, switch_buffer, size) == 0){
         ESP_LOGI(TAG, "Switch request received: switching NOW!");
         // TODO do the actual switch here
         return;
     }
 
+    // otherwise, decode the message as a normal protobuf buffer
     BTProvide msg = BTProvide_init_zero;
     pb_istream_t stream = pb_istream_from_buffer(data, size);
 
     if (pb_decode(&stream, BTProvide_fields, &msg)){
-        ESP_LOGD(TAG, "Decoded protobuf msg successfully");
         xQueueSendToBack(packetQueue, &msg, pdMS_TO_TICKS(250));
     } else {
         ESP_LOGE(TAG, "Protobuf decode error: %s", PB_GET_ERROR(&stream));
