@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment ONE of these to identify the device as either a master or a slave.
-#define NVS_WRITE_MASTER
+// #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
@@ -208,7 +208,8 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION -30 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION 0 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_SCALING true
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -221,7 +222,7 @@
 
 // IMU
 #define IMU_CALIBRATION_COUNT 100
-#define IMU_CALIBRATION_TIME 50
+#define IMU_CALIBRATION_TIME 15
 #define IMU_THRESHOLD 1000
 #define IMU_MULTIPLIER 100.0f
 
