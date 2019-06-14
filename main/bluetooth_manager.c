@@ -30,8 +30,7 @@ void comms_bt_logic_task(void *pvParameter){
             if (robotState.outSwitchOk){
                 ESP_LOGI(TAG, "I'm also willing to switch: switching NOW!");
                 esp_spp_write(handle, 6, switch_buffer);
-                // TODO do actual switch FSM bullshit whatever the fuck here
-                
+                fsm_change_state(stateMachine, &stateDefenceIdle);
                 esp_task_wdt_reset();
                 continue;
             }

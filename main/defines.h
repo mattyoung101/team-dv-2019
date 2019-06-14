@@ -2,7 +2,7 @@
 #include "esp_log.h"
 
 // Uncomment ONE of these to identify the device as either a master or a slave.
-#define NVS_WRITE_MASTER
+// #define NVS_WRITE_MASTER
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
@@ -35,6 +35,7 @@
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
 #define I2C_BUF_SIZE 128 // size of I2C buffer
 #define MSG_SENSORUPDATE_ID 0 // should probably make these an enum
+#define MSG_BTPROVIDE_ID 1
 
 // Music
 #define MUSIC_BPM 100
@@ -104,14 +105,6 @@
 #define AUTOMODE_ILLEGAL 254
 #define AUTOMODE_SLAVE 0
 #define AUTOMODE_MASTER 1
-
-// WiFi
-#define WIFI_SSID "DVRobotLink"
-#define WIFI_PASS "ClapInts123"
-#define WIFI_MAXCON 3 // 1 for other robot, 2 for websockets 
-#define SOCK_ADDR "192.168.0.165"
-#define SOCK_PORT 12323
-#define WS_PORT 14323
 
 // Camera
 #define CAM_DATA_LEN 8
@@ -219,6 +212,9 @@
 #define TSOP_MUX_EN 27
 #define TSOP_MUX_WR 26
 
+// individual TSOP calibration for each sensor
+extern float tsopScalars[TSOP_NUM];
+
 // IMU
 #define IMU_CALIBRATION_COUNT 100
 #define IMU_CALIBRATION_TIME 50
@@ -272,3 +268,5 @@
 #define LED_PIN 13
 #define LED_NUM 12
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
+
+void defines_init(uint8_t robotId);

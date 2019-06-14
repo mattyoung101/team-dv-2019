@@ -36,7 +36,7 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
     if (memcmp(data, switch_buffer, size) == 0){
         ESP_LOGI(TAG, "Switch request received: switching NOW!");
-        // TODO do the actual switch here
+        fsm_change_state(stateMachine, &stateDefenceIdle);
         return;
     }
 
