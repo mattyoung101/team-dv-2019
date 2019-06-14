@@ -6,12 +6,12 @@ static const char *TAGM = "CommsBT_M";
 static const char *TAGS = "CommsBT_S";
 static const char *TAG = "CommsBT";
 
-static TaskHandle_t masterCtrlHandle = NULL;
-static TaskHandle_t slaveCtrlHandle = NULL;
+static TaskHandle_t logicTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
+static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
 /** Initialises Bluetooth stack **/
-static void bt_init(){
+static void bt_init(void){
     ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
 
     esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
@@ -25,7 +25,7 @@ static void bt_init(){
 }
 
 /** restart GAP discovery **/
-static void bt_gap_restart_disc(){
+static void bt_gap_restart_disc(void){
     esp_bt_gap_cancel_discovery();
     esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
     ESP_LOGI(TAG, "Restarting GAP discovery");
@@ -33,15 +33,28 @@ static void bt_gap_restart_disc(){
 
 /** decode data and push to packet queue */
 static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
+    // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
+    if (memcmp(data, switch_buffer, size) == 0){
+        ESP_LOGI(TAG, "Switch request received: switching NOW!");
+        // TODO do the actual switch here
+        return;
+    }
+
+    // otherwise, decode the message as a normal protobuf buffer
     BTProvide msg = BTProvide_init_zero;
     pb_istream_t stream = pb_istream_from_buffer(data, size);
 
     if (pb_decode(&stream, BTProvide_fields, &msg)){
-        ESP_LOGD(TAG, "Decoded protobuf msg successfully");
         xQueueSendToBack(packetQueue, &msg, pdMS_TO_TICKS(250));
     } else {
         ESP_LOGE(TAG, "Protobuf decode error: %s", PB_GET_ERROR(&stream));
     }
+}
+
+/** starts the logic task */
+static void bt_start_logic_task(esp_spp_cb_param_t *param){
+    xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 2, logicTaskHandle);
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
@@ -113,8 +126,8 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting controller task");
-            if (masterCtrlHandle != NULL){
-                vTaskDelete(masterCtrlHandle);
+            if (logicTaskHandle != NULL){
+                vTaskDelete(logicTaskHandle);
             }
             break;
         case ESP_SPP_START_EVT:
@@ -128,12 +141,11 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGM, "SPP congestion status changed, now: %d", param->cong.cong);
+            ESP_LOGI(TAGM, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP server opened, starting controller task");
-            xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->srv_open.handle,
-                         configMAX_PRIORITIES - 2, masterCtrlHandle);
+            bt_start_logic_task(param);
             break;
         default:
             // ESP_LOGI(TAGM, "spp_cb event: %d", event);
@@ -205,7 +217,7 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                 ESP_LOGI(TAGS, "Authentication success: %s", param->auth_cmpl.device_name);
                 esp_log_buffer_hex(TAGS, param->auth_cmpl.bda, ESP_BD_ADDR_LEN);
             } else {
-                ESP_LOGE(TAGS, "Authentication failed, status:% d", param->auth_cmpl.stat);
+                ESP_LOGE(TAGS, "Authentication failed, status: %d", param->auth_cmpl.stat);
             }
             break;
         }
@@ -262,13 +274,12 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
-            xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->open.handle, 
-                        configMAX_PRIORITIES - 2, slaveCtrlHandle);
+            bt_start_logic_task(param);
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting controller task");
-            if (slaveCtrlHandle != NULL){
-                vTaskDelete(slaveCtrlHandle);
+            if (logicTaskHandle != NULL){
+                vTaskDelete(logicTaskHandle);
             }
             bt_gap_restart_disc();
             break;

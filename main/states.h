@@ -42,6 +42,7 @@ typedef struct {
     int16_t outOrientation;
     bool outShouldBrake;
     bool outIsAttack;
+    bool outSwitchOk;
 } robot_state_t;
 
 typedef struct {
