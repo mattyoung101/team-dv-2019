@@ -133,7 +133,7 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(stateMachine);
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
-        // print_ball_data(&robotState);
+        print_position_data(&robotState);
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code
         // motor_vec_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Rob's motor code
