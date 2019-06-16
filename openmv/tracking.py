@@ -115,7 +115,6 @@ while(True):
 
     # Serial out preparation
     out.clear()
-
     out += [0xB]
 
     if biggestBlue == None:
@@ -129,9 +128,6 @@ while(True):
         out += [True, int(biggestYellow.cx()), int(biggestYellow.cy())]
 
     out += [0xE]
-
-    # junk values for UART testing
-    #out += [0xB, 64, 18, 1, 20, 21, 0xE]
 
     #pyb.LED(2).on()
     for byte in out:

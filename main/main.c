@@ -55,7 +55,7 @@ void master_task(void *pvParameter){
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
-    defines_init(&robotId);
+    defines_init(robotId);
     if (robotId == 0){
         comms_bt_init_master();
     } else {
@@ -74,6 +74,7 @@ void master_task(void *pvParameter){
     while (true){
         // update cam
         cam_calc();
+        continue;
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -270,8 +271,8 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
-        // xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-        xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+        xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  

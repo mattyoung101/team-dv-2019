@@ -20,9 +20,11 @@ typedef struct {
     bool exists;
     int16_t x;
     int16_t y;
-    int16_t angle;
+    float angle;
+    /** pixel length, raw from camera */
     float length;
-    int16_t distance;
+    /** real distance (cm) */
+    float distance;
 } cam_goal;
 
 extern SemaphoreHandle_t goalDataSem;
@@ -32,6 +34,8 @@ extern cam_goal goalYellow;
 extern int16_t robotX;
 extern int16_t robotY;
 
+/** initialises the camera receive task */
 void cam_init(void);
 void cam_update(void);
+/** runs calculations on raw camera data */
 void cam_calc(void);

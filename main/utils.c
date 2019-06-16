@@ -289,7 +289,7 @@ void print_line_data(robot_state_t *robotState){
 
 void print_goal_data(){
     static const char *TAG = "GoalDebug";
-    ESP_LOGD(TAG, "Yellow - Angle: %d, Length: %f, Distance: %d | Blue - Angle: %d, Length: %f, Distance: %d", goalYellow.angle, 
+    ESP_LOGD(TAG, "Yellow - Angle: %f, Length: %f, Distance: %f | Blue - Angle: %f, Length: %f, Distance: %f", goalYellow.angle, 
     goalYellow.length, goalYellow.distance, goalBlue.angle, goalBlue.length, goalBlue.distance);
 }
 
