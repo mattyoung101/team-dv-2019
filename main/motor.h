@@ -15,8 +15,6 @@
 void motor_init(void);
 /** Calculates PWM values for each motor **/
 void motor_calc(int16_t direction, int16_t orientation, float speed);
-/** Rob's motor calculations **/
-void motor_vec_calc(int16_t direction, int16_t orientation, float speed);
 /** Handles writing to the motor controller **/
 void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, bool reversed, bool brake);
 /** Writes to each controller to move all motors **/

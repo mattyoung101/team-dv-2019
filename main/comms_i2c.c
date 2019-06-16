@@ -151,7 +151,7 @@ void comms_i2c_init_master(i2c_port_t port){
         .sda_pullup_en = GPIO_PULLUP_ENABLE,
         .scl_io_num = 22,
         .scl_pullup_en = GPIO_PULLUP_ENABLE,
-        // 0.4 MHz, max is 1 MHz, unit is Hz
+        // 0.8 MHz, max is 1 MHz, unit is Hz
         // NOTE: 1MHz tends to break the i2c packets - use with caution!!
         .master.clk_speed = 800000,
     };

@@ -55,6 +55,7 @@ void master_task(void *pvParameter){
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
+    defines_init(robotId);
     if (robotId == 0){
         comms_bt_init_master();
     } else {
@@ -62,7 +63,7 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    stateMachine = fsm_new(&stateAttackPursue);
+    stateMachine = fsm_new(&stateDefenceDefend);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -73,6 +74,7 @@ void master_task(void *pvParameter){
     while (true){
         // update cam
         cam_calc();
+        continue;
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -83,13 +85,11 @@ void master_task(void *pvParameter){
                 robotState.outOrientation = 0;
                 robotState.outDirection = 0;
 
-                // update
+                // update FSM values
                 robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
                 robotState.inBallStrength = lastSensorUpdate.tsopStrength;
-                // ESP_LOGD(TAG, "Values of SensorUpdate: heading: %f, ball angle: %f, ball strength: %f",
-                // lastSensorUpdate.heading, lastSensorUpdate.tsopAngle, lastSensorUpdate.tsopStrength);
-
-                if(robotState.outIsAttack){
+                // TODO make goal stuff floats as well
+                if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
                     robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
                     robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
@@ -110,14 +110,6 @@ void master_task(void *pvParameter){
                     robotState.inGoalLength = (int16_t) HOME_GOAL.length;
                     robotState.inGoalDistance = HOME_GOAL.distance;
                 }
-
-                // robotState.inGoalVisible = robotState.outIsAttack ? AWAY_GOAL.exists : HOME_GOAL.exists;
-                // robotState.inGoalAngle = robotState.outIsAttack ? AWAY_GOAL.angle + CAM_ANGLE_OFFSET : HOME_GOAL.angle 
-                //                         + CAM_ANGLE_OFFSET;
-                // // TODO make goal angle a float as well
-                // robotState.inGoalLength = robotState.outIsAttack ? (int16_t) AWAY_GOAL.length : (int16_t) HOME_GOAL.length;
-                // robotState.inGoalDistance = robotState.outIsAttack ? AWAY_GOAL.distance : HOME_GOAL.distance;
-
                 robotState.inHeading = lastSensorUpdate.heading;
                 robotState.inX = robotX;
                 robotState.inY = robotY;
@@ -135,8 +127,7 @@ void master_task(void *pvParameter){
         // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
         print_position_data(&robotState);
         // run motors
-        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Our silly old motor code
-        // motor_vec_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed); // Rob's motor code
+        motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
@@ -178,7 +169,6 @@ void slave_task(void *pvParameter){
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
         
         // set the message's values
-        
         // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
         //     msg.lastAngle = nanoData.lastAngle;
         //     msg.lineAngle = nanoData.lineAngle;
@@ -189,23 +179,26 @@ void slave_task(void *pvParameter){
         // } else {
         //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
         // }
-        msg.tsopAngle = tsopAvgAngle;
+        msg.heading = heading;
+        msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
-            ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
+            // ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
+            // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
 
         esp_task_wdt_reset();
+
+        // printf("%f\n", tsopAngle);
+        // ESP_LOGD(TAG, "%f", heading);
+        // vTaskDelay(pdMS_TO_TICKS(100));
     }
-    // printf("%f\n", tsopAvgAngle);
-    // vTaskDelay(pdMS_TO_TICKS(100));
 }
 
 void motor_test_task(void *pvParameter){

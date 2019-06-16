@@ -20,7 +20,7 @@
 #define ROBOT0_NAME "DeusVult_Robot0"
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
-#define PACKET_QUEUE_LENGTH 16
+#define PACKET_QUEUE_LENGTH 8
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -35,6 +35,7 @@
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
 #define I2C_BUF_SIZE 128 // size of I2C buffer
 #define MSG_SENSORUPDATE_ID 0 // should probably make these an enum
+#define MSG_BTPROVIDE_ID 1
 
 // Music
 #define MUSIC_BPM 100
@@ -55,9 +56,9 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 8
+#define FORWARD_KP 4
 #define FORWARD_KI 0
-#define FORWARD_KD 0.01
+#define FORWARD_KD 0.0001
 #define FORWARD_MAX 100
 
 #define SIDE_KP 3.2
@@ -67,9 +68,9 @@
 
 #define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.01
+#define INTERCEPT_KD 0.001
 #define INTERCEPT_MAX 100
-#define INTERCEPT_MIN 30
+#define INTERCEPT_MIN 40
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -105,22 +106,14 @@
 #define AUTOMODE_SLAVE 0
 #define AUTOMODE_MASTER 1
 
-// WiFi
-#define WIFI_SSID "DVRobotLink"
-#define WIFI_PASS "ClapInts123"
-#define WIFI_MAXCON 3 // 1 for other robot, 2 for websockets 
-#define SOCK_ADDR "192.168.0.165"
-#define SOCK_PORT 12323
-#define WS_PORT 14323
-
 // Camera
 #define CAM_DATA_LEN 8
 #define CAM_BEGIN_BYTE 0xB
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 75
-#define CAM_OFFSET_Y 45
+#define CAM_OFFSET_X 89
+#define CAM_OFFSET_Y 51
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -208,7 +201,8 @@
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION -30 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_CORRECTION 0 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+#define TSOP_SCALING true
 
 #define TSOP_MUX_S0 19
 #define TSOP_MUX_S1 18
@@ -219,9 +213,12 @@
 #define TSOP_MUX_EN 27
 #define TSOP_MUX_WR 26
 
+// individual TSOP calibration for each sensor
+extern float tsopScalars[TSOP_NUM];
+
 // IMU
 #define IMU_CALIBRATION_COUNT 100
-#define IMU_CALIBRATION_TIME 50
+#define IMU_CALIBRATION_TIME 15
 #define IMU_THRESHOLD 1000
 #define IMU_MULTIPLIER 100.0f
 
@@ -261,13 +258,16 @@
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
 #define SURGE_DISTANCE 40
-#define SURGE_STRENGTH 155
+#define SURGE_STRENGTH 140
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
+#define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
 
 // RGB LEDs :)
 #define LED_PIN 13
 #define LED_NUM 12
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
+
+void defines_init(uint8_t robotId);

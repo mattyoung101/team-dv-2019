@@ -21,24 +21,6 @@ static float accelBegin = 0.0f;
 // shortcut lol
 #define rs robotState
 
-//////// UTILS CODE //////////
-/** start a timer if its not already started and has been instantiated **/
-static void timer_start(dv_timer_t *timer){
-    if (timer->timer != NULL && !timer->running){
-        xTimerReset(timer->timer, pdMS_TO_TICKS(10));
-        xTimerStart(timer->timer, pdMS_TO_TICKS(10));
-        timer->running = false;
-    }
-}
-
-/** stops a timer if it has been instantiated **/
-static void timer_stop(dv_timer_t *timer){
-    if (timer->timer != NULL){
-        xTimerStop(timer->timer, pdMS_TO_TICKS(10));
-        timer->running = false;
-    }
-}
-
 /** callback that goes off after idle timeout **/
 static void idle_timer_callback(TimerHandle_t timer){
     static const char *TAG = "IdleTimerCallback";
@@ -48,6 +30,7 @@ static void idle_timer_callback(TimerHandle_t timer){
     // as it turns out, the timer ID is passed as a void pointer (meaning it can be any type, though in this context
     // it should probably be an integer) - so we pass the state_machine_t as the timer's ID
     state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
+    dv_timer_stop(&idleTimer);
     FSM_CHANGE_STATE(Idle);
 }
 
@@ -56,6 +39,7 @@ static void dribble_timer_callback(TimerHandle_t timer){
     ESP_LOGI(TAG, "Dribble timer has gone off, switch to dribble state");
 
     state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
+    dv_timer_stop(&dribbleTimer);
     FSM_CHANGE_STATE(Dribble);
 }
 
@@ -77,7 +61,7 @@ static void create_timers_if_needed(state_machine_t *fsm){
 static void timer_check(){
     // if the ball is visible, stop the idle timer
     if (robotState.inBallStrength > 0.0f){
-        timer_stop(&idleTimer);
+        dv_timer_stop(&idleTimer);
     }
 }
 
@@ -118,7 +102,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     // Ball not visible (brake) and ball too close (switch to orbit)
     if (rs.inBallStrength <= 0.0f){
         LOG_ONCE(TAG, "Ball is not visible, braking");
-        timer_start(&idleTimer);
+        dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
     } else if (rs.inBallStrength >= ORBIT_DIST){
         LOG_ONCE(TAG, "Ball close enough, switching to orbit, strength: %f, orbit dist thresh: %d", rs.inBallStrength,
@@ -142,25 +126,28 @@ void state_attack_orbit_update(state_machine_t *fsm){
     else imu_correction(&robotState);
     timer_check();
 
+    // fuck
+    if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
+        LOG_ONCE(TAG, "Ball and angle in correct spot, starting dribble timer, strength: %f, angle: %f, orbit dist thresh: %d"
+                " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
+                IN_FRONT_MAX_ANGLE);
+        dv_timer_start(&dribbleTimer);
+        accelBegin = rs.outSpeed;
+    } else {
+        dv_timer_stop(&dribbleTimer);
+    }
+
     // Check criteria:
     // Ball too far away, Ball too close and angle good (go to dribble), Ball too far (revert)
     if (rs.inBallStrength <= 0.0f){
         LOG_ONCE(TAG, "Ball not visible, switching to idle, strength: %f", robotState.inBallStrength);
-        timer_start(&idleTimer);
-        timer_stop(&dribbleTimer);
+        dv_timer_start(&idleTimer);
         FSM_CHANGE_STATE(Idle);
     } else if (rs.inBallStrength < ORBIT_DIST){
         LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, orbit dist thresh: %d", robotState.inBallStrength,
                  ORBIT_DIST);
-        timer_stop(&dribbleTimer);
         FSM_REVERT;
-    } else if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
-        LOG_ONCE(TAG, "Ball and angle in correct spot, starting dribble timer, strength: %f, angle: %f, orbit dist thresh: %d"
-                " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
-                IN_FRONT_MAX_ANGLE);
-        timer_start(&dribbleTimer);
-        accelBegin = rs.outSpeed;
-    }
+    } 
 
     orbit(&robotState);
 }
@@ -177,7 +164,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     // Ball not visible, ball not in front, ball too far away, not facing goal
     if (robotState.inBallStrength <= 0.0f){
         LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallAngle);
-        timer_start(&idleTimer);
+        dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 20, IN_FRONT_MAX_ANGLE - 20)){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,

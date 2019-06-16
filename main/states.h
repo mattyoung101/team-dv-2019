@@ -42,12 +42,17 @@ typedef struct {
     int16_t outOrientation;
     bool outShouldBrake;
     bool outIsAttack;
+    bool outSwitchOk;
 } robot_state_t;
 
 typedef struct {
     TimerHandle_t timer;
     bool running;
 } dv_timer_t;
+
+// Utils code
+void dv_timer_start(dv_timer_t *timer);
+void dv_timer_stop(dv_timer_t *timer);
 
 extern SemaphoreHandle_t robotStateSem;
 extern robot_state_t robotState;
@@ -95,6 +100,7 @@ void state_defence_idle_update(state_machine_t *fsm);
 extern fsm_state_t stateDefenceIdle;
 
 // Defend state: positions between ball and centre of goal
+void state_defence_defend_enter(state_machine_t *fsm);
 void state_defence_defend_update(state_machine_t *fsm);
 extern fsm_state_t stateDefenceDefend;
 

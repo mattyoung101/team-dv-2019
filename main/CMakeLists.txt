@@ -2,7 +2,7 @@
 set(COMPONENT_REQUIRES )
 set(COMPONENT_PRIV_REQUIRES "nanopb")
 
-set(COMPONENT_SRCS  
+set(COMPONENT_SRCS "defines.c"
                    "main.c"
                    "utils.c"
                    "comms_i2c.c"

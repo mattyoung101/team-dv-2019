@@ -47,9 +47,9 @@ extern pid_config_t forwardPID;
         return 1; \
     } } while (0);
 /** Starts counting on the performance timer. The variable "pfBegin" must be undefined **/
-#define PERF_TIMER_START int64_t pfBegin = esp_timer_get_time();
+#define PERF_dv_timer_start int64_t pfBegin = esp_timer_get_time();
 /** Stops the performance timer and logs to UART. **/
-#define PERF_TIMER_STOP ESP_LOGD("PerfTimer", "%lld us", (esp_timer_get_time() - pfBegin));
+#define PERF_dv_timer_stop ESP_LOGD("PerfTimer", "%lld us", (esp_timer_get_time() - pfBegin));
 /** Cosine in degrees of x in degrees **/
 #define cosfd(x) (cosf(x * DEG_RAD) * RAD_DEG)
 /** Sin in degrees of x in degrees **/

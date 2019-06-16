@@ -4,9 +4,9 @@ import ucollections
 
 # OpenMV object tracking, by Matt Young
 # Serial out format:
-# [42, bfound, bx, by, yfound, yx, yy, 0x0A] (6 bytes not including 0x0A)
+# [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(32, 54, -5, 22, 22, 65)]  # yellow
+thresholds = [(28, 69, -18, 28, 23, 62)]  # yellow
              #(36, 52, -24, 4, -51, -11)] # blue
              #(46, 76, 27, 77, 9, 62)]    # orange
 
@@ -36,7 +36,7 @@ sensor.skip_frames(time=500)
 sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
-sensor.skip_frames(time = 1000)
+sensor.skip_frames(time=500)
 #sensor.set_windowing((0, 0, 95, 95))
 
 # === GAIN ===
@@ -49,13 +49,13 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-6.02073, -6.02073, -1.557143))
+rgb_gain_db=(-6.438398, -6.02073, -0.634088))
 
 sensor.set_brightness(-3)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
-sensor.skip_frames(time=1000)
+sensor.skip_frames(time=500)
 
 # Pretty LED stuff :3
 pyb.LED(1).off()
@@ -115,7 +115,6 @@ while(True):
 
     # Serial out preparation
     out.clear()
-
     out += [0xB]
 
     if biggestBlue == None:
@@ -130,15 +129,12 @@ while(True):
 
     out += [0xE]
 
-    # junk values for UART testing
-    #out += [1, 64, 18, 1, 20, 21, 0xE]
-
     #pyb.LED(2).on()
     for byte in out:
         uart.writechar(byte)
     #pyb.LED(2).off()
 
     if debug:
-        img.draw_string(5, 5, "S " + "\n".join(str(x) for x in out))
+        img.draw_string(5, 5, "" + "\n".join(str(x) for x in out))
 
     print(clock.fps())

@@ -7,6 +7,7 @@ cam_goal goalBlue = {0};
 cam_goal goalYellow = {0};
 int16_t robotX = 0;
 int16_t robotY = 0;
+static float k = 92.5f; // distance of goal to centre in cm, measured on the field
 
 static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";
@@ -22,7 +23,7 @@ static void cam_receive_task(void *pvParameter){
         esp_task_wdt_reset();
 
         // wait slightly shorter than the watchdog timer for our bytes to come in
-        uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096));
+        uart_read_bytes(UART_NUM_2, buffer, CAM_BUF_SIZE, pdMS_TO_TICKS(4096)); 
 
         if (buffer[0] == CAM_BEGIN_BYTE){
             // ESP_LOGW(TAG, "Found start byte %d", buffer[0]);
@@ -72,44 +73,57 @@ void cam_init(void){
     ESP_LOGI(TAG, "Camera init OK");
 }
 
+/** 
+ * Converts from pixel distance to real distance in cm
+ * Model: f(x) = 3E-07x^4.8552
+ **/
+static inline float cam_pixel_to_cm(int16_t measurement){
+    return powf(3E-07, 4.8552);
+}
+
+/** calculates the position vector for a goal */
+static inline hmm_vec2 cam_goal_calc(float angle, float distance){
+    float theta = fmodf(90.0f - angle, 360.0f);
+    float r = distance;
+    return HMM_Vec2(-r * cosfd(theta), k + r * sinfd(theta));
+}
+
 void cam_calc(void){
-    goalBlue.angle = mod(450 - roundf(RAD_DEG * atan2f(goalBlue.y, goalBlue.x)), 360);
+    goalBlue.angle = floatMod(450 - roundf(RAD_DEG * atan2f(goalBlue.y, goalBlue.x)), 360.0f);
     goalBlue.length = sqrtf(sq(goalBlue.x) + sq(goalBlue.y));
 
-    goalYellow.angle = mod(450 - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360);
+    goalYellow.angle = floatMod(450 - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360.0f);
     goalYellow.length = sqrtf(sq(goalYellow.x) + sq(goalYellow.y));
 
-    // Convert length to mm
-    goalYellow.distance = 2090.94732 / (1 + 16915.5377 * powf(E, -0.1330901 * goalYellow.length));
-    goalBlue.distance = 2090.94732 / (1 + 16915.5377 * powf(E, -0.1330901 * goalBlue.length));
-
-    // y = 2090.94732 / (1 + 16915.5377 * powf(E, -0.1330901 * x))
+    goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
+    goalBlue.distance = cam_pixel_to_cm(goalBlue.distance);
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
         robotY = CAM_NO_VALUE;
     } else {
-        // Triangulate goal position
-        // First calculate the position of the robot, according to both goals
-        float blueY = goalBlue.length * sinf(goalBlue.angle) + (ENEMY_GOAL ? -HALFWAY_DISTANCE : HALFWAY_DISTANCE);
-        float blueX = goalBlue.length * cosf(goalBlue.angle);
+        hmm_vec2 yellowPos = cam_goal_calc(goalYellow.angle, goalYellow.distance);
+        hmm_vec2 bluePos = cam_goal_calc(goalBlue.angle, goalBlue.distance);
 
-        float yellowY = goalYellow.length * sinf(goalYellow.angle) + (ENEMY_GOAL ? HALFWAY_DISTANCE : -HALFWAY_DISTANCE);
-        float yellowX = goalYellow.length * cosf(goalYellow.angle);
-
-        // Now find the average position of the robot based on both goals
-        if (goalBlue.exists && !goalYellow.exists){
-            // only blue
-            robotX = blueX;
-            robotY = blueY;
-        } else if (goalYellow.exists && !goalBlue.exists){
-            // only yellow
-            robotX = yellowX;
-            robotY = yellowY;
+        if (goalYellow.exists && !goalBlue.exists){
+            // only yellow goal visible
+            robotX = yellowPos.X;
+            robotY = yellowPos.Y;
+        } else if (goalBlue.exists && !goalYellow.exists){
+            // only blue goal visible
+            robotX = bluePos.X;
+            robotY = bluePos.Y;
         } else {
-            // both
-            robotX = (blueX + yellowX) / 2.0f;
-            robotY = (blueY + yellowY) / 2.0f;
+            // both goals visible
+            if (goalYellow.distance < goalBlue.distance){
+                // yellow goal is closer, use it
+                robotX = yellowPos.X;
+                robotY = yellowPos.Y;
+            } else {
+                // blue goal is closer, use it
+                robotX = bluePos.X;
+                robotY = bluePos.Y;
+            }
         }
     }
 }
