@@ -49,7 +49,7 @@ void master_task(void *pvParameter){
 
     // Initialise comms and hardware
     motor_init();
-    comms_i2c_init_slave();
+    // comms_i2c_init_slave();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
@@ -69,7 +69,7 @@ void master_task(void *pvParameter){
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
 
-    esp_task_wdt_add(NULL);
+    // esp_task_wdt_add(NULL);
 
     while (true){
         // update cam
@@ -123,7 +123,7 @@ void master_task(void *pvParameter){
         }
 
         // update the actual FSM
-        fsm_update(stateMachine);
+        // fsm_update(stateMachine);
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);

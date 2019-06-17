@@ -68,7 +68,7 @@ void state_defence_idle_update(state_machine_t *fsm){
  // Defend
 static void surge_timer_callback(TimerHandle_t timer){
     static const char *TAG = "SurgeTimerCallback";
-    ESP_LOGI(TAG, "Surge timer has gone off, swithcing to surge state");
+    ESP_LOGI(TAG, "Surge timer has gone off, switching to surge state");
 
     state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
     dv_timer_stop(&surgeTimer);

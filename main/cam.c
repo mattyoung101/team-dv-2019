@@ -75,28 +75,31 @@ void cam_init(void){
 
 /** 
  * Converts from pixel distance to real distance in cm
- * Model: f(x) = 3E-07x^4.8552
- **/
-static inline float cam_pixel_to_cm(int16_t measurement){
-    return powf(3E-07, 4.8552);
+ * Model: f(x) = 0.3302e^0.1035x
+ */
+static inline float cam_pixel_to_cm(float measurement){
+    return 0.3302f * powf(E, 0.1035 * measurement);
 }
 
 /** calculates the position vector for a goal */
 static inline hmm_vec2 cam_goal_calc(float angle, float distance){
-    float theta = fmodf(90.0f - angle, 360.0f);
+    float theta = floatMod(90.0f - angle, 360.0f);
     float r = distance;
+    // ESP_LOGD(TAG, "theta: %f, r: %f", theta, r);
     return HMM_Vec2(-r * cosfd(theta), k + r * sinfd(theta));
 }
 
 void cam_calc(void){
-    goalBlue.angle = floatMod(450 - roundf(RAD_DEG * atan2f(goalBlue.y, goalBlue.x)), 360.0f);
+    goalBlue.angle = floatMod(450.0f - roundf(RAD_DEG * atan2f(goalBlue.y, goalBlue.x)), 360.0f);
     goalBlue.length = sqrtf(sq(goalBlue.x) + sq(goalBlue.y));
 
-    goalYellow.angle = floatMod(450 - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360.0f);
+    goalYellow.angle = floatMod(450.0f - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360.0f);
     goalYellow.length = sqrtf(sq(goalYellow.x) + sq(goalYellow.y));
 
     goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
-    goalBlue.distance = cam_pixel_to_cm(goalBlue.distance);
+    goalBlue.distance = cam_pixel_to_cm(goalBlue.length);
+
+    ESP_LOGD(TAG, "Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
@@ -109,21 +112,29 @@ void cam_calc(void){
             // only yellow goal visible
             robotX = yellowPos.X;
             robotY = yellowPos.Y;
+            // ESP_LOGD(TAG, "Only yellow");
         } else if (goalBlue.exists && !goalYellow.exists){
             // only blue goal visible
             robotX = bluePos.X;
             robotY = bluePos.Y;
+            ESP_LOGD(TAG, "Only blue");
         } else {
             // both goals visible
             if (goalYellow.distance < goalBlue.distance){
                 // yellow goal is closer, use it
                 robotX = yellowPos.X;
                 robotY = yellowPos.Y;
+                ESP_LOGD(TAG, "Both, selected yellow");
             } else {
                 // blue goal is closer, use it
                 robotX = bluePos.X;
                 robotY = bluePos.Y;
+                ESP_LOGD(TAG, "Both, selected blue");
             }
         }
     }
+
+    // ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
+    // puts("=============================");
+    vTaskDelay(pdMS_TO_TICKS(1000));
 }
