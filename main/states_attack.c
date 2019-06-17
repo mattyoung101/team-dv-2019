@@ -5,8 +5,6 @@
 robot_state_t robotState = {0};
 SemaphoreHandle_t robotStateSem = NULL;
 
-// TODO also just a note: can't every function in this file be static??? except for stateAttackXXX
-
 fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state_attack_idle_update, "AttackIdle"};
 fsm_state_t stateAttackPursue = {&state_attack_pursue_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
 fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &state_attack_orbit_update, "AttackOrbit"};

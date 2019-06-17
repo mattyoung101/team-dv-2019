@@ -214,7 +214,7 @@
 #define TSOP_MUX_WR 26
 
 // individual TSOP calibration for each sensor
-extern float tsopScalars[TSOP_NUM];
+extern float TSOP_TUNING[TSOP_NUM];
 
 // IMU
 #define IMU_CALIBRATION_COUNT 100

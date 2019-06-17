@@ -49,13 +49,14 @@ void master_task(void *pvParameter){
 
     // Initialise comms and hardware
     motor_init();
-    // comms_i2c_init_slave();
+    comms_i2c_init_slave();
     cam_init();
     ESP_LOGI(TAG, "Master hardware init OK");
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     defines_init(robotId);
+    ESP_LOGI(TAG, "Running as robot #%d", robotId);
     if (robotId == 0){
         comms_bt_init_master();
     } else {
@@ -74,7 +75,6 @@ void master_task(void *pvParameter){
     while (true){
         // update cam
         cam_calc();
-        continue;
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -143,6 +143,7 @@ void slave_task(void *pvParameter){
     i2c_scanner();
 
     // Initialise hardware
+    // TODO need to call defines_init here
     tsop_init();
     // rgb_led_init();
     simu_init();
@@ -184,16 +185,15 @@ void slave_task(void *pvParameter){
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            // ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
-            // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
-            vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
+            // wait so that the slave realises we're not sending any more data
+            vTaskDelay(pdMS_TO_TICKS(4)); 
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
 
         esp_task_wdt_reset();
 
-        // printf("%f\n", tsopAngle);
+        // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
         // ESP_LOGD(TAG, "%f", heading);
         // vTaskDelay(pdMS_TO_TICKS(100));
     }

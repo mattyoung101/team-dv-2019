@@ -78,14 +78,13 @@ void cam_init(void){
  * Model: f(x) = 0.3302e^0.1035x
  */
 static inline float cam_pixel_to_cm(float measurement){
-    return 0.3302f * powf(E, 0.1035 * measurement);
+    return 0.3302f * powf(E, 0.1035f * measurement);
 }
 
 /** calculates the position vector for a goal */
 static inline hmm_vec2 cam_goal_calc(float angle, float distance){
     float theta = floatMod(90.0f - angle, 360.0f);
     float r = distance;
-    // ESP_LOGD(TAG, "theta: %f, r: %f", theta, r);
     return HMM_Vec2(-r * cosfd(theta), k + r * sinfd(theta));
 }
 
@@ -99,7 +98,8 @@ void cam_calc(void){
     goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
     goalBlue.distance = cam_pixel_to_cm(goalBlue.length);
 
-    ESP_LOGD(TAG, "Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
+    ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
+    ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
@@ -112,7 +112,7 @@ void cam_calc(void){
             // only yellow goal visible
             robotX = yellowPos.X;
             robotY = yellowPos.Y;
-            // ESP_LOGD(TAG, "Only yellow");
+            ESP_LOGD(TAG, "Only yellow");
         } else if (goalBlue.exists && !goalYellow.exists){
             // only blue goal visible
             robotX = bluePos.X;
@@ -134,7 +134,7 @@ void cam_calc(void){
         }
     }
 
-    // ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
-    // puts("=============================");
+    ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
+    puts("=============================");
     vTaskDelay(pdMS_TO_TICKS(1000));
 }
