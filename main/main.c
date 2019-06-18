@@ -64,7 +64,7 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    stateMachine = fsm_new(&stateDefenceDefend);
+    stateMachine = fsm_new(&stateAttackPursue);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -123,8 +123,9 @@ void master_task(void *pvParameter){
         }
 
         // update the actual FSM
-        // fsm_update(stateMachine);
+        fsm_update(stateMachine);
         // run motors
+        robotState.outSpeed = 0;
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
@@ -137,13 +138,15 @@ void master_task(void *pvParameter){
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
+    uint8_t robotId = 69;
 
     // Initialise comms
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
 
     // Initialise hardware
-    // TODO need to call defines_init here
+    nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
+    defines_init(robotId);
     tsop_init();
     // rgb_led_init();
     simu_init();

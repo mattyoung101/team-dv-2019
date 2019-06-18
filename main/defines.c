@@ -17,6 +17,4 @@ void defines_init(uint8_t robotId){
                         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }
-
-    ESP_LOGD(TAG, "Just making sure it works: %f,%f,%f,%f", TSOP_TUNING[0], TSOP_TUNING[1], TSOP_TUNING[2], TSOP_TUNING[3]);
 }

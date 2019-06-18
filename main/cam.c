@@ -7,7 +7,7 @@ cam_goal goalBlue = {0};
 cam_goal goalYellow = {0};
 int16_t robotX = 0;
 int16_t robotY = 0;
-static float k = 92.5f; // distance of goal to centre in cm, measured on the field
+static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
 
 static void cam_receive_task(void *pvParameter){
     static const char *TAG = "CamReceiveTask";
@@ -44,11 +44,10 @@ static void cam_receive_task(void *pvParameter){
             }
         } else {
             ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, expected: 0x%X", buffer[0], CAM_BEGIN_BYTE);
-            uart_flush_input(UART_NUM_2);
         }
 
+        uart_flush_input(UART_NUM_2);
         esp_task_wdt_reset();
-        // uart_flush_input(UART_NUM_2);
     }
 }
 
@@ -98,8 +97,8 @@ void cam_calc(void){
     goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
     goalBlue.distance = cam_pixel_to_cm(goalBlue.length);
 
-    ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
-    ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
+    // ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
+    // ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
 
     if (!goalBlue.exists && !goalYellow.exists){
         robotX = CAM_NO_VALUE;
@@ -112,29 +111,29 @@ void cam_calc(void){
             // only yellow goal visible
             robotX = yellowPos.X;
             robotY = yellowPos.Y;
-            ESP_LOGD(TAG, "Only yellow");
+            // ESP_LOGD(TAG, "Only yellow");
         } else if (goalBlue.exists && !goalYellow.exists){
             // only blue goal visible
             robotX = bluePos.X;
             robotY = bluePos.Y;
-            ESP_LOGD(TAG, "Only blue");
+            // ESP_LOGD(TAG, "Only blue");
         } else {
             // both goals visible
             if (goalYellow.distance < goalBlue.distance){
                 // yellow goal is closer, use it
                 robotX = yellowPos.X;
                 robotY = yellowPos.Y;
-                ESP_LOGD(TAG, "Both, selected yellow");
+                // ESP_LOGD(TAG, "Both, selected yellow");
             } else {
                 // blue goal is closer, use it
                 robotX = bluePos.X;
                 robotY = bluePos.Y;
-                ESP_LOGD(TAG, "Both, selected blue");
+                // ESP_LOGD(TAG, "Both, selected blue");
             }
         }
     }
 
-    ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
-    puts("=============================");
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    // ESP_LOGD(TAG, "Robot position: x: %d, y: %d", robotX, robotY);
+    // puts("=============================");
+    // vTaskDelay(pdMS_TO_TICKS(1000));
 }
