@@ -10,10 +10,12 @@ void defines_init(uint8_t robotId){
     if (robotId == 0){
         float values[] = {1.0f, 0.8f, 0.6f, 0.6f, 0.6f, 0.5f, 1.0f, 1.0f, 0.2f, 0.2f, 1.2f, 1.2f, 1.0f, 1.0f, 1.0f, 1.0f, 
                         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+        // fuckin C bullshit workaround
+        memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     } else {
         float values[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
                         1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+        // fuckin C bullshit workaround
+        memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }
-    // fuckin C bullshit workaround
-    memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
 }
