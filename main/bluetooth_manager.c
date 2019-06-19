@@ -3,21 +3,19 @@
 // task which runs when a Bluetooth connection is established.
 // manages sending and receiving data as well as logic
 
-void comms_bt_logic_task(void *pvParameter){
-    static const char *TAG = "BTManager";
+void comms_bt_receive_task(void *pvParameter){
+    static const char *TAG = "BTReceive";
     uint32_t handle = (uint32_t) pvParameter;
-    uint8_t buf[PROTOBUF_SIZE] = {0};
     bool wasSwitchOk = false;
-    uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
+    uint8_t switchBuffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
     ESP_LOGI(TAG, "BT manager init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
 
     while (true){
-        //////////////////////// RECEIVE PACKET //////////////////////
         BTProvide recvMsg = BTProvide_init_zero;
 
-        if (xQueueReceive(packetQueue, &recvMsg, pdMS_TO_TICKS(5))){
+        if (xQueueReceive(packetQueue, &recvMsg, pdMS_TO_TICKS(250))){
             ESP_LOGD(TAG, "Received BT packet: state: %s, robotX: %f, robotY: %f, switch ok: %s", recvMsg.fsmState, recvMsg.robotX, 
             recvMsg.robotY, recvMsg.switchOk ? "yes" : "no");
         }
@@ -29,7 +27,7 @@ void comms_bt_logic_task(void *pvParameter){
 
             if (robotState.outSwitchOk){
                 ESP_LOGI(TAG, "I'm also willing to switch: switching NOW!");
-                esp_spp_write(handle, 6, switch_buffer);
+                esp_spp_write(handle, 6, switchBuffer);
                 fsm_change_state(stateMachine, &stateDefenceIdle);
                 esp_task_wdt_reset();
                 continue;
@@ -40,7 +38,19 @@ void comms_bt_logic_task(void *pvParameter){
             wasSwitchOk = false;
         }
 
-        //////////////////////// SEND PACKET //////////////////////
+        esp_task_wdt_reset();
+    }
+}
+
+void comms_bt_send_task(void *pvParameter){
+    static const char *TAG = "BTSend";
+    uint32_t handle = (uint32_t) pvParameter;
+    uint8_t buf[PROTOBUF_SIZE] = {0};
+
+    ESP_LOGI(TAG, "BT manager init OK, handle: %d", handle);
+    esp_task_wdt_add(NULL);
+    
+    while (true){
         memset(buf, 0, PROTOBUF_SIZE);
 
         BTProvide sendMsg = BTProvide_init_zero;
@@ -60,5 +70,6 @@ void comms_bt_logic_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
+        vTaskDelay(pdMS_TO_TICKS(100)); // TODO decrease this but test first
     }
 }

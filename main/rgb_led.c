@@ -26,24 +26,24 @@ static struct led_color_t rainbow[] = {RED, ORANGE, YELLOW, GREEN, BLUE, PURPLE}
 static float totalDelta = 0.0f;
 
 // partial source: https://codeforwin.org/2017/03/c-program-to-right-rotate-array.html
-static void array_rotate(struct led_color_t *arr, size_t size){
-    struct led_color_t last = arr[size - 1];
+// static void array_rotate(struct led_color_t *arr, size_t size){
+//     struct led_color_t last = arr[size - 1];
 
-    for(int i = size - 1; i > 0; i--){
-        arr[i] = arr[i - 1];
-    }
+//     for(int i = size - 1; i > 0; i--){
+//         arr[i] = arr[i - 1];
+//     }
 
-    arr[0] = last;
-}
+//     arr[0] = last;
+// }
 
-static struct led_color_t lerp_colour(struct led_color_t a, struct led_color_t b, float alpha){
-    struct led_color_t lerped = {
-        lerp(a.red, b.red, alpha), // red
-        lerp(a.green, b.green, alpha), // green
-        lerp(a.blue, b.blue, alpha), // blue
-    };
-    return lerped;
-}
+// static struct led_color_t lerp_colour(struct led_color_t a, struct led_color_t b, float alpha){
+//     struct led_color_t lerped = {
+//         lerp(a.red, b.red, alpha), // red
+//         lerp(a.green, b.green, alpha), // green
+//         lerp(a.blue, b.blue, alpha), // blue
+//     };
+//     return lerped;
+// }
 
 /** Task which controls RGB LEDs **/
 static void rgb_led_task(void *pvParameters){

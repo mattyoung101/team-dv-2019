@@ -20,7 +20,7 @@
 #define ROBOT0_NAME "DeusVult_Robot0"
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
-#define PACKET_QUEUE_LENGTH 8
+#define PACKET_QUEUE_LENGTH 1
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -138,25 +138,25 @@
 #define MOTOR_FL_IN1 27
 #define MOTOR_FL_IN2 32
 #define MOTOR_FL_ANGLE 300
-#define MOTOR_FL_REVERSED true
+extern bool MOTOR_FL_REVERSED;
 
 #define MOTOR_FR_PWM 23
 #define MOTOR_FR_IN1 4
 #define MOTOR_FR_IN2 5
 #define MOTOR_FR_ANGLE 60
-#define MOTOR_FR_REVERSED true
+extern bool MOTOR_FR_REVERSED;
 
 #define MOTOR_BL_PWM 14
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
-#define MOTOR_BL_REVERSED true
+extern bool MOTOR_BL_REVERSED;
 
 #define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 18
 #define MOTOR_BR_IN2 19
 #define MOTOR_BR_ANGLE 135
-#define MOTOR_BR_REVERSED false
+extern bool MOTOR_BR_REVERSED;
 
 #define TORQUE_SCALAR 1
 #define FRONT_MOTOR_ANGLE 60
@@ -265,9 +265,15 @@ extern float TSOP_TUNING[TSOP_NUM];
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
 
+// General FSM defines
+#define MODE_ATTACK 0
+#define MODE_DEFEND 1
+extern uint8_t ROBOT_MODE;
+
 // RGB LEDs :)
 #define LED_PIN 13
 #define LED_NUM 12
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
 
+/** initialises per robot values */
 void defines_init(uint8_t robotId);
