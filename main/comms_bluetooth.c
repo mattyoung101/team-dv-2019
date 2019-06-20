@@ -6,8 +6,8 @@ static const char *TAGM = "CommsBT_M";
 static const char *TAGS = "CommsBT_S";
 static const char *TAG = "CommsBT";
 
-static TaskHandle_t receiveTaskHandle = NULL;
-static TaskHandle_t sendTaskHandle = NULL;
+TaskHandle_t receiveTaskHandle = NULL;
+TaskHandle_t sendTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
 static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
@@ -29,7 +29,7 @@ static void bt_init(void){
 static void bt_gap_restart_disc(void){
     esp_bt_gap_cancel_discovery();
     esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
-    ESP_LOGI(TAG, "Restarting GAP discovery");
+    ESP_LOGI(TAG, "Restarting GAP discovery...");
 }
 
 /** decode data and push to packet queue */
@@ -46,7 +46,6 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
     pb_istream_t stream = pb_istream_from_buffer(data, size);
 
     if (pb_decode(&stream, BTProvide_fields, &msg)){
-        ESP_LOGD(TAG, "Received Protobuf packet to queue");
         xQueueOverwrite(packetQueue, &msg);
     } else {
         ESP_LOGE(TAG, "Protobuf decode error: %s", PB_GET_ERROR(&stream));
@@ -62,15 +61,17 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
             configMAX_PRIORITIES - 5, &sendTaskHandle);
 }
 
-static void bt_stop_tasks(void){
+void bt_stop_tasks(void){
     if (receiveTaskHandle != NULL){
         esp_task_wdt_delete(receiveTaskHandle);
         vTaskDelete(receiveTaskHandle);
+        receiveTaskHandle = NULL;
     }
 
     if (sendTaskHandle != NULL){
         esp_task_wdt_delete(sendTaskHandle);
         vTaskDelete(sendTaskHandle);
+        sendTaskHandle = NULL;
     }
 }
 
@@ -149,7 +150,7 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
+            ESP_LOGD(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
             break;
         case ESP_SPP_CONG_EVT:
@@ -285,7 +286,7 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
                 ESP_LOGI(TAGS, "Connecting to SPP server...");
                 esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
             } else {
-                ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
+                ESP_LOGE(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
                 bt_gap_restart_disc();
             }
             break;

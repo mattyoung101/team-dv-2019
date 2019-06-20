@@ -1,0 +1,78 @@
+Bluetooth error
+
+Description: On the master, turn off the slave. Very soon after it's turned off, quickly turn it back on again.
+Invalid state occurs.
+
+
+Master log trace:
+...
+D (48144) BTReceive: Received BT packet: state: AttackIdle, robotX: 1516.000000, robotY: -1009.000000, switch ok: no
+////////// (NB: at this point the slave is powered off)
+D (48214) BTSend: Sending 23 bytes
+D (48298) BTSend: Sending 23 bytes
+D (48382) BTSend: Sending 23 bytes
+D (48466) BTSend: Sending 23 bytes
+D (48550) BTSend: Sending 23 bytes
+W (48592) BTTimeout: Packet timeout has gone off, other robot is off for damage
+W (48592) CommsBT_M: Slave has disconnected (SPP connection closed), deleting controller task
+E (51280) BT_L2CAP: L2CAP got conn_req while connected (state:4). Reject it
+
+E (55921) BT_L2CAP: L2CAP got conn_comp in bad state: 4  status: 0x16
+
+W (55921) BT_RFCOMM: port_rfc_closed RFCOMM connection in state 2 closed: Peer connection failed (res: 16)
+W (55928) CommsBT_M: Slave has disconnected (SPP connection closed), deleting controller task
+
+Observations:
+    - gets into an invalid state or something, unsure as to why
+
+
+Slave log trace:
+...
+I (1397) CommsBT_S: Found other robot. Attempting to establish SPP connection...
+I (2216) CommsBT_S: SPP discovery completed, status=0 scn_num=1
+I (2216) CommsBT_S: Connecting to SPP server...
+I (2216) CommsBT_S: SPP client connection initiated
+W (2272) BT_RFCOMM: port_rfc_closed RFCOMM connection in state 1 closed: Closed (res: 19)
+W (2272) CommsBT_S: Master has disconnected (SPP connection closed), deleting controller task
+I (2279) CommsBT: Restarting GAP discovery
+D (2860) PursueState: Ball is not visible, braking
+I (4050) CommsBT_S: Found other robot. Attempting to establish SPP connection...
+I (4092) CommsBT_S: SPP discovery completed, status=0 scn_num=1
+I (4092) CommsBT_S: Connecting to SPP server...
+I (4099) CommsBT_S: SPP client connection initiated
+W (4134) BT_RFCOMM: port_rfc_closed RFCOMM connection in state 1 closed: Closed (res: 19)
+W (4134) CommsBT_S: Master has disconnected (SPP connection closed), deleting controller task
+I (4141) CommsBT: Restarting GAP discovery
+I (4442) CommsBT_S: Found other robot. Attempting to establish SPP connection...
+I (4512) CommsBT_S: SPP discovery completed, status=0 scn_num=1
+I (4512) CommsBT_S: Connecting to SPP server...
+I (4512) CommsBT_S: SPP client connection initiated
+W (4519) BT_RFCOMM: port_rfc_closed RFCOMM connection in state 1 closed: Closed (res: 19)
+W (4526) CommsBT_S: Master has disconnected (SPP connection closed), deleting controller task
+I (4533) CommsBT: Restarting GAP discovery
+I (4939) CommsBT_S: Found other robot. Attempting to establish SPP connection...
+I (5009) CommsBT_S: SPP discovery completed, status=0 scn_num=1
+I (5009) CommsBT_S: Connecting to SPP server...
+I (5016) CommsBT_S: SPP client connection initiated
+W (5016) BT_RFCOMM: port_rfc_closed RFCOMM connection in state 1 closed: Closed (res: 19)
+W (5023) CommsBT_S: Master has disconnected (SPP connection closed), deleting controller task
+I (5037) CommsBT: Restarting GAP discovery
+I (5436) CommsBT_S: Found other robot. Attempting to establish SPP connection...
+I (5499) CommsBT_S: SPP discovery completed, status=0 scn_num=1
+I (5499) CommsBT_S: Connecting to SPP server...
+I (5499) CommsBT_S: SPP client connection initiated
+W (5506) BT_RFCOMM: port_rfc_closed RFCOMM connection in state 1 closed: Closed (res: 19)
+W (5513) CommsBT_S: Master has disconnected (SPP connection closed), deleting controller task
+I (5520) CommsBT: Restarting GAP discovery
+I (5548) IdleTimerCallback: Idle timer has gone off, switching to idle state
+I (5548) FSM: Switching states from AttackPursue to AttackIdle
+I (5849) CommsBT_S: Found other robot. Attempting to establish SPP connection...
+I (5912) CommsBT_S: SPP discovery completed, status=0 scn_num=1
+I (5912) CommsBT_S: Connecting to SPP server...
+W (5912) BT_BTM: BTM_SEC_REG: Out of Service Records (8)
+E (5919) BT_APPL: sec_id:57 is zero or BTM_SetSecurityLevel failed, remote_scn:1
+I (5926) CommsBT_S: SPP client connection initiated
+
+Observations:
+    - keeps trying to reconnect, but it seems either it or the master keeps disconnecting itself
+    - then eventually it just gives up
