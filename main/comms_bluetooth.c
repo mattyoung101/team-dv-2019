@@ -6,7 +6,8 @@ static const char *TAGM = "CommsBT_M";
 static const char *TAGS = "CommsBT_S";
 static const char *TAG = "CommsBT";
 
-static TaskHandle_t logicTaskHandle = NULL;
+static TaskHandle_t receiveTaskHandle = NULL;
+static TaskHandle_t sendTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
 static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
@@ -36,7 +37,7 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
     if (memcmp(data, switch_buffer, size) == 0){
         ESP_LOGI(TAG, "Switch request received: switching NOW!");
-        fsm_change_state(stateMachine, &stateDefenceIdle);
+        fsm_change_state(stateMachine, &stateDefenceDefend);
         return;
     }
 
@@ -45,16 +46,32 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
     pb_istream_t stream = pb_istream_from_buffer(data, size);
 
     if (pb_decode(&stream, BTProvide_fields, &msg)){
-        xQueueSendToBack(packetQueue, &msg, pdMS_TO_TICKS(250));
+        ESP_LOGD(TAG, "Received Protobuf packet to queue");
+        xQueueOverwrite(packetQueue, &msg);
     } else {
         ESP_LOGE(TAG, "Protobuf decode error: %s", PB_GET_ERROR(&stream));
     }
 }
 
 /** starts the logic task */
-static void bt_start_logic_task(esp_spp_cb_param_t *param){
-    xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->open.handle, 
-            configMAX_PRIORITIES - 2, logicTaskHandle);
+static void bt_start_tasks(esp_spp_cb_param_t *param){
+    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 4, &receiveTaskHandle);
+    
+    xTaskCreate(comms_bt_send_task, "BTSendTask", 2048, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 5, &sendTaskHandle);
+}
+
+static void bt_stop_tasks(void){
+    if (receiveTaskHandle != NULL){
+        esp_task_wdt_delete(receiveTaskHandle);
+        vTaskDelete(receiveTaskHandle);
+    }
+
+    if (sendTaskHandle != NULL){
+        esp_task_wdt_delete(sendTaskHandle);
+        vTaskDelete(sendTaskHandle);
+    }
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
@@ -76,7 +93,6 @@ static void esp_bt_gap_cb_master(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_para
             break;
         }
         case ESP_BT_GAP_PIN_REQ_EVT:{
-            // ESP_LOGD(TAGM, "ESP_BT_GAP_PIN_REQ_EVT min_16_digit: %d", param->pin_req.min_16_digit);
             if (param->pin_req.min_16_digit) {
                 ESP_LOGD(TAGM, "Sending 16 digit pin code");
                 esp_bt_pin_code_t pin_code = {0};
@@ -102,10 +118,8 @@ static void esp_bt_gap_cb_master(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_para
         case ESP_BT_GAP_KEY_REQ_EVT:
             ESP_LOGD(TAGM, "ESP_BT_GAP_KEY_REQ_EVT Please enter passkey!");
             break;
-        default: {
-            // ESP_LOGI(TAGM, "bt_gap_cb event: %d", event);
+        default:
             break;
-        }
     }
     return;
 }
@@ -119,16 +133,14 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP server initialised");
             break;
         case ESP_SPP_DISCOVERY_COMP_EVT:
-            ESP_LOGD(TAGM, "ESP_SPP_DISCOVERY_COMP_EVT");
+            ESP_LOGD(TAGM, "SPP discovery completed");
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP connection opened");;
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting controller task");
-            if (logicTaskHandle != NULL){
-                vTaskDelete(logicTaskHandle);
-            }
+            bt_stop_tasks();
             break;
         case ESP_SPP_START_EVT:
             ESP_LOGI(TAGM, "SPP server started");
@@ -142,13 +154,19 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             break;
         case ESP_SPP_CONG_EVT:
             ESP_LOGI(TAGM, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
+            if (param->cong.cong){
+                ESP_LOGD(TAGM, "Suspending send task due to congestion");
+                vTaskSuspend(sendTaskHandle);
+            } else {
+                ESP_LOGD(TAGM, "Resuming send task as congestion hsa cleared");
+                vTaskResume(sendTaskHandle);
+            }
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP server opened, starting controller task");
-            bt_start_logic_task(param);
+            bt_start_tasks(param);
             break;
         default:
-            // ESP_LOGI(TAGM, "spp_cb event: %d", event);
             break;
     }
 }
@@ -204,7 +222,7 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                     
                         if (strlen(remote_device_name) == peer_bdname_len
                             && strncmp(peer_bdname, remote_device_name, peer_bdname_len) == 0) {
-                                ESP_LOGI(TAGS, "Found other robot! Attempting to establish SPP connection...");
+                                ESP_LOGI(TAGS, "Found other robot. Attempting to establish SPP connection...");
                                 memcpy(peer_bd_addr, param->disc_res.bda, ESP_BD_ADDR_LEN);
                                 esp_spp_start_discovery(peer_bd_addr);
                                 esp_bt_gap_cancel_discovery();
@@ -222,7 +240,6 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
             break;
         }
         case ESP_BT_GAP_PIN_REQ_EVT:{
-            // ESP_LOGI(TAGS, "ESP_BT_GAP_PIN_REQ_EVT min_16_digit:%d", param->pin_req.min_16_digit);
             if (param->pin_req.min_16_digit) {
                 ESP_LOGI(TAGS, "Sending 16 digit pin code");
                 esp_bt_pin_code_t pin_code = {0};
@@ -274,13 +291,11 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
-            bt_start_logic_task(param);
+            bt_start_tasks(param);
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting controller task");
-            if (logicTaskHandle != NULL){
-                vTaskDelete(logicTaskHandle);
-            }
+            bt_stop_tasks();
             bt_gap_restart_disc();
             break;
         case ESP_SPP_START_EVT:
@@ -290,11 +305,18 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             ESP_LOGI(TAGS, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
+            // ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGS, "SPP congestion status changed, now: %d", param->cong.cong);
+            ESP_LOGI(TAGS, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
+            if (param->cong.cong){
+                ESP_LOGD(TAGS, "Suspending send task due to congestion");
+                vTaskSuspend(sendTaskHandle);
+            } else {
+                ESP_LOGD(TAGS, "Resuming send task as congestion hsa cleared");
+                vTaskResume(sendTaskHandle);
+            }
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP server opened");

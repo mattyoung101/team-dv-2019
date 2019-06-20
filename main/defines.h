@@ -8,10 +8,6 @@
 // If this is defined, the value of the robot number will be written to NVS
 // #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
-// Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
-// Will probably slow down the robot, don't enable in competition!
-#define WEB_DEBUG_ENABLED
-
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
 #define CONF_LOG_LEVEL ESP_LOG_DEBUG
@@ -20,7 +16,8 @@
 #define ROBOT0_NAME "DeusVult_Robot0"
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
-#define PACKET_QUEUE_LENGTH 8
+#define PACKET_QUEUE_LENGTH 1
+#define BT_PACKET_TIMEOUT 1000 // if we haven't received a packet in this many ms, other robot is off for damage
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -29,7 +26,7 @@
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
-#define NANO_PACKET_SIZE 9
+#define NANO_PACKET_SIZE 9 // size of packet coming from Nano LS slave
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -102,7 +99,6 @@
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
 
 // AutoMode (code that automatically starts attack/defence tasks based on NVS)
-#define AUTOMODE_ILLEGAL 254
 #define AUTOMODE_SLAVE 0
 #define AUTOMODE_MASTER 1
 
@@ -138,25 +134,25 @@
 #define MOTOR_FL_IN1 27
 #define MOTOR_FL_IN2 32
 #define MOTOR_FL_ANGLE 300
-#define MOTOR_FL_REVERSED true
+extern bool MOTOR_FL_REVERSED;
 
 #define MOTOR_FR_PWM 23
 #define MOTOR_FR_IN1 4
 #define MOTOR_FR_IN2 5
 #define MOTOR_FR_ANGLE 60
-#define MOTOR_FR_REVERSED true
+extern bool MOTOR_FR_REVERSED;
 
 #define MOTOR_BL_PWM 14
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
-#define MOTOR_BL_REVERSED true
+extern bool MOTOR_BL_REVERSED;
 
 #define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 18
 #define MOTOR_BR_IN2 19
 #define MOTOR_BR_ANGLE 135
-#define MOTOR_BR_REVERSED false
+extern bool MOTOR_BR_REVERSED;
 
 #define TORQUE_SCALAR 1
 #define FRONT_MOTOR_ANGLE 60
@@ -193,11 +189,9 @@
 #define LS_MUX_WR 14
 
 // TSOPs
-#define TSOP_NUM 24
-#define TSOP_BEST 5
-#define TSOP_TARGET_READS 255
-#define TSOP_READ_PERIOD_US 75
-// #define TSOP_TIMER_PERIOD 4
+#define TSOP_NUM 24 // total number of TSOPs
+#define TSOP_BEST 5 // pick the TSOP_BEST number of TSOPs to calculate with
+#define TSOP_TARGET_READS 255 // number of reads to do per slave task loop
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
@@ -265,9 +259,15 @@ extern float TSOP_TUNING[TSOP_NUM];
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
 
+// General FSM defines
+#define MODE_ATTACK 0
+#define MODE_DEFEND 1
+extern uint8_t ROBOT_MODE;
+
 // RGB LEDs :)
 #define LED_PIN 13
 #define LED_NUM 12
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
 
+/** initialises per robot values */
 void defines_init(uint8_t robotId);

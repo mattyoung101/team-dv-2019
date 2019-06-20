@@ -40,7 +40,6 @@ static void comms_i2c_receive_task(void *pvParameters){
                 break;
             }
         }
-        // ESP_LOG_BUFFER_HEX(TAG, buf, PROTOBUF_SIZE);
 
         if (buf[0] == 0xB){
             uint8_t msgId = buf[1];
@@ -60,7 +59,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                     msgFields = (void*) &SensorUpdate_fields;
                     break;
                 default:
-                    ESP_LOGE(TAG, "main task: Unknown message ID: %d", msgId);
+                    ESP_LOGW(TAG, "main task: Unknown message ID: %d", msgId);
                     continue;
             }
 
@@ -77,11 +76,8 @@ static void comms_i2c_receive_task(void *pvParameters){
                     // or why the valid is being set to zero
                     if (lastSensorUpdate.heading <= 0.01f && 
                         (lastSensorUpdate.tsopStrength <= 0.01f || lastSensorUpdate.tsopAngle <= 0.01f)){
-                        ESP_LOGW(TAG, "Rejecting invalid message, restoring last message");
+                        // ESP_LOGW(TAG, "Rejecting invalid message, restoring last message");
                         lastSensorUpdate = oldUpdate;
-                    } else {
-                        // ESP_LOGI(TAG, "Message is valid: heading %f, strength: %f, angle: %f",
-                        // lastSensorUpdate.heading, lastSensorUpdate.tsopStrength, lastSensorUpdate.tsopAngle);
                     }
                 }
                 
@@ -90,7 +86,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
             }
         } else {
-            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            // ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
 
             // reset I2C and try to correct the issue by waiting
             i2c_reset_rx_fifo(I2C_NUM_0);

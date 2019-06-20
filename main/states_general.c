@@ -8,7 +8,6 @@ fsm_state_t stateGeneralNothing = {&state_nothing_enter, &state_nothing_exit, &s
 /** start a timer if its not already started and has been instantiated */
 void dv_timer_start(dv_timer_t *timer){
     if (timer->timer != NULL && !timer->running){
-        // printf("dv_timer_start name: %s\n", pcTimerGetTimerName(timer->timer));
         xTimerReset(timer->timer, pdMS_TO_TICKS(10));
         xTimerStart(timer->timer, pdMS_TO_TICKS(10));
         timer->running = true;
@@ -18,7 +17,6 @@ void dv_timer_start(dv_timer_t *timer){
 /** stops a timer if it has been instantiated */
 void dv_timer_stop(dv_timer_t *timer){
     if (timer->timer != NULL){
-        // printf("dv_timer_stop name: %s\n", pcTimerGetTimerName(timer->timer));
         xTimerStop(timer->timer, pdMS_TO_TICKS(10));
         timer->running = false;
     }

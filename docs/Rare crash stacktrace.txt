@@ -1,0 +1,26 @@
+D (2839) PursueState: Ball is not visible, braking
+W (3385) I2CReceiveTask: main task: Unknown message ID: 63
+Guru Meditation Error: Core  1 panic'ed (Unhandled debug exception)
+Debug exception reason: BREAK instr
+Core 1 register dump:
+PC      : 0x400803c0  PS      : 0x00060936  A0      : 0x00000001  A1      : 0x3ffd0940
+0x400803c0: _DoubleExceptionVector at C:/Users/25070/esp/esp-idf/components/freertos/xtensa_vectors.S:543
+
+A2      : 0x00000000  A3      : 0x00000000  A4      : 0x00000001  A5      : 0x00000000
+A6      : 0x00000000  A7      : 0x49233f17  A8      : 0x80090452  A9      : 0x3ffd0a20
+A10     : 0xffffffcd  A11     : 0xffffffa7  A12     : 0x00000013  A13     : 0x0000000d
+A14     : 0x00000000  A15     : 0x3ffd0ab0  SAR     : 0x00000013  EXCCAUSE: 0x00000001
+EXCVADDR: 0x00000000  LBEG    : 0x400014fd  LEND    : 0x4000150d  LCOUNT  : 0xfffffff8
+
+ELF file SHA256: cb3dc5bb87b5feac49c3f30f9a8db26330003ae769e267f0ec360499d0222ddb
+
+Backtrace: 0x400803c0:0x3ffd0940 0x7ffffffe:0x3ffd0a60 0x4008eae9:0x3ffd0a90
+0x400803c0: _DoubleExceptionVector at C:/Users/25070/esp/esp-idf/components/freertos/xtensa_vectors.S:543
+
+0x4008eae9: vPortTaskWrapper at C:/Users/25070/esp/esp-idf/components/freertos/port.c:403
+
+
+I (3820) esp_core_dump_flash: Save core dump to flash...
+I (3826) esp_core_dump_common: Found tasks: (14)!
+I (3963) esp_core_dump_flash: Core dump has been saved to flash.
+Rebooting...

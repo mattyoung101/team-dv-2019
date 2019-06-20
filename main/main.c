@@ -38,7 +38,7 @@
     #define HOME_GOAL goalYellow
 #endif
 
-static uint8_t mode = AUTOMODE_ILLEGAL;
+static uint8_t mode = 69; // start out with invalid mode
 state_machine_t *stateMachine = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
@@ -51,7 +51,7 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     cam_init();
-    ESP_LOGI(TAG, "Master hardware init OK");
+    ESP_LOGI(TAG, "========== Master hardware init OK ==========");
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
@@ -64,13 +64,13 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    stateMachine = fsm_new(&stateAttackPursue);
+    stateMachine = fsm_new(ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
 
-    // esp_task_wdt_add(NULL);
+    esp_task_wdt_add(NULL);
 
     while (true){
         // update cam
@@ -125,7 +125,7 @@ void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(stateMachine);
 
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
 
         // run motors
         // robotState.outSpeed = 0;
@@ -144,24 +144,26 @@ void slave_task(void *pvParameter){
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
     uint8_t robotId = 69;
 
+    // Initialise software
+    nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
+    defines_init(robotId);
+
     // Initialise comms
     comms_i2c_init_master(I2C_NUM_0);
     i2c_scanner();
 
     // Initialise hardware
-    nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
-    defines_init(robotId);
     tsop_init();
     // rgb_led_init();
     simu_init();
     simu_calibrate();
 
-    ESP_LOGI(TAG, "Slave hardware init OK");
+    ESP_LOGI(TAG, "========== Slave hardware init OK ==========");
     esp_task_wdt_add(NULL);
     
     while (true) {
         // update TSOPs
-        for (int i = 0; i < 255; i++){
+        for (int i = 0; i < TSOP_TARGET_READS; i++){
             tsop_update(NULL);
         }
         tsop_calc();
