@@ -50,8 +50,9 @@ typedef struct {
     bool running;
 } dv_timer_t;
 
-// Utils code
+/** start a timer if its not already started and has been instantiated */
 void dv_timer_start(dv_timer_t *timer);
+/** stops a timer if it has been instantiated */
 void dv_timer_stop(dv_timer_t *timer);
 
 extern SemaphoreHandle_t robotStateSem;

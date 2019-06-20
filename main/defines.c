@@ -12,7 +12,7 @@ uint8_t ROBOT_MODE = 254;
 // Code which sets per-robot values, i.e. values that cannot be set at compile time using #defines
 
 void defines_init(uint8_t robotId){
-    ESP_LOGI(TAG, "Initialising values as robot ID %d", robotId);
+    ESP_LOGI(TAG, "Initialising values as robot ID #%d", robotId);
 
     if (robotId == 0){
         float values[] = {1.0f, 0.8f, 0.6f, 0.6f, 0.6f, 0.5f, 1.0f, 1.0f, 0.2f, 0.2f, 1.2f, 1.2f, 1.0f, 1.0f, 1.0f, 1.0f, 

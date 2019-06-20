@@ -38,7 +38,7 @@
     #define HOME_GOAL goalYellow
 #endif
 
-static uint8_t mode = AUTOMODE_ILLEGAL;
+static uint8_t mode = 69; // start out with invalid mode
 state_machine_t *stateMachine = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
@@ -159,7 +159,7 @@ void slave_task(void *pvParameter){
     
     while (true) {
         // update TSOPs
-        for (int i = 0; i < 255; i++){
+        for (int i = 0; i < TSOP_TARGET_READS; i++){
             tsop_update(NULL);
         }
         tsop_calc();
