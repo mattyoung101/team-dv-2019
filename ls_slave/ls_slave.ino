@@ -1,7 +1,13 @@
 #include <Wire.h>
 #include "LightSensorArray.h"
+#include "Timer.h"
 
 #define I2C_ON true
+#define BLINK_LED 9
+#define DEBUG_LED A6
+
+Timer ledTimer(100000);
+bool ledOn;
 
 LightSensorArray ls = LightSensorArray();
 float heading = 0.0f;
@@ -14,6 +20,8 @@ void setup() {
   #endif
   
   Serial.begin(9600);
+
+  pinMode(BLINK_LED,OUTPUT);
 
   // initialise LS library
   ls.init();
