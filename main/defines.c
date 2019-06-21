@@ -40,7 +40,7 @@ void defines_init(uint8_t robotId){
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 94;
         CAM_OFFSET_Y = 47;
-        TSOP_CORRECTION = -30;
+        TSOP_CORRECTION = 0;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }
