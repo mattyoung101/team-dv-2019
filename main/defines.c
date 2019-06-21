@@ -38,8 +38,8 @@ void defines_init(uint8_t robotId){
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_ATTACK;
-        CAM_OFFSET_X = 94;
-        CAM_OFFSET_Y = 47;
+        CAM_OFFSET_X = 56;
+        CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = 0;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));

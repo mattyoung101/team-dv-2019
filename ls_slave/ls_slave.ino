@@ -6,7 +6,7 @@
 #define BLINK_LED 9
 #define DEBUG_LED A6
 
-Timer ledTimer(100000);
+Timer ledTimer(500000);
 bool ledOn;
 
 LightSensorArray ls = LightSensorArray();
@@ -41,6 +41,19 @@ void loop() {
   Serial.print("\t");
   Serial.print("lineSize: ");
   Serial.print(ls.getLineSize());
+  Serial.print("\t");
+  Serial.print("isOnLine: ");
+  Serial.print(ls.isOnLine);
+  Serial.print("\t");
+  Serial.print("lineOver: ");
+  Serial.print(ls.lineOver);
+
+  if(ledTimer.timeHasPassed()){
+    digitalWrite(BLINK_LED,ledOn);
+    ledOn = !ledOn;
+  }
+
+  Serial.println();
 }
 
 void requestEvent(){

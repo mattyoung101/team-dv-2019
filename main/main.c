@@ -128,6 +128,8 @@ void master_task(void *pvParameter){
         fsm_update(stateMachine);
         robotState.outSwitchOk = true;
 
+        print_ball_data(&robotState);
+
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);

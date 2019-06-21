@@ -37,7 +37,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((0, 0, 95, 95))
+sensor.set_windowing((36, 0, 112, 112))
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
