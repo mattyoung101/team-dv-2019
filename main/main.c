@@ -74,7 +74,7 @@ void master_task(void *pvParameter){
     while (true){
         // update cam
         cam_calc();
-        continue;
+        // continue;
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
