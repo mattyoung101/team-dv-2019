@@ -71,7 +71,9 @@ void state_attack_idle_update(state_machine_t *fsm){
 
     imu_correction(&robotState);
     rs.outIsAttack = true;
+    rs.outSwitchOk = true;
 
+    // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
     if (rs.inBallStrength > 0.0f) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
@@ -93,6 +95,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     
     accelProgress = 0;
     rs.outIsAttack = true;
+    rs.outSwitchOk = true;
     imu_correction(&robotState);
     timer_check();
 
@@ -120,6 +123,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
+    rs.outSwitchOk = true;
     if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
     else imu_correction(&robotState);
     timer_check();
@@ -155,6 +159,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     static const char *TAG = "DribbleState";
     
     rs.outIsAttack = true;
+    rs.outSwitchOk = false; // we're trying to shoot so piss off
     goal_correction(&robotState);
     timer_check();
 
@@ -174,7 +179,8 @@ void state_attack_dribble_update(state_machine_t *fsm){
         FSM_REVERT;
     }
     /*} else if (!is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE) || !rs.inGoalVisible){
-        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
+        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, 
+        GOAL_MAX_ANGLE);
         FSM_REVERT;
     }*/
 
@@ -193,6 +199,7 @@ void state_attack_doubledefence_update(state_machine_t *fsm){
     static const char *TAG = "AvoidDoubleDefenceState";
 
     rs.outIsAttack = true;
+    rs.outSwitchOk = false; // we switch now, and we might enter double defence, so don't
     imu_correction(&robotState);
     timer_check();
 
