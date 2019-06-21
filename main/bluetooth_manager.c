@@ -39,7 +39,8 @@ void comms_bt_receive_task(void *pvParameter){
             recvMsg.robotX, recvMsg.robotY, recvMsg.switchOk ? "yes" : "no");
             
             // reset the timeout timer if we got a packet
-            dv_timer_start(&packetTimer);
+            xTimerStart(packetTimer.timer, pdMS_TO_TICKS(10));
+            xTimerReset(packetTimer.timer, pdMS_TO_TICKS(10));
         }
 
         // decide if we should switch or not
@@ -89,6 +90,6 @@ void comms_bt_send_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(25));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

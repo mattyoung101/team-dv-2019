@@ -120,8 +120,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
-    if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
-    else imu_correction(&robotState);
+    imu_correction(&robotState);
+    // if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
+    // else imu_correction(&robotState);
     timer_check();
 
     // fuck
