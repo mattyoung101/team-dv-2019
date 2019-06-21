@@ -20,7 +20,6 @@ void state_defence_reverse_update(state_machine_t *fsm){
     static const char *TAG = "DefendReverseState";
 
     rs.outIsAttack = false;
-
     imu_correction(&robotState);
 
     if (rs.inGoalVisible){
@@ -29,10 +28,12 @@ void state_defence_reverse_update(state_machine_t *fsm){
     }
 
     if (rs.inBallStrength > 0.0f){ 
-        if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){ // Check if ball is behind
+        // Check if ball is behind
+        if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){
             LOG_ONCE(TAG, "Ball is behind, orbiting");
             orbit(&robotState);
         } else {
+            // TODO is ball in front? should we request switch?
             float distanceMovement = REVERSE_SPEED;
             float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
 
@@ -50,7 +51,6 @@ void state_defence_idle_update(state_machine_t *fsm){
     static const char *TAG = "DefendIdleState";
 
     rs.outIsAttack = false;
-
     imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
@@ -65,10 +65,10 @@ void state_defence_idle_update(state_machine_t *fsm){
     position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
- // Defend
+// Defend
 static void surge_timer_callback(TimerHandle_t timer){
     static const char *TAG = "SurgeTimerCallback";
-    ESP_LOGI(TAG, "Surge timer has gone off, swithcing to surge state");
+    ESP_LOGI(TAG, "Surge timer has gone off, switching to surge state");
 
     state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
     dv_timer_stop(&surgeTimer);
@@ -97,14 +97,15 @@ void state_defence_defend_enter(state_machine_t *fsm){
     if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 30, IN_FRONT_MAX_ANGLE - 30) 
         && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
         LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, starting surge timer");
+        rs.outSwitchOk = true;
         dv_timer_start(&surgeTimer);
     } else {
-        LOG_ONCE(TAG, "Stopping surge timer as criteria is no longer satisified");
+        LOG_ONCE(TAG, "Stopping surge timer as criteria is no longer satisfied");
         dv_timer_stop(&surgeTimer);
     }
 
 
-    // Check criteria: goal visibile and ball visible
+    // Check criteria: goal visible and ball visible
     if (!rs.inGoalVisible){
         LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
         FSM_CHANGE_STATE_DEFENCE(Reverse);
@@ -114,7 +115,8 @@ void state_defence_defend_enter(state_machine_t *fsm){
     } 
 
     if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
-        orbit(&robotState); // Ball is behind, orbit so we don't score an own goal
+        // Ball is behind, orbit so we don't score an own goal
+        orbit(&robotState);
     } else {
         float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle;
         float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 - 360 range
@@ -138,6 +140,7 @@ void state_defence_surge_update(state_machine_t *fsm){
     imu_correction(&robotState);
 
     rs.outIsAttack = false;
+    rs.outSwitchOk = true;
 
     if (rs.inGoalLength > SURGE_DISTANCE || !rs.inGoalVisible){
         LOG_ONCE(TAG, "Too far from goal, switching to defend");

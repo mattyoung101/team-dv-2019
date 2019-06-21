@@ -8,8 +8,7 @@
 static const char *TAG = "FSM";
 
 state_machine_t* fsm_new(fsm_state_t *startState){
-    // TODO this is pretty hacky, should we check if it's already created first? 
-    // or move it elsewhere - this code should just handle FSMs, not other crap as well
+    // TODO move this elsewhere - this code should just handle FSMs, not other crap as well
     if (robotStateSem == NULL){
         robotStateSem = xSemaphoreCreateMutex();
         xSemaphoreGive(robotStateSem);

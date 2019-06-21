@@ -11,7 +11,6 @@ static mplexer_5bit_t tsopMux = {
 };
 // Index = TSOP number, Value = multiplexer pin
 static const gpio_num_t irTable[] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 23, 22, 21, 20, 19, 18, 17, 16};
-static const float irMod[] = {1.0f, 0.8f, 0.6f, 0.6f, 0.6f, 0.5f, 1.0f, 1.0f, 0.2f, 0.2f, 1.2f, 1.2f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
 #ifdef TSOP_DEBUG
     static const char *TAG = "TSOP";
 #endif
@@ -69,7 +68,7 @@ void tsop_calc(void){
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X = ((float) readings[i].X / (float) tsopCounter);
         #if TSOP_SCALING
-            readings[i].X *= irMod[i];
+            readings[i].X *= TSOP_TUNING[i];
         #endif
     }
     #ifdef TSOP_DEBUG

@@ -6,11 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
-
-// Debug mode - if uncommented, enables the code that communicates to the Aquila monitoring webapp
-// Will probably slow down the robot, don't enable in competition!
-#define WEB_DEBUG_ENABLED
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -20,7 +16,9 @@
 #define ROBOT0_NAME "DeusVult_Robot0"
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
-#define PACKET_QUEUE_LENGTH 8
+#define PACKET_QUEUE_LENGTH 1
+#define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
+#define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -29,7 +27,7 @@
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
-#define NANO_PACKET_SIZE 9
+#define NANO_PACKET_SIZE 9 // size of packet coming from Nano LS slave
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -92,7 +90,7 @@
 // --- Goal Correction --- //
 #define GOAL_KP 1.5
 #define GOAL_KI 0
-#define GOAL_KD 0.1
+#define GOAL_KD 0.2
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -102,7 +100,6 @@
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
 
 // AutoMode (code that automatically starts attack/defence tasks based on NVS)
-#define AUTOMODE_ILLEGAL 254
 #define AUTOMODE_SLAVE 0
 #define AUTOMODE_MASTER 1
 
@@ -112,8 +109,8 @@
 #define CAM_END_BYTE 0xE
 #define CAM_FRAME_WIDTH 0
 #define CAM_FRAME_HEIGHT 0
-#define CAM_OFFSET_X 89
-#define CAM_OFFSET_Y 51
+extern int16_t CAM_OFFSET_X;
+extern int16_t CAM_OFFSET_Y;
 #define CAM_ANGLE_OFFSET 0
 #define CAM_NO_VALUE 0xBAD
 #define CAM_UART_TX 17
@@ -125,8 +122,6 @@
 #define GOAL_OFF 2
 #define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
-#define IDLE_DISTANCE 40
-#define IDLE_OFFSET 0
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 30 // The lowest speed for which the robot will move while positioning
@@ -138,25 +133,25 @@
 #define MOTOR_FL_IN1 27
 #define MOTOR_FL_IN2 32
 #define MOTOR_FL_ANGLE 300
-#define MOTOR_FL_REVERSED true
+extern bool MOTOR_FL_REVERSED;
 
 #define MOTOR_FR_PWM 23
 #define MOTOR_FR_IN1 4
 #define MOTOR_FR_IN2 5
 #define MOTOR_FR_ANGLE 60
-#define MOTOR_FR_REVERSED true
+extern bool MOTOR_FR_REVERSED;
 
 #define MOTOR_BL_PWM 14
 #define MOTOR_BL_IN1 25
 #define MOTOR_BL_IN2 26
 #define MOTOR_BL_ANGLE 225
-#define MOTOR_BL_REVERSED true
+extern bool MOTOR_BL_REVERSED;
 
 #define MOTOR_BR_PWM 13
 #define MOTOR_BR_IN1 18
 #define MOTOR_BR_IN2 19
 #define MOTOR_BR_ANGLE 135
-#define MOTOR_BR_REVERSED false
+extern bool MOTOR_BR_REVERSED;
 
 #define TORQUE_SCALAR 1
 #define FRONT_MOTOR_ANGLE 60
@@ -193,15 +188,13 @@
 #define LS_MUX_WR 14
 
 // TSOPs
-#define TSOP_NUM 24
-#define TSOP_BEST 5
-#define TSOP_TARGET_READS 255
-#define TSOP_READ_PERIOD_US 75
-// #define TSOP_TIMER_PERIOD 4
+#define TSOP_NUM 24 // total number of TSOPs
+#define TSOP_BEST 9 // pick the TSOP_BEST number of TSOPs to calculate with
+#define TSOP_TARGET_READS 255 // number of reads to do per slave task loop
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
-#define TSOP_CORRECTION 0 // at 0 degrees TSOPs actually print a different value, so use this to correct it
+extern int16_t TSOP_CORRECTION; // at 0 degrees TSOPs actually print a different value, so use this to correct it
 #define TSOP_SCALING true
 
 #define TSOP_MUX_S0 19
@@ -214,7 +207,7 @@
 #define TSOP_MUX_WR 26
 
 // individual TSOP calibration for each sensor
-extern float tsopScalars[TSOP_NUM];
+extern float TSOP_TUNING[TSOP_NUM];
 
 // IMU
 #define IMU_CALIBRATION_COUNT 100
@@ -239,35 +232,43 @@ extern float tsopScalars[TSOP_NUM];
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 135
+#define BALL_CLOSE_STRENGTH 150
 #define ORBIT_SPEED_SLOW 40
 #define ORBIT_SPEED_FAST 60
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 155 // if less than this, switch out of dribble
-#define ORBIT_DIST 100 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 355
+#define DRIBBLE_BALL_TOO_FAR 250 // if less than this, switch out of dribble
+#define ORBIT_DIST 200 // switch from orbit to pursue if value is more than this
+#define IN_FRONT_MIN_ANGLE 8 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 352
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
-#define DRIBBLE_TIMEOUT 1000 // ms, if robot sees ball in this position for this time it will switch to dribble state
+#define IDLE_DISTANCE 40
+#define IDLE_OFFSET 0
+#define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick
+#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
 #define SURGE_DISTANCE 40
-#define SURGE_STRENGTH 140
+#define SURGE_STRENGTH 200
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
 
+// General FSM defines
+#define MODE_ATTACK 0
+#define MODE_DEFEND 1
+extern uint8_t ROBOT_MODE;
+
 // RGB LEDs :)
 #define LED_PIN 13
 #define LED_NUM 12
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
 
+/** initialises per robot values */
 void defines_init(uint8_t robotId);

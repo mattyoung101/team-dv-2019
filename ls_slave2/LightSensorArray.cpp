@@ -1,23 +1,43 @@
 #include "LightSensorArray.h"
 
 void LightSensorArray::init() {
-    for (int i = 0; i < LS_NUM; i++) {
-      if (i == 12) continue;
-        sensors[i] = LightSensor(lsPins[i]);
-        sensors[i].init();
-    }
+    pinMode(MUX_EN, OUTPUT);
+    pinMode(MUX_WR, OUTPUT);
+    pinMode(MUX_A0, OUTPUT);
+    pinMode(MUX_A1, OUTPUT);
+    pinMode(MUX_A2, OUTPUT);
+    pinMode(MUX_A3, OUTPUT);
+    pinMode(MUX_A4, OUTPUT);
+
+    pinMode(LS0, INPUT);
+    pinMode(LS1, INPUT);
+
+    digitalWrite(MUX_EN, LOW);
 }
 
-void LightSensorArray::read() {
-    for (int i = 0; i < LS_NUM; i++) {
-      if(i == 12) continue;
-        data[i] = sensors[i].isOnWhite();
-        sensors[i].read();
-        // Serial.print(sensors[i].getValue());
-        // Serial.print(" ");
-        // Serial.printf("%d ", data[i]);
-    }
-    // Serial.println();
+void LightSensorArray::changeMUXChannel(uint8_t channel) {
+    // Change the multiplexer channel
+
+    digitalWrite(MUX_WR, LOW);
+
+    digitalWrite(MUX_A0, channel & 0x1);
+    digitalWrite(MUX_A1, (channel >> 1) & 0x1);
+    digitalWrite(MUX_A2, (channel >> 2) & 0x1);
+    digitalWrite(MUX_A3, (channel >> 3) & 0x1);
+    digitalWrite(MUX_A4, (channel >> 4) & 0x1);
+
+    digitalWrite(MUX_WR, HIGH);
+}
+
+int LightSensorArray::readSensor(int sensor) {  
+    // If pin is >= 24, we're on mux 1, otherwise mux 0
+    int mux = (sensor >= 24) ? LS1 : LS0;
+
+    // This changes the pins on both multiplexers. I had some optimisations written up in the ESP32 version
+    // to read both mux channels at once, but the Arduino IDE sucks and I got other shit to do.
+    changeMUXChannel(sensor % 24);
+        
+    return analogRead(mux);
 }
 
 void LightSensorArray::calculateClusters(bool doneFillInSensors) {

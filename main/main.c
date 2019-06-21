@@ -1,5 +1,6 @@
 #define HANDMADE_MATH_IMPLEMENTATION
 #define HANDMADE_MATH_NO_SSE
+#define _GNU_SOURCE
 #include "HandmadeMath.h"
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -38,7 +39,7 @@
     #define HOME_GOAL goalYellow
 #endif
 
-static uint8_t mode = AUTOMODE_ILLEGAL;
+static uint8_t mode = 69; // start out with invalid mode
 state_machine_t *stateMachine = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
@@ -51,11 +52,12 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     cam_init();
-    ESP_LOGI(TAG, "Master hardware init OK");
+    ESP_LOGI(TAG, "========== Master hardware init OK ==========");
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     defines_init(robotId);
+    ESP_LOGI(TAG, "Running as robot #%d", robotId);
     if (robotId == 0){
         comms_bt_init_master();
     } else {
@@ -63,7 +65,7 @@ void master_task(void *pvParameter){
     }
 
     // Initialise FSM
-    stateMachine = fsm_new(&stateDefenceDefend);
+    stateMachine = fsm_new(ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -74,7 +76,6 @@ void master_task(void *pvParameter){
     while (true){
         // update cam
         cam_calc();
-        // continue;
 
         // update values for FSM, mutexes are used to prevent race conditions
         if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT)) && 
@@ -84,6 +85,7 @@ void master_task(void *pvParameter){
                 robotState.outShouldBrake = false;
                 robotState.outOrientation = 0;
                 robotState.outDirection = 0;
+                robotState.outSwitchOk = false;
 
                 // update FSM values
                 robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
@@ -124,8 +126,8 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
-        // ESP_LOGI(TAG, "State: %s", fsm_get_current_state_name(fsm));
-        print_position_data(&robotState);
+        robotState.outSwitchOk = true;
+
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
@@ -139,6 +141,11 @@ void master_task(void *pvParameter){
 void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
+    uint8_t robotId = 69;
+
+    // Initialise software
+    nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
+    defines_init(robotId);
 
     // Initialise comms
     comms_i2c_init_master(I2C_NUM_0);
@@ -150,12 +157,12 @@ void slave_task(void *pvParameter){
     simu_init();
     simu_calibrate();
 
-    ESP_LOGI(TAG, "Slave hardware init OK");
+    ESP_LOGI(TAG, "========== Slave hardware init OK ==========");
     esp_task_wdt_add(NULL);
     
     while (true) {
         // update TSOPs
-        for (int i = 0; i < 255; i++){
+        for (int i = 0; i < TSOP_TARGET_READS; i++){
             tsop_update(NULL);
         }
         tsop_calc();
@@ -186,16 +193,15 @@ void slave_task(void *pvParameter){
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            // ESP_LOGD(TAG, "pb: Wrote %d bytes", stream.bytes_written);
-            // ESP_LOG_BUFFER_HEX(TAG, pbBuf, stream.bytes_written);
-            vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
+            // wait so that the slave realises we're not sending any more data
+            vTaskDelay(pdMS_TO_TICKS(4)); 
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
 
         esp_task_wdt_reset();
 
-        // printf("%f\n", tsopAngle);
+        // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
         // ESP_LOGD(TAG, "%f", heading);
         // vTaskDelay(pdMS_TO_TICKS(100));
     }

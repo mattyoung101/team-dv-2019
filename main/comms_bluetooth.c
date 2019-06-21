@@ -6,17 +6,22 @@ static const char *TAGM = "CommsBT_M";
 static const char *TAGS = "CommsBT_S";
 static const char *TAG = "CommsBT";
 
-static TaskHandle_t logicTaskHandle = NULL;
+TaskHandle_t receiveTaskHandle = NULL;
+TaskHandle_t sendTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
 static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
+static bool isMaster = false;
+static bool isFirstRun = true;
+static uint8_t totalErrors = 0;
 
 /** Initialises Bluetooth stack **/
 static void bt_init(void){
-    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
+    if (isFirstRun){
+        ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
+        esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+        ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
+    }
 
-    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-
-    ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
     ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
     ESP_ERROR_CHECK(esp_bluedroid_init());
     ESP_ERROR_CHECK(esp_bluedroid_enable());
@@ -28,15 +33,37 @@ static void bt_init(void){
 static void bt_gap_restart_disc(void){
     esp_bt_gap_cancel_discovery();
     esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
-    ESP_LOGI(TAG, "Restarting GAP discovery");
+    ESP_LOGI(TAG, "Restarting GAP discovery...");
+}
+
+// FIXME: this is broken as fuck right now and causes a serious panic on core 0 that also crashes the core dumper itself
+void comms_bt_reinit(void){
+    ESP_LOGI(TAG, "Reinitialising Bluetooth stack");
+    
+    // tear down Bluetooth
+    ESP_LOGI(TAG, "Shutting down");
+    ESP_ERROR_CHECK(esp_spp_deinit());
+    ESP_ERROR_CHECK(esp_bluedroid_disable());
+    ESP_ERROR_CHECK(esp_bluedroid_deinit());
+    ESP_ERROR_CHECK(esp_bt_controller_disable());
+    ESP_LOGI(TAG, "Shutdown");
+
+    // re-init Bluetooth
+    ESP_LOGI(TAG, "Restarting");
+    if (isMaster){
+        comms_bt_init_master();
+    } else {
+        comms_bt_init_slave();
+    }
+    ESP_LOGI(TAG, "Done");
 }
 
 /** decode data and push to packet queue */
-static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
+static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle){
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
     if (memcmp(data, switch_buffer, size) == 0){
         ESP_LOGI(TAG, "Switch request received: switching NOW!");
-        fsm_change_state(stateMachine, &stateDefenceIdle);
+        fsm_change_state(stateMachine, &stateDefenceDefend);
         return;
     }
 
@@ -45,16 +72,38 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data){
     pb_istream_t stream = pb_istream_from_buffer(data, size);
 
     if (pb_decode(&stream, BTProvide_fields, &msg)){
-        xQueueSendToBack(packetQueue, &msg, pdMS_TO_TICKS(250));
+        xQueueOverwrite(packetQueue, &msg);
+        totalErrors = 0;
     } else {
         ESP_LOGE(TAG, "Protobuf decode error: %s", PB_GET_ERROR(&stream));
+        if (totalErrors++ > 4){
+            ESP_LOGE(TAG, "Too many errors in a row, dropping connection");
+            esp_spp_disconnect(handle);
+        }
     }
 }
 
 /** starts the logic task */
-static void bt_start_logic_task(esp_spp_cb_param_t *param){
-    xTaskCreate(comms_bt_logic_task, "BTLogicTask", 4096, (void*) param->open.handle, 
-            configMAX_PRIORITIES - 2, logicTaskHandle);
+static void bt_start_tasks(esp_spp_cb_param_t *param){
+    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 4, &receiveTaskHandle);
+    
+    xTaskCreate(comms_bt_send_task, "BTSendTask", 2048, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 5, &sendTaskHandle);
+}
+
+void comms_bt_stop_tasks(void){
+    if (receiveTaskHandle != NULL){
+        esp_task_wdt_delete(receiveTaskHandle);
+        vTaskDelete(receiveTaskHandle);
+        receiveTaskHandle = NULL;
+    }
+
+    if (sendTaskHandle != NULL){
+        esp_task_wdt_delete(sendTaskHandle);
+        vTaskDelete(sendTaskHandle);
+        sendTaskHandle = NULL;
+    }
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
@@ -75,37 +124,12 @@ static void esp_bt_gap_cb_master(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_para
             }
             break;
         }
-        case ESP_BT_GAP_PIN_REQ_EVT:{
-            // ESP_LOGD(TAGM, "ESP_BT_GAP_PIN_REQ_EVT min_16_digit: %d", param->pin_req.min_16_digit);
-            if (param->pin_req.min_16_digit) {
-                ESP_LOGD(TAGM, "Sending 16 digit pin code");
-                esp_bt_pin_code_t pin_code = {0};
-                esp_bt_gap_pin_reply(param->pin_req.bda, true, 16, pin_code);
-            } else {
-                ESP_LOGD(TAGM, "Sending 4 digit pin code");
-                esp_bt_pin_code_t pin_code;
-                pin_code[0] = '1';
-                pin_code[1] = '2';
-                pin_code[2] = '3';
-                pin_code[3] = '4';
-                esp_bt_gap_pin_reply(param->pin_req.bda, true, 4, pin_code);
-            }
-            break;
-        }
         case ESP_BT_GAP_CFM_REQ_EVT:
             ESP_LOGD(TAGM, "ESP_BT_GAP_CFM_REQ_EVT, value: %d", param->cfm_req.num_val);
             esp_bt_gap_ssp_confirm_reply(param->cfm_req.bda, true);
             break;
-        case ESP_BT_GAP_KEY_NOTIF_EVT:
-            ESP_LOGD(TAGM, "ESP_BT_GAP_KEY_NOTIF_EVT passkey: %d", param->key_notif.passkey);
+        default:
             break;
-        case ESP_BT_GAP_KEY_REQ_EVT:
-            ESP_LOGD(TAGM, "ESP_BT_GAP_KEY_REQ_EVT Please enter passkey!");
-            break;
-        default: {
-            // ESP_LOGI(TAGM, "bt_gap_cb event: %d", event);
-            break;
-        }
     }
     return;
 }
@@ -119,16 +143,14 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP server initialised");
             break;
         case ESP_SPP_DISCOVERY_COMP_EVT:
-            ESP_LOGD(TAGM, "ESP_SPP_DISCOVERY_COMP_EVT");
+            ESP_LOGD(TAGM, "SPP discovery completed");
             break;
         case ESP_SPP_OPEN_EVT:
-            ESP_LOGI(TAGM, "SPP connection opened");;
+            ESP_LOGI(TAGM, "SPP connection opened");
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting controller task");
-            if (logicTaskHandle != NULL){
-                vTaskDelete(logicTaskHandle);
-            }
+            comms_bt_stop_tasks();
             break;
         case ESP_SPP_START_EVT:
             ESP_LOGI(TAGM, "SPP server started");
@@ -137,18 +159,24 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
-            bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
+            // ESP_LOGD(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
+            bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data, param->data_ind.handle);
             break;
         case ESP_SPP_CONG_EVT:
             ESP_LOGI(TAGM, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
+            if (param->cong.cong){
+                ESP_LOGD(TAGM, "Suspending send task due to congestion");
+                vTaskSuspend(sendTaskHandle);
+            } else {
+                ESP_LOGD(TAGM, "Resuming send task as congestion hsa cleared");
+                vTaskResume(sendTaskHandle);
+            }
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGM, "SPP server opened, starting controller task");
-            bt_start_logic_task(param);
+            bt_start_tasks(param);
             break;
         default:
-            // ESP_LOGI(TAGM, "spp_cb event: %d", event);
             break;
     }
 }
@@ -204,7 +232,7 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                     
                         if (strlen(remote_device_name) == peer_bdname_len
                             && strncmp(peer_bdname, remote_device_name, peer_bdname_len) == 0) {
-                                ESP_LOGI(TAGS, "Found other robot! Attempting to establish SPP connection...");
+                                ESP_LOGI(TAGS, "Found other robot. Attempting to establish SPP connection...");
                                 memcpy(peer_bd_addr, param->disc_res.bda, ESP_BD_ADDR_LEN);
                                 esp_spp_start_discovery(peer_bd_addr);
                                 esp_bt_gap_cancel_discovery();
@@ -221,32 +249,9 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
             }
             break;
         }
-        case ESP_BT_GAP_PIN_REQ_EVT:{
-            // ESP_LOGI(TAGS, "ESP_BT_GAP_PIN_REQ_EVT min_16_digit:%d", param->pin_req.min_16_digit);
-            if (param->pin_req.min_16_digit) {
-                ESP_LOGI(TAGS, "Sending 16 digit pin code");
-                esp_bt_pin_code_t pin_code = {0};
-                esp_bt_gap_pin_reply(param->pin_req.bda, true, 16, pin_code);
-            } else {
-                ESP_LOGI(TAGS, "Sending 4 digit pin code");
-                esp_bt_pin_code_t pin_code;
-                pin_code[0] = '1';
-                pin_code[1] = '2';
-                pin_code[2] = '3';
-                pin_code[3] = '4';
-                esp_bt_gap_pin_reply(param->pin_req.bda, true, 4, pin_code);
-            }
-            break;
-        }
         case ESP_BT_GAP_CFM_REQ_EVT:
             ESP_LOGI(TAGS, "ESP_BT_GAP_CFM_REQ_EVT, value: %d", param->cfm_req.num_val);
             esp_bt_gap_ssp_confirm_reply(param->cfm_req.bda, true);
-            break;
-        case ESP_BT_GAP_KEY_NOTIF_EVT:
-            ESP_LOGI(TAGS, "ESP_BT_GAP_KEY_NOTIF_EVT passkey: %d", param->key_notif.passkey);
-            break;
-        case ESP_BT_GAP_KEY_REQ_EVT:
-            ESP_LOGI(TAGS, "ESP_BT_GAP_KEY_REQ_EVT Please enter passkey!");
             break;
         default:
             break;
@@ -268,19 +273,17 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
                 ESP_LOGI(TAGS, "Connecting to SPP server...");
                 esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
             } else {
-                ESP_LOGW(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
+                ESP_LOGE(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
                 bt_gap_restart_disc();
             }
             break;
         case ESP_SPP_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
-            bt_start_logic_task(param);
+            bt_start_tasks(param);
             break;
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting controller task");
-            if (logicTaskHandle != NULL){
-                vTaskDelete(logicTaskHandle);
-            }
+            comms_bt_stop_tasks();
             bt_gap_restart_disc();
             break;
         case ESP_SPP_START_EVT:
@@ -290,11 +293,18 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             ESP_LOGI(TAGS, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
-            bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data);
+            // ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
+            bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data, param->data_ind.handle);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGS, "SPP congestion status changed, now: %d", param->cong.cong);
+            ESP_LOGI(TAGS, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
+            if (param->cong.cong){
+                ESP_LOGD(TAGS, "Suspending send task due to congestion");
+                vTaskSuspend(sendTaskHandle);
+            } else {
+                ESP_LOGD(TAGS, "Resuming send task as congestion hsa cleared");
+                vTaskResume(sendTaskHandle);
+            }
             break;
         case ESP_SPP_SRV_OPEN_EVT:
             ESP_LOGI(TAGS, "SPP server opened");
@@ -306,8 +316,8 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
 
 static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     bt_init();
-    ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
-    ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
+    if (isFirstRun) { ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb)); }
+    if (isFirstRun) { ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb)); }
     ESP_ERROR_CHECK(esp_spp_init(ESP_SPP_MODE_CB));
     
     // Simple Secure Paring (SSP) params
@@ -321,17 +331,25 @@ static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     esp_bt_gap_set_pin(pin_type, 0, pin_code);
 
     // create the BT packet queue
-    packetQueue = xQueueCreate(PACKET_QUEUE_LENGTH, BTProvide_size);
+    if (packetQueue == NULL){
+        packetQueue = xQueueCreate(PACKET_QUEUE_LENGTH, BTProvide_size);
+    }
+
+    if (isFirstRun){
+        isFirstRun = false;
+    }
 }
 
 // waits for connection, acceptor
 void comms_bt_init_master(){
+    isMaster = true;
     comms_bt_init_generic(esp_bt_gap_cb_master, esp_spp_cb_master);
     ESP_LOGI(TAGM, "Bluetooth master init OK");
 }
 
 // connects to master, initiator
 void comms_bt_init_slave(){
+    isMaster = false;
     comms_bt_init_generic(esp_bt_gap_cb_slave, esp_spp_cb_slave);
     ESP_LOGI(TAGS, "Bluetooth slave init OK");
 }

@@ -5,8 +5,6 @@
 robot_state_t robotState = {0};
 SemaphoreHandle_t robotStateSem = NULL;
 
-// TODO also just a note: can't every function in this file be static??? except for stateAttackXXX
-
 fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state_attack_idle_update, "AttackIdle"};
 fsm_state_t stateAttackPursue = {&state_attack_pursue_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
 fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &state_attack_orbit_update, "AttackOrbit"};
@@ -50,7 +48,8 @@ static void create_timers_if_needed(state_machine_t *fsm){
     if (idleTimer.timer == NULL){
         ESP_LOGI(TAG, "Creating idle timer");
         idleTimer.timer = xTimerCreate("IdleTimer", pdMS_TO_TICKS(IDLE_TIMEOUT), false, (void*) fsm, idle_timer_callback);
-    } else if (dribbleTimer.timer == NULL){
+    } 
+    if (dribbleTimer.timer == NULL){
         ESP_LOGI(TAG, "Creating dribble timer timer");
         dribbleTimer.timer = xTimerCreate("DribbleTimer", pdMS_TO_TICKS(DRIBBLE_TIMEOUT), false, (void*) fsm, 
                             dribble_timer_callback);
@@ -73,7 +72,9 @@ void state_attack_idle_update(state_machine_t *fsm){
 
     imu_correction(&robotState);
     rs.outIsAttack = true;
+    rs.outSwitchOk = true;
 
+    // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
     if (rs.inBallStrength > 0.0f) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
@@ -95,6 +96,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     
     accelProgress = 0;
     rs.outIsAttack = true;
+    rs.outSwitchOk = true;
     imu_correction(&robotState);
     timer_check();
 
@@ -122,6 +124,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
+    rs.outSwitchOk = true;
     if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
     else imu_correction(&robotState);
     timer_check();
@@ -131,10 +134,11 @@ void state_attack_orbit_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball and angle in correct spot, starting dribble timer, strength: %f, angle: %f, orbit dist thresh: %d"
                 " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);
-        dv_timer_start(&dribbleTimer);
+        // dv_timer_start(&dribbleTimer);
         accelBegin = rs.outSpeed;
+        FSM_CHANGE_STATE(Dribble);
     } else {
-        dv_timer_stop(&dribbleTimer);
+        // dv_timer_stop(&dribbleTimer);
     }
 
     // Check criteria:
@@ -157,6 +161,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     static const char *TAG = "DribbleState";
     
     rs.outIsAttack = true;
+    rs.outSwitchOk = false; // we're trying to shoot so piss off
     goal_correction(&robotState);
     timer_check();
 
@@ -176,7 +181,8 @@ void state_attack_dribble_update(state_machine_t *fsm){
         FSM_REVERT;
     }
     /*} else if (!is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE) || !rs.inGoalVisible){
-        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE);
+        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, 
+        GOAL_MAX_ANGLE);
         FSM_REVERT;
     }*/
 
@@ -195,6 +201,7 @@ void state_attack_doubledefence_update(state_machine_t *fsm){
     static const char *TAG = "AvoidDoubleDefenceState";
 
     rs.outIsAttack = true;
+    rs.outSwitchOk = false; // we switch now, and we might enter double defence, so don't
     imu_correction(&robotState);
     timer_check();
 

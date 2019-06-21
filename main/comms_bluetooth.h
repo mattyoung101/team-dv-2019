@@ -20,13 +20,22 @@
 #include "pb_decode.h"
 #include "bluetooth.pb.h"
 #include "math.h"
+#include "freertos/task.h"
 
 /** received packets are pushed into this queue and read by the BT manager task in bluetooth_manager.c */
 extern QueueHandle_t packetQueue;
+extern TaskHandle_t receiveTaskHandle;
+extern TaskHandle_t sendTaskHandle;
 
 /** Initialises the Bluetooth stack as a slave, or initiator **/
 void comms_bt_init_slave();
 /** Initialises the Bluetooth stack as a master, or acceptor **/
 void comms_bt_init_master();
-/** Bluetooth logic manager task **/
-void comms_bt_logic_task(void *pvParameter);
+/** Bluetooth receive task */
+void comms_bt_receive_task(void *pvParameter);
+/** Bluetooth send task */
+void comms_bt_send_task(void *pvParameter);
+/** stops the send and receive tasks */
+void comms_bt_stop_tasks(void);
+/** reinits bluetooth **/
+void comms_bt_reinit(void);
