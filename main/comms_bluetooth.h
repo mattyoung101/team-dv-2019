@@ -24,6 +24,8 @@
 
 /** received packets are pushed into this queue and read by the BT manager task in bluetooth_manager.c */
 extern QueueHandle_t packetQueue;
+extern TaskHandle_t receiveTaskHandle;
+extern TaskHandle_t sendTaskHandle;
 
 /** Initialises the Bluetooth stack as a slave, or initiator **/
 void comms_bt_init_slave();
@@ -33,3 +35,5 @@ void comms_bt_init_master();
 void comms_bt_receive_task(void *pvParameter);
 /** Bluetooth send task */
 void comms_bt_send_task(void *pvParameter);
+/** stops the send and receive tasks */
+void bt_stop_tasks(void);

@@ -42,7 +42,7 @@ float midAngleBetween(float angleCounterClockwise, float angleClockwise){
     return mod(angleCounterClockwise + angleBetween(angleCounterClockwise, angleClockwise) / 2.0, 360);
 }
 
-int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max){
+inline int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, int32_t out_max){
     return (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
 }
 
@@ -98,11 +98,11 @@ void goal_correction(robot_state_t *robotState){
     }
 }
 
-float get_magnitude(int16_t x, int16_t y){
+inline float get_magnitude(int16_t x, int16_t y){
     return sqrtf((float) (x * x + y * y)); // Cheeky pythag theorem
 }
 
-float get_angle(int16_t x, int16_t y){
+inline float get_angle(int16_t x, int16_t y){
     return fmodf(90 - RAD_DEG * (atan2(y, x)), 360.0f);
 }
 
@@ -125,7 +125,7 @@ void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y){
     }
 }
 
-float lerp(float fromValue, float toValue, float progress){
+inline float lerp(float fromValue, float toValue, float progress){
     return fromValue + (toValue - fromValue) * progress;
 }
 

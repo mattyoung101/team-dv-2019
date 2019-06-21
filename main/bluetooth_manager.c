@@ -3,16 +3,28 @@
 // tasks which runs when a Bluetooth connection is established. manages sending and receiving data as well as logic.
 
 static dv_timer_t packetTimer = {NULL, false};
+static dv_timer_t cooldownTimer = {NULL, false};
+static SemaphoreHandle_t cooldownSem = NULL;
 
 static void packet_timer_callback(TimerHandle_t timer){
-    static const char *TAG = "BTimeout";
+    static const char *TAG = "BTTimeout";
 
     ESP_LOGW(TAG, "Packet timeout has gone off, other robot is off for damage");
     uint32_t handle = (uint32_t) pvTimerGetTimerID(timer);
 
     if (robotState.outIsAttack) fsm_change_state(stateMachine, &stateDefenceDefend);
-    esp_spp_disconnect(handle);
+    vTaskSuspend(receiveTaskHandle);
+    vTaskSuspend(sendTaskHandle);
+    
+    ESP_ERROR_CHECK_WITHOUT_ABORT(esp_spp_disconnect(handle));  
     dv_timer_stop(&packetTimer);
+}
+
+static void cooldown_timer_callback(TimerHandle_t timer){
+    static const char *TAG = "CooldownTimer";
+    ESP_LOGI(TAG, "Cooldown timer gone off, re-enabling switch");
+    xSemaphoreGive(cooldownSem);
+    dv_timer_stop(&cooldownTimer);
 }
 
 void comms_bt_receive_task(void *pvParameter){
@@ -28,6 +40,17 @@ void comms_bt_receive_task(void *pvParameter){
                         packet_timer_callback);
     }
 
+    if (cooldownTimer.timer == NULL){
+        ESP_LOGI(TAG, "Creating cooldown timer");
+        cooldownTimer.timer = xTimerCreate("CooldownTimer", pdMS_TO_TICKS(BT_SWITCH_COOLDOWN), false, pvParameter,
+                                cooldown_timer_callback);
+    }
+    
+    if (cooldownSem == NULL){
+        ESP_LOGI(TAG, "Creating switch semaphore");
+        cooldownSem = xSemaphoreCreateBinary();
+    }
+
     ESP_LOGI(TAG, "BT receive task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
 
@@ -39,8 +62,8 @@ void comms_bt_receive_task(void *pvParameter){
             recvMsg.robotX, recvMsg.robotY, recvMsg.switchOk ? "yes" : "no");
             
             // reset the timeout timer if we got a packet
-            xTimerStart(packetTimer.timer, pdMS_TO_TICKS(10));
-            xTimerReset(packetTimer.timer, pdMS_TO_TICKS(10));
+            xTimerStart(packetTimer.timer, portMAX_DELAY);
+            xTimerReset(packetTimer.timer, portMAX_DELAY);
         }
 
         // decide if we should switch or not
@@ -48,10 +71,12 @@ void comms_bt_receive_task(void *pvParameter){
             ESP_LOGI(TAG, "Other robot is willing to switch");
             wasSwitchOk = true;
 
-            if (robotState.outSwitchOk){
+            if (robotState.outSwitchOk && xSemaphoreTake(cooldownSem, 0)){
                 ESP_LOGI(TAG, "I'm also willing to switch: switching NOW!");
+                // write switch, change states and start cooldown timer to re-anble switching
                 esp_spp_write(handle, 6, switchBuffer);
-                fsm_change_state(stateMachine, &stateDefenceDefend);
+                fsm_change_state(stateMachine, &stateDefenceDefend); 
+                dv_timer_start(&cooldownTimer);
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
@@ -90,6 +115,6 @@ void comms_bt_send_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(50));
     }
 }
