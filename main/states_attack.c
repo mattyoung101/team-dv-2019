@@ -48,7 +48,8 @@ static void create_timers_if_needed(state_machine_t *fsm){
     if (idleTimer.timer == NULL){
         ESP_LOGI(TAG, "Creating idle timer");
         idleTimer.timer = xTimerCreate("IdleTimer", pdMS_TO_TICKS(IDLE_TIMEOUT), false, (void*) fsm, idle_timer_callback);
-    } else if (dribbleTimer.timer == NULL){
+    } 
+    if (dribbleTimer.timer == NULL){
         ESP_LOGI(TAG, "Creating dribble timer timer");
         dribbleTimer.timer = xTimerCreate("DribbleTimer", pdMS_TO_TICKS(DRIBBLE_TIMEOUT), false, (void*) fsm, 
                             dribble_timer_callback);
@@ -120,9 +121,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     accelProgress = 0; // reset acceleration progress
     rs.outIsAttack = true;
-    imu_correction(&robotState);
-    // if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
-    // else imu_correction(&robotState);
+    // goal_correction(&robotState);
+    if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
+    else imu_correction(&robotState);
     timer_check();
 
     // fuck
@@ -130,10 +131,11 @@ void state_attack_orbit_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball and angle in correct spot, starting dribble timer, strength: %f, angle: %f, orbit dist thresh: %d"
                 " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);
-        dv_timer_start(&dribbleTimer);
+        // dv_timer_start(&dribbleTimer);
         accelBegin = rs.outSpeed;
+        FSM_CHANGE_STATE(Dribble);
     } else {
-        dv_timer_stop(&dribbleTimer);
+        // dv_timer_stop(&dribbleTimer);
     }
 
     // Check criteria:

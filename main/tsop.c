@@ -1,7 +1,7 @@
 #include "tsop.h"
 #include "HandmadeMath.h"
 
-#define TSOP_DEBUG
+// #define TSOP_DEBUG
 
 static uint16_t tsopCounter = 0;
 // in polar form, so x = mag, y = theta
