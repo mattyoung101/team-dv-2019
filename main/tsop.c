@@ -125,24 +125,24 @@ void tsop_calc(void){
 
 void tsop_dump(void){
     // this is generated using tsop_format_gen.py in the scripts folder, yes I know it sucks
-    printf("BEGIN_TSOP_DEBUG %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f "
-    "%.4f %.4f %.4f %.4f %.4f %.4f\n", readings[0].X, readings[1].X, readings[2].X, readings[3].X, readings[4].X, 
-    readings[5].X, readings[6].X, readings[7].X, readings[8].X, readings[9].X, readings[10].X, readings[11].X, 
-    readings[12].X, readings[13].X, readings[14].X, readings[15].X, readings[16].X, readings[17].X, readings[18].X, 
-    readings[19].X, readings[20].X, readings[21].X, readings[22].X, readings[23].X);
+    // printf("BEGIN_TSOP_DEBUG %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f "
+    // "%.4f %.4f %.4f %.4f %.4f %.4f\n", readings[0].X, readings[1].X, readings[2].X, readings[3].X, readings[4].X, 
+    // readings[5].X, readings[6].X, readings[7].X, readings[8].X, readings[9].X, readings[10].X, readings[11].X, 
+    // readings[12].X, readings[13].X, readings[14].X, readings[15].X, readings[16].X, readings[17].X, readings[18].X, 
+    // readings[19].X, readings[20].X, readings[21].X, readings[22].X, readings[23].X);
     // printf("BEGIN_TSOP_DEBUG %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f %.4f "
     // "%.4f %.4f %.4f %.4f %.4f %.4f\n", readings[0].Y, readings[1].Y, readings[2].Y, readings[3].Y, readings[4].Y, 
     // readings[5].Y, readings[6].Y, readings[7].Y, readings[8].Y, readings[9].Y, readings[10].Y, readings[11].Y, 
     // readings[12].Y, readings[13].Y, readings[14].Y, readings[15].Y, readings[16].Y, readings[17].Y, readings[18].Y, 
     // readings[19].Y, readings[20].Y, readings[21].Y, readings[22].Y, readings[23].Y);
-    // ESP_LOGD(TAG, "Values: (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
-    // "(%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
-    // "(%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
-    // "(%f, %f), (%f, %f)", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, readings[2].Y, 
-    // readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, readings[6].Y, 
-    // readings[7].X, readings[7].Y, readings[8].X, readings[8].Y, readings[9].X, readings[9].Y, readings[10].X, readings[10].Y, 
-    // readings[11].X, readings[11].Y, readings[12].X, readings[12].Y, readings[13].X, readings[13].Y, readings[14].X, 
-    // readings[14].Y, readings[15].X, readings[15].Y, readings[16].X, readings[16].Y, readings[17].X, readings[17].Y, 
-    // readings[18].X, readings[18].Y, readings[19].X, readings[19].Y, readings[20].X, readings[20].Y, readings[21].X, 
-    // readings[21].Y, readings[22].X, readings[22].Y, readings[23].X, readings[23].Y);
+    printf("Values: (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
+    "(%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
+    "(%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), (%f, %f), "
+    "(%f, %f), (%f, %f)\n", readings[0].X, readings[0].Y, readings[1].X, readings[1].Y, readings[2].X, readings[2].Y, 
+    readings[3].X, readings[3].Y, readings[4].X, readings[4].Y, readings[5].X, readings[5].Y, readings[6].X, readings[6].Y, 
+    readings[7].X, readings[7].Y, readings[8].X, readings[8].Y, readings[9].X, readings[9].Y, readings[10].X, readings[10].Y, 
+    readings[11].X, readings[11].Y, readings[12].X, readings[12].Y, readings[13].X, readings[13].Y, readings[14].X, 
+    readings[14].Y, readings[15].X, readings[15].Y, readings[16].X, readings[16].Y, readings[17].X, readings[17].Y, 
+    readings[18].X, readings[18].Y, readings[19].X, readings[19].Y, readings[20].X, readings[20].Y, readings[21].X, 
+    readings[21].Y, readings[22].X, readings[22].Y, readings[23].X, readings[23].Y);
 }

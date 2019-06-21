@@ -31,8 +31,8 @@ void defines_init(uint8_t robotId){
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     } else {
-        float values[] = {1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f,
-                        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f};
+        float values[] = {1.0f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f,
+                        0.6f, 0.6f, 0.6f, 1.0f, 1.0f, 1.0f, 1.1f, 1.0f};
         MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = false;

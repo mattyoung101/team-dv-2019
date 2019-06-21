@@ -201,9 +201,9 @@ void slave_task(void *pvParameter){
 
         esp_task_wdt_reset();
 
-        // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
+        printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
         // ESP_LOGD(TAG, "%f", heading);
-        // vTaskDelay(pdMS_TO_TICKS(100));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
