@@ -1,5 +1,6 @@
 #define HANDMADE_MATH_IMPLEMENTATION
 #define HANDMADE_MATH_NO_SSE
+#define _GNU_SOURCE
 #include "HandmadeMath.h"
 #include <stdio.h>
 #include "freertos/FreeRTOS.h"
@@ -84,6 +85,7 @@ void master_task(void *pvParameter){
                 robotState.outShouldBrake = false;
                 robotState.outOrientation = 0;
                 robotState.outDirection = 0;
+                robotState.outSwitchOk = false;
 
                 // update FSM values
                 robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
@@ -124,12 +126,9 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
-
-        // print_ball_data(&robotState);
+        robotState.outSwitchOk = true;
 
         // run motors
-        // robotState.outSpeed = 0;
-        // motor_calc(0, robotState.outOrientation, 0);
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 

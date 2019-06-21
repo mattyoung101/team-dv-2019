@@ -36,4 +36,6 @@ void comms_bt_receive_task(void *pvParameter);
 /** Bluetooth send task */
 void comms_bt_send_task(void *pvParameter);
 /** stops the send and receive tasks */
-void bt_stop_tasks(void);
+void comms_bt_stop_tasks(void);
+/** reinits bluetooth **/
+void comms_bt_reinit(void);

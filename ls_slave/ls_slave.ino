@@ -24,32 +24,23 @@ void setup() {
   pinMode(BLINK_LED,OUTPUT);
 
   // initialise LS library
-//  ls.init();
-//  ls.calibrate();
+  ls.init();
+  ls.calibrate();
 }
 
 void loop() {
-//  ls.read();
-//  ls.calculateClusters();
-//  ls.calculateLine();
+  ls.read();
+  ls.calculateClusters();
+  ls.calculateLine();
 
-//  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
-//  ls.lineCalc();
+  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
+  ls.lineCalc();
 
-//  Serial.print("lineAngle: ");
-//  Serial.print(ls.getLineAngle());
-//  Serial.print("\t");
-//  Serial.print("lineSize: ");
-//  Serial.print(ls.getLineSize());
-  
-//  Serial.print(analogRead(A1));
-//  Serial.println("fuck");
-
-  // Blinky LEDs :D
-  if(ledTimer.timeHasPassed()){
-    digitalWrite(BLINK_LED,ledOn);
-    ledOn = !ledOn;
-  }
+  Serial.print("lineAngle: ");
+  Serial.print(ls.getLineAngle());
+  Serial.print("\t");
+  Serial.print("lineSize: ");
+  Serial.print(ls.getLineSize());
 }
 
 void requestEvent(){
@@ -63,16 +54,16 @@ void requestEvent(){
   = 9 bytes total
   */
   Wire.write(0xB);
-//  Wire.write(highByte((uint16_t) ls.getLineAngle()));
-//  Wire.write(lowByte((uint16_t) ls.getLineAngle()));
-//  Wire.write(highByte((uint16_t) ls.getLineSize()));
-//  Wire.write(lowByte((uint16_t) ls.getLineSize()));
-//  Wire.write(ls.isOnLine);
-//  Wire.write(ls.lineOver);
-  Wire.write(highByte((uint16_t) 100));
-  Wire.write(lowByte((uint16_t) 100));
-  Wire.write(highByte((uint16_t) 8700));
-  Wire.write(lowByte((uint16_t) 8700));
-  Wire.write(0);
-  Wire.write(1);
+  Wire.write(highByte((uint16_t) ls.getLineAngle()));
+  Wire.write(lowByte((uint16_t) ls.getLineAngle()));
+  Wire.write(highByte((uint16_t) ls.getLineSize()));
+  Wire.write(lowByte((uint16_t) ls.getLineSize()));
+  Wire.write(ls.isOnLine);
+  Wire.write(ls.lineOver);
+//  Wire.write(highByte((uint16_t) 100));
+//  Wire.write(lowByte((uint16_t) 100));
+//  Wire.write(highByte((uint16_t) 8700));
+//  Wire.write(lowByte((uint16_t) 8700));
+//  Wire.write(0);
+//  Wire.write(1);
 }
