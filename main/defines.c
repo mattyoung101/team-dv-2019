@@ -19,7 +19,7 @@ void defines_init(uint8_t robotId){
 
     if (robotId == 0){
         float values[] = {1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
-                        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.2f, 1.2f};
+                        0.7f, 0.7f, 0.7f, 1.0f, 1.0f, 1.0f, 1.2f, 1.2f};
         MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = true;

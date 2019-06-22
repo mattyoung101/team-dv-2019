@@ -116,6 +116,11 @@ void master_task(void *pvParameter){
                 robotState.inX = robotX;
                 robotState.inY = robotY;
                 robotState.inBatteryVoltage = lastSensorUpdate.voltage;
+                robotState.inLineAngle = lastSensorUpdate.lineAngle;
+                robotState.inLineSize = lastSensorUpdate.lineSize;
+                robotState.inLastAngle = lastSensorUpdate.lastAngle;
+                robotState.inOnLine = lastSensorUpdate.onLine;
+                robotState.inLineOver = lastSensorUpdate.lineOver;
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
@@ -127,6 +132,10 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
+        // robotState.outSpeed = 0;
+        update_line(&robotState);
+
+        print_ball_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);

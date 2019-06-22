@@ -47,6 +47,11 @@
 #define HEADING_KD 0.042
 #define HEADING_MAX_CORRECTION 100
 
+#define LINEAVOID_KP 2
+#define LINEAVOID_KI 0
+#define LINEAVOID_KD 0.5
+#define LINEAVOID_MAX 100
+
 // --- Idle Correction --- //
 #define IDLE_KP 0.3
 #define IDLE_KI 0
@@ -163,15 +168,15 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_MUX1_BUFFER 5
 #define LS_NUM 48
 #define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
-#define LS_NO_LINE_ANGLE 0xBAD
-#define LS_NO_LINE_SIZE 0xBAD
+#define LS_NO_LINE_ANGLE 400
+#define LS_NO_LINE_SIZE 400
 #define ADC_SAMPLES 1
 #define LS_ES_DEFAULT 69
 #define LS_TIMER_PERIOD 1000 // microseconds
 
 // Line avoid settings
 #define LS_LINE_OVER_BUFFER 80
-#define LINE_BIG_SIZE 1
+#define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
 #define OVER_LINE_SPEED 100
 #define LINE_TRACK_SPEED 30
@@ -232,22 +237,22 @@ extern float TSOP_TUNING[TSOP_NUM];
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 120
-#define ORBIT_SPEED_SLOW 50
-#define ORBIT_SPEED_FAST 70
+#define BALL_CLOSE_STRENGTH 130
+#define ORBIT_SPEED_SLOW 30
+#define ORBIT_SPEED_FAST 50
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 100 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 10 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 350
+#define IN_FRONT_MIN_ANGLE 3 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 357
 #define IN_FRONT_ANGLE_BUFFER 15
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 50 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.0001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330

@@ -69,7 +69,7 @@ void state_attack_idle_update(state_machine_t *fsm){
     if (rs.inBallStrength > 0.0f) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
-    } else if (!rs.inGoalVisible) {
+    } else if (!rs.inOtherGoalVisible) {
         LOG_ONCE(TAG, "Goal not visible, braking");
         FSM_MOTOR_BRAKE;
     }

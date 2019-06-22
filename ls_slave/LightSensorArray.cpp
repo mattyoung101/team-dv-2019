@@ -85,15 +85,16 @@ int LightSensorArray::readSensor(int sensor) {
 void LightSensorArray::read() {
     // Read all 48 sensors
     for (int i = 0; i < LS_NUM; i++) {
+        if(i == 47 || i == 46 || i == 45 || i == 44 || i == 43 || i == 42 || i == 41 || i == 17 || i == 18 || i == 19 || i ==20 || i ==21 || i == 22 || i == 23) continue; // Robot 0
         data[i] = readSensor(i) > thresholds[i];
         #if DEBUG_DATA
             Serial.print(data[i]);
 //            Serial.print(" ");
         #elif DEBUG_RAW
-//            if(i < 24){
+            if(i < 24){
               Serial.print(readSensor(i));
               Serial.print(", ");
-//            }
+            }
         #endif
     }
 }
