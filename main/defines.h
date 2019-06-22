@@ -27,7 +27,7 @@
 #define I2C_ACK_MODE 0x1 // 0x0 to disable ack
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
-#define NANO_PACKET_SIZE 9 // size of packet coming from Nano LS slave
+#define NANO_PACKET_SIZE 11 // size of packet coming from Nano LS slave, including start byte
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows

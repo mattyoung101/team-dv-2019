@@ -16,7 +16,7 @@ message SensorUpdate {
     // IMU
     float heading = 8;
 
-    // Junk "innovation" sensors
-    // int32 temperature = 9; // screw accuracy
-    // float voltage = 10; // ok I guess we need it here
+    // Other sensors
+    int32 temperature = 9; // screw accuracy
+    float voltage = 10; // ok I guess we need it here
 }

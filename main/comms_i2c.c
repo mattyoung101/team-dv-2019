@@ -99,7 +99,7 @@ static void comms_i2c_receive_task(void *pvParameters){
 /** sends/receives data from the Arduino Nano LS slave **/
 static void nano_comms_task(void *pvParameters){
     static const char *TAG = "NanoCommsTask";
-    uint8_t buf[9] = {0};
+    uint8_t buf[NANO_PACKET_SIZE] = {0};
     nanoDataSem = xSemaphoreCreateMutex();
     xSemaphoreGive(nanoDataSem);
 
@@ -113,8 +113,9 @@ static void nano_comms_task(void *pvParameters){
         bool inOnLine: 1 byte
         bool inLineOver: 1 byte
         float inLastAngle: 2 bytes
-        = 8 bytes + 1 start byte 
-        = 9 bytes total
+        float batteryVoltage: 2 bytes
+        = 10 bytes + 1 start byte 
+        = 11 bytes total
         */
         memset(buf, 0, NANO_PACKET_SIZE);
         nano_read(I2C_NANO_SLAVE_ADDR, NANO_PACKET_SIZE, buf);
@@ -126,6 +127,7 @@ static void nano_comms_task(void *pvParameters){
                 nanoData.isOnLine = (bool) buf[5];
                 nanoData.isLineOver = (bool) buf[6];
                 nanoData.lastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
+                nanoData.batteryVoltage = UNPACK_16(buf[9], buf[10]) / IMU_MULTIPLIER;
                 xSemaphoreGive(nanoDataSem);
             } else {
                 ESP_LOGE(TAG, "Failed to unlock nano data semaphore!");

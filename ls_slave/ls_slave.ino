@@ -95,8 +95,9 @@ void requestEvent(){
   bool inOnLine: 1 byte
   bool inLineOver: 1 byte
   float inLastAngle: 2 bytes
-  = 8 bytes + 1 start byte 
-  = 9 bytes total
+  float batteryVoltage: 2 bytes
+  = 10 bytes + 1 start byte 
+  = 11 bytes total
   */
   Wire.write(0xB);
   Wire.write(highByte((uint16_t) (ls.getLineAngle() * 100.0)));
@@ -105,4 +106,6 @@ void requestEvent(){
   Wire.write(lowByte((uint16_t) (ls.getLineSize() * 100.0)));
   Wire.write(ls.isOnLine);
   Wire.write(ls.lineOver);
+  Wire.write(highByte((uint16_t) (batteryVoltage * 100.0)));
+  Wire.write(lowByte((uint16_t) (batteryVoltage * 100.0)));
 }

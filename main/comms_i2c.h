@@ -26,6 +26,7 @@ typedef struct {
     bool isOnLine;
     bool isLineOver;
     float lastAngle;
+    float batteryVoltage;
 } nano_data_t;
 
 /** last SensorUpdate protobuf message from slave **/
