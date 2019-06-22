@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 #define LS_NUM 48
-#define DEBUG_DATA true
+#define DEBUG_DATA false
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10
