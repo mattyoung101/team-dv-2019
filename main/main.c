@@ -128,8 +128,6 @@ void master_task(void *pvParameter){
         fsm_update(stateMachine);
         robotState.outSwitchOk = true;
 
-        print_ball_data(&robotState);
-
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
@@ -155,9 +153,9 @@ void slave_task(void *pvParameter){
 
     // Initialise hardware
     tsop_init();
-    // rgb_led_init();
     simu_init();
     simu_calibrate();
+    gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
 
     ESP_LOGI(TAG, "========== Slave hardware init OK ==========");
     esp_task_wdt_add(NULL);
@@ -176,18 +174,18 @@ void slave_task(void *pvParameter){
         memset(pbBuf, 0, PROTOBUF_SIZE);
         SensorUpdate msg = SensorUpdate_init_zero;
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
-        
+
         // set the message's values
-        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-        //     msg.lastAngle = nanoData.lastAngle;
-        //     msg.lineAngle = nanoData.lineAngle;
-        //     msg.lineOver = nanoData.isLineOver;
-        //     msg.lineSize = nanoData.lineSize;
-        //     msg.onLine = nanoData.isOnLine;
-        //     xSemaphoreGive(nanoDataSem);
-        // } else {
-        //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        // }
+        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+            msg.lastAngle = nanoData.lastAngle;
+            msg.lineAngle = nanoData.lineAngle;
+            msg.lineOver = nanoData.isLineOver;
+            msg.lineSize = nanoData.lineSize;
+            msg.onLine = nanoData.isOnLine;
+            xSemaphoreGive(nanoDataSem);
+        } else {
+            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        }
         msg.heading = heading;
         msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopStrength;
@@ -200,6 +198,9 @@ void slave_task(void *pvParameter){
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
+
+        // activate/deactivate debug LEDs
+        gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
 
         esp_task_wdt_reset();
 

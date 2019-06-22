@@ -149,7 +149,9 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP connection opened");
             break;
         case ESP_SPP_CLOSE_EVT:
-            ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting controller task");
+            ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting tasks");
+            ESP_LOGI(TAGM, "Status: %d, Port status: %d, Async: %d", param->close.status, param->close.port_status,
+            param->close.async);
             comms_bt_stop_tasks();
             break;
         case ESP_SPP_START_EVT:
@@ -165,15 +167,15 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
         case ESP_SPP_CONG_EVT:
             ESP_LOGI(TAGM, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
             if (param->cong.cong){
-                ESP_LOGD(TAGM, "Suspending send task due to congestion");
+                ESP_LOGI(TAGM, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
             } else {
-                ESP_LOGD(TAGM, "Resuming send task as congestion hsa cleared");
+                ESP_LOGI(TAGM, "Resuming send task as congestion hsa cleared");
                 vTaskResume(sendTaskHandle);
             }
             break;
         case ESP_SPP_SRV_OPEN_EVT:
-            ESP_LOGI(TAGM, "SPP server opened, starting controller task");
+            ESP_LOGI(TAGM, "SPP server opened, starting tasks");
             bt_start_tasks(param);
             break;
         default:
@@ -278,11 +280,11 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             }
             break;
         case ESP_SPP_OPEN_EVT:
-            ESP_LOGI(TAGS, "SPP connection opened, creating controller task");
+            ESP_LOGI(TAGS, "SPP connection opened, creating tasks");
             bt_start_tasks(param);
             break;
         case ESP_SPP_CLOSE_EVT:
-            ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting controller task");
+            ESP_LOGW(TAGS, "Master has disconnected (SPP connection closed), deleting tasks");
             comms_bt_stop_tasks();
             bt_gap_restart_disc();
             break;
@@ -299,10 +301,10 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
         case ESP_SPP_CONG_EVT:
             ESP_LOGI(TAGS, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
             if (param->cong.cong){
-                ESP_LOGD(TAGS, "Suspending send task due to congestion");
+                ESP_LOGI(TAGS, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
             } else {
-                ESP_LOGD(TAGS, "Resuming send task as congestion hsa cleared");
+                ESP_LOGI(TAGS, "Resuming send task as congestion hsa cleared");
                 vTaskResume(sendTaskHandle);
             }
             break;

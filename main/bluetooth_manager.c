@@ -32,6 +32,7 @@ void comms_bt_receive_task(void *pvParameter){
     static const char *TAG = "BTReceive";
     uint32_t handle = (uint32_t) pvParameter;
     bool wasSwitchOk = false;
+    bool alreadyPrinted = false;
     uint8_t switchBuffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 
     // create timers and semaphore if they've not already been created in a previous run of this task
@@ -52,16 +53,29 @@ void comms_bt_receive_task(void *pvParameter){
 
         if (xQueueReceive(packetQueue, &recvMsg, portMAX_DELAY)){
             isAttack = strstr(recvMsg.fsmState, "Attack");
-            ESP_LOGD(TAG, "Received BT packet: state: %s, robotX: %f, robotY: %f, switch ok: %s, isAttack: %s", 
-            recvMsg.fsmState, recvMsg.robotX, recvMsg.robotY, recvMsg.switchOk ? "yes" : "no", isAttack ? "yes" : "no");
-            
-            // reset the timeout timer if we got a packet
+            // ESP_LOGD(TAG, "Received BT packet: state: %s, robotX: %f, robotY: %f, switch ok: %s, isAttack: %s", 
+            // recvMsg.fsmState, recvMsg.robotX, recvMsg.robotY, recvMsg.switchOk ? "yes" : "no", isAttack ? "yes" : "no");
             xTimerReset(packetTimer.timer, portMAX_DELAY);
+        }
+
+        // conflict resolution: whichever robot is closes to the goal loses the conflict and becomes defender
+        if ((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) {
+            ESP_LOGW(TAG, "Conflict detected: both robots are attack!");
+
+            if (recvMsg.goalLength < robotState.inGoalLength){
+                ESP_LOGI(TAG, "Conflict resolution: other robot is closest to goal, do nothing");
+            } else {
+                ESP_LOGI(TAG, "Conflict resolution: I'm closest to goal, switch to defence");
+                fsm_change_state(stateMachine, &stateDefenceDefend);
+            }
         }
 
         // decide if we should switch or not
         if (recvMsg.switchOk){
-            ESP_LOGI(TAG, "Other robot is willing to switch");
+            if (!alreadyPrinted){
+                ESP_LOGI(TAG, "Other robot is willing to switch");
+                alreadyPrinted = true;
+            }
             wasSwitchOk = true;
 
             // if we're OK to switch, the other robot is OK to switch and we're not in the cooldown period, switch
@@ -70,11 +84,13 @@ void comms_bt_receive_task(void *pvParameter){
                 esp_spp_write(handle, 6, switchBuffer);
                 fsm_change_state(stateMachine, &stateDefenceDefend); 
                 dv_timer_start(&cooldownTimer);
+                alreadyPrinted = false;
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
-            ESP_LOGI(TAG, "Other robot is NO LONGER willing to switch.");
+            ESP_LOGW(TAG, "Other robot is NO LONGER willing to switch");
             wasSwitchOk = false;
+            alreadyPrinted = false;
         }
 
         esp_task_wdt_reset();
@@ -98,10 +114,10 @@ void comms_bt_send_task(void *pvParameter){
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
+        sendMsg.goalLength = robotState.inGoalLength;
 
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         if (pb_encode(&stream, BTProvide_fields, &sendMsg)){
-            // ESP_LOGD(TAG, "Sending %d bytes", stream.bytes_written);
             esp_spp_write(handle, stream.bytes_written, buf);
         } else {
             ESP_LOGE(TAG, "Error encoding Protobuf stream: %s", PB_GET_ERROR(&stream));

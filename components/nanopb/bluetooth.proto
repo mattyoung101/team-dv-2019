@@ -6,7 +6,8 @@ message BTProvide {
     float robotX = 2;
     float robotY = 3;
     bool onLine = 4;
-    bool switchOk = 5; // whether or not it is OK to switch right now
+    bool switchOk = 5;
+    float goalLength = 6;
 }
 
 // we won't have BTRequest because both robots can just spam each other with data
