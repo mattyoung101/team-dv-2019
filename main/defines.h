@@ -267,10 +267,12 @@ extern float TSOP_TUNING[TSOP_NUM];
 #define MODE_DEFEND 1
 extern uint8_t ROBOT_MODE;
 
-// RGB LEDs :)
+// RGB LEDs
 #define LED_PIN 13
 #define LED_NUM 12
 #define RAINBOW_TRANSITION_TIME 0.1f // seconds
+#define DEBUG_LED_1 23 // supposed to be orange
+#define DEBUG_LED_2 25 // supposed to be white
 
 /** initialises per robot values */
 void defines_init(uint8_t robotId);

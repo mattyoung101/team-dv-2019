@@ -43,17 +43,8 @@ static void dribble_timer_callback(TimerHandle_t timer){
 
 /** instantiates the idle timer if it is null **/
 static void create_timers_if_needed(state_machine_t *fsm){
-    static const char *TAG = "CreateTimer";
-
-    if (idleTimer.timer == NULL){
-        ESP_LOGI(TAG, "Creating idle timer");
-        idleTimer.timer = xTimerCreate("IdleTimer", pdMS_TO_TICKS(IDLE_TIMEOUT), false, (void*) fsm, idle_timer_callback);
-    } 
-    if (dribbleTimer.timer == NULL){
-        ESP_LOGI(TAG, "Creating dribble timer timer");
-        dribbleTimer.timer = xTimerCreate("DribbleTimer", pdMS_TO_TICKS(DRIBBLE_TIMEOUT), false, (void*) fsm, 
-                            dribble_timer_callback);
-    }
+    dv_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
+    dv_timer_check_create(&dribbleTimer, "DribbleTimer", DRIBBLE_TIMEOUT, (void*) fsm, dribble_timer_callback);
 }
 
 /** checks if any of the timers should be disabled based on current robot data */
