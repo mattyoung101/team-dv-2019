@@ -106,6 +106,8 @@ void requestEvent(){
   Wire.write(lowByte((uint16_t) (ls.getLineSize() * 100.0)));
   Wire.write(ls.isOnLine);
   Wire.write(ls.lineOver);
+  Wire.write(highByte((uint16_t) (firstAngle * 100.0)));
+  Wire.write(lowByte((uint16_t) (firstAngle * 100.0)));
   Wire.write(highByte((uint16_t) (batteryVoltage * 100.0)));
   Wire.write(lowByte((uint16_t) (batteryVoltage * 100.0)));
 }
