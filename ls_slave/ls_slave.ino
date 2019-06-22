@@ -54,19 +54,20 @@ void loop() {
   inputVoltage = V_REF * (double)analogRead(V_BAT)/1023;
   batteryVoltage = (float)((inputVoltage * (R1 + R2)) / R2) + V_BAT_OFFSET;
 
-//  Serial.print(batteryVoltage);
-
-//  Serial.print("lineAngle: ");
-//  Serial.print(ls.getLineAngle());
-//  Serial.print("\t");
-//  Serial.print("lineSize: ");
-//  Serial.print(ls.getLineSize());
-//  Serial.print("\t");
-//  Serial.print("isOnLine: ");
-//  Serial.print(ls.isOnLine);
-//  Serial.print("\t");
-//  Serial.print("lineOver: ");
-//  Serial.print(ls.lineOver);
+  Serial.print("batteryVoltage: ");
+  Serial.print(batteryVoltage);
+  Serial.print("\t");
+  Serial.print("lineAngle: ");
+  Serial.print(ls.getLineAngle());
+  Serial.print("\t");
+  Serial.print("lineSize: ");
+  Serial.print(ls.getLineSize());
+  Serial.print("\t");
+  Serial.print("isOnLine: ");
+  Serial.print(ls.isOnLine);
+  Serial.print("\t");
+  Serial.print("lineOver: ");
+  Serial.print(ls.lineOver);
 
   // LED Stuff
   if(batteryVoltage < V_BAT_MIN){

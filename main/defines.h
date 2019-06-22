@@ -232,15 +232,15 @@ extern float TSOP_TUNING[TSOP_NUM];
 
 // Orbit
 #define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 125
-#define ORBIT_SPEED_SLOW 40
-#define ORBIT_SPEED_FAST 60
+#define BALL_CLOSE_STRENGTH 120
+#define ORBIT_SPEED_SLOW 50
+#define ORBIT_SPEED_FAST 70
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 130 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 100 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 355
+#define IN_FRONT_MIN_ANGLE 10 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 350
 #define IN_FRONT_ANGLE_BUFFER 15
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
