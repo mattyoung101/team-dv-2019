@@ -161,11 +161,9 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             ESP_LOGI(TAGM, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            // ESP_LOGD(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data, param->data_ind.handle);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGM, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
             if (param->cong.cong){
                 ESP_LOGI(TAGM, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
@@ -295,11 +293,9 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             ESP_LOGI(TAGS, "SPP client connection initiated");
             break;
         case ESP_SPP_DATA_IND_EVT:
-            // ESP_LOGI(TAGM, "SPP data received len=%d handle=%d", param->data_ind.len, param->data_ind.handle);
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data, param->data_ind.handle);
             break;
         case ESP_SPP_CONG_EVT:
-            ESP_LOGI(TAGS, "SPP congestion status changed, now: %s", param->cong.cong ? "true" : "false");
             if (param->cong.cong){
                 ESP_LOGI(TAGS, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);

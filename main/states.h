@@ -35,6 +35,8 @@ typedef struct {
     bool inOnLine;
     bool inLineOver;
     float inLastAngle;
+    // Other stuff
+    float inBatteryVoltage;
 
     // Outputs
     int16_t outSpeed;
@@ -54,7 +56,10 @@ typedef struct {
 void dv_timer_start(dv_timer_t *timer);
 /** stops a timer if it has been instantiated */
 void dv_timer_stop(dv_timer_t *timer);
-/** checks to see if a timer needs to be created. due to fucking bullshit, we can't do this with a macro, so it sucks */
+/** 
+ * checks to see if a timer needs to be created.
+ * @param timeout timeout, in ms, automatically converted to ticks inside this function using pdMS_TO_TICKS
+ */
 void dv_timer_check_create(dv_timer_t *timer, char *timerName, int32_t timeout, void *const parameter, 
                             TimerCallbackFunction_t callback);
 

@@ -115,6 +115,7 @@ void master_task(void *pvParameter){
                 robotState.inHeading = lastSensorUpdate.heading;
                 robotState.inX = robotX;
                 robotState.inY = robotY;
+                robotState.inBatteryVoltage = lastSensorUpdate.voltage;
 
                 // unlock semaphores
                 xSemaphoreGive(robotStateSem);
@@ -126,7 +127,6 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
-        robotState.outSwitchOk = true;
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -182,6 +182,7 @@ void slave_task(void *pvParameter){
             msg.lineOver = nanoData.isLineOver;
             msg.lineSize = nanoData.lineSize;
             msg.onLine = nanoData.isOnLine;
+            msg.voltage = nanoData.batteryVoltage;
             xSemaphoreGive(nanoDataSem);
         } else {
             ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
@@ -193,13 +194,12 @@ void slave_task(void *pvParameter){
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
             comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            // wait so that the slave realises we're not sending any more data
-            vTaskDelay(pdMS_TO_TICKS(4)); 
+            vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
 
-        // activate/deactivate debug LEDs
+        // activate/deactivate debug LED if we're on the line
         gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
 
         esp_task_wdt_reset();

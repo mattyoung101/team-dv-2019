@@ -76,12 +76,7 @@ static void surge_timer_callback(TimerHandle_t timer){
 }
 
 void state_defence_defend_enter(state_machine_t *fsm){
-    static const char *TAG = "DefenceDefendEnter";
-
-     if (surgeTimer.timer == NULL){
-        ESP_LOGI(TAG, "Creating surge timer");
-        surgeTimer.timer = xTimerCreate("SurgeTimer", pdMS_TO_TICKS(SURGE_TIMEOUT), false, (void*) fsm, surge_timer_callback);
-    }
+    dv_timer_check_create(&surgeTimer, "SurgeTimer", SURGE_TIMEOUT, (void*) fsm, surge_timer_callback);
  }
 
  void state_defence_defend_update(state_machine_t *fsm){
