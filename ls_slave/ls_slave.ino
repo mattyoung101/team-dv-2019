@@ -48,10 +48,13 @@ void loop() {
   Serial.print("lineOver: ");
   Serial.print(ls.lineOver);
 
+  // LED Stuff
   if(ledTimer.timeHasPassed()){
-    digitalWrite(BLINK_LED,ledOn);
+    digitalWrite(BLINK_LED, ledOn);
     ledOn = !ledOn;
   }
+
+//  digitalWrite(DEBUG_LED, ls.isOnLine || ls.lineOver);
 
   Serial.println();
 }
@@ -67,16 +70,10 @@ void requestEvent(){
   = 9 bytes total
   */
   Wire.write(0xB);
-  Wire.write(highByte((uint16_t) ls.getLineAngle()));
-  Wire.write(lowByte((uint16_t) ls.getLineAngle()));
-  Wire.write(highByte((uint16_t) ls.getLineSize()));
-  Wire.write(lowByte((uint16_t) ls.getLineSize()));
+  Wire.write(highByte((uint16_t) (ls.getLineAngle() * 100.0)));
+  Wire.write(lowByte((uint16_t) (ls.getLineAngle() * 100.0)));
+  Wire.write(highByte((uint16_t) (ls.getLineSize() * 100.0)));
+  Wire.write(lowByte((uint16_t) (ls.getLineSize() * 100.0)));
   Wire.write(ls.isOnLine);
   Wire.write(ls.lineOver);
-//  Wire.write(highByte((uint16_t) 100));
-//  Wire.write(lowByte((uint16_t) 100));
-//  Wire.write(highByte((uint16_t) 8700));
-//  Wire.write(lowByte((uint16_t) 8700));
-//  Wire.write(0);
-//  Wire.write(1);
 }

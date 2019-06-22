@@ -9,8 +9,8 @@
 #define LS_CALIBRATION_COUNT 10
 #define LS_CALIBRATION_BUFFER 100
 #define LS_ES_DEFAULT 69
-#define NO_LINE_ANGLE 0xBAD
-#define NO_LINE_SIZE 0xBAD
+#define NO_LINE_ANGLE 400
+#define NO_LINE_SIZE 400
 #define LS_NUM_MULTIPLIER 7.5 // 360 / LS_NUM
 
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
