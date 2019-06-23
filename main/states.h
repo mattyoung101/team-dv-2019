@@ -52,6 +52,11 @@ typedef struct {
     bool running;
 } dv_timer_t;
 
+/** locks the robot state semaphore */
+#define RS_SEM_LOCK if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))) {
+/** unlocks the robot state semaphore */
+#define RS_SEM_UNLOCK xSemaphoreGive(robotStateSem); } else { ESP_LOGW(TAG, "Failed to unlock robot state semaphore!"); }
+
 /** start a timer if its not already started and has been instantiated */
 void dv_timer_start(dv_timer_t *timer);
 /** stops a timer if it has been instantiated */

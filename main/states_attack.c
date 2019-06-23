@@ -63,7 +63,10 @@ void state_attack_idle_update(state_machine_t *fsm){
 
     imu_correction(&robotState);
     rs.outIsAttack = true;
-    rs.outSwitchOk = false;
+    
+    RS_SEM_LOCK
+    rs.outSwitchOk = true;
+    RS_SEM_UNLOCK
 
     // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
     if (rs.inBallStrength > 0.0f) {
@@ -86,8 +89,10 @@ void state_attack_pursue_update(state_machine_t *fsm){
     static const char *TAG = "PursueState";
     
     accelProgress = 0;
+    RS_SEM_LOCK
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
+    RS_SEM_UNLOCK
     imu_correction(&robotState);
     timer_check();
 
@@ -114,8 +119,10 @@ void state_attack_orbit_update(state_machine_t *fsm){
     static const char *TAG = "OrbitState";
 
     accelProgress = 0; // reset acceleration progress
+    RS_SEM_LOCK
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
+    RS_SEM_UNLOCK
     if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
     else imu_correction(&robotState);
     timer_check();
@@ -151,8 +158,10 @@ void state_attack_orbit_update(state_machine_t *fsm){
 void state_attack_dribble_update(state_machine_t *fsm){
     static const char *TAG = "DribbleState";
     
+    RS_SEM_LOCK
     rs.outIsAttack = true;
     rs.outSwitchOk = false; // we're trying to shoot so piss off
+    RS_SEM_UNLOCK
     goal_correction(&robotState);
     timer_check();
 
@@ -192,8 +201,10 @@ void state_attack_dribble_update(state_machine_t *fsm){
 void state_attack_doubledefence_update(state_machine_t *fsm){
     static const char *TAG = "AvoidDoubleDefenceState";
 
+    RS_SEM_LOCK
     rs.outIsAttack = true;
     rs.outSwitchOk = false; // we switch now, and we might enter double defence, so don't
+    RS_SEM_UNLOCK
     imu_correction(&robotState);
     timer_check();
 

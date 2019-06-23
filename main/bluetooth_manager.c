@@ -38,11 +38,9 @@ void comms_bt_receive_task(void *pvParameter){
     // create timers and semaphore if they've not already been created in a previous run of this task
     dv_timer_check_create(&packetTimer, "BTTimeout", BT_PACKET_TIMEOUT, pvParameter, packet_timer_callback);
     dv_timer_check_create(&cooldownTimer, "CooldownTimer", BT_SWITCH_COOLDOWN, pvParameter, cooldown_timer_callback);
+    if (cooldownSem == NULL) cooldownSem = xSemaphoreCreateBinary();
 
-    if (cooldownSem == NULL){
-        ESP_LOGI(TAG, "Creating switch semaphore");
-        cooldownSem = xSemaphoreCreateBinary();
-    }
+    ESP_LOGD(TAG, "cooldown sem: %d", cooldownSem == NULL);
 
     ESP_LOGI(TAG, "Bluetooth receive task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
@@ -109,14 +107,16 @@ void comms_bt_send_task(void *pvParameter){
     
     while (true){
         memset(buf, 0, PROTOBUF_SIZE);
-
         BTProvide sendMsg = BTProvide_init_zero;
+
+        RS_SEM_LOCK;
         sendMsg.onLine = robotState.inOnLine;
         strcpy(sendMsg.fsmState, stateMachine->currentState->name);
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
         sendMsg.goalLength = robotState.inGoalLength;
+        RS_SEM_UNLOCK;
 
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         if (pb_encode(&stream, BTProvide_fields, &sendMsg)){

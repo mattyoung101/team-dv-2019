@@ -20,7 +20,7 @@
 
 #include <string.h>
 
-#define LED_STRIP_TASK_SIZE             (512)
+#define LED_STRIP_TASK_SIZE             (2048)
 #define LED_STRIP_TASK_PRIORITY         (configMAX_PRIORITIES - 1)
 
 #define LED_STRIP_REFRESH_PERIOD_MS     (30U) // TODO: add as parameter to led_strip_init

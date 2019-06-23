@@ -102,6 +102,9 @@ void requestEvent(){
   = 10 bytes + 1 start byte 
   = 11 bytes total
   */
+  uint16_t rawHeading = word(Wire.read(), Wire.read());
+  heading = rawHeading / 100.0;
+
   Wire.write(0xB);
   Wire.write(highByte((uint16_t) (ls.getLineAngle() * 100.0)));
   Wire.write(lowByte((uint16_t) (ls.getLineAngle() * 100.0)));
