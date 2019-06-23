@@ -40,8 +40,6 @@ void comms_bt_receive_task(void *pvParameter){
     dv_timer_check_create(&cooldownTimer, "CooldownTimer", BT_SWITCH_COOLDOWN, pvParameter, cooldown_timer_callback);
     if (cooldownSem == NULL) cooldownSem = xSemaphoreCreateBinary();
 
-    ESP_LOGD(TAG, "cooldown sem: %d", cooldownSem == NULL);
-
     ESP_LOGI(TAG, "Bluetooth receive task init OK, handle: %d", handle);
     esp_task_wdt_add(NULL);
 

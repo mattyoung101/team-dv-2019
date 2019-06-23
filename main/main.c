@@ -64,8 +64,8 @@ void master_task(void *pvParameter){
         comms_bt_init_slave();
     }
 
-    // Initialise FSM
-    stateMachine = fsm_new(ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
+    // Initialise FSM, start out in defence until we get a BT connection
+    stateMachine = fsm_new(&stateDefenceDefend);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
