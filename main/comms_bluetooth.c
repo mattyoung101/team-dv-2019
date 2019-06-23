@@ -92,18 +92,18 @@ static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle)
 
 /** starts the logic task */
 static void bt_start_tasks(esp_spp_cb_param_t *param){
-    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
-            configMAX_PRIORITIES - 4, &receiveTaskHandle);
-    
-    xTaskCreate(comms_bt_send_task, "BTSendTask", 2048, (void*) param->open.handle, 
-            configMAX_PRIORITIES - 5, &sendTaskHandle);
-
     // change into our default mode if it's the first connection
     if (firstConnection){
         ESP_LOGI(TAG, "First connection, changing into default mode");
         fsm_change_state(stateMachine, ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
         firstConnection = false;
     }
+    
+    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 4, &receiveTaskHandle);
+    
+    xTaskCreate(comms_bt_send_task, "BTSendTask", 2048, (void*) param->open.handle, 
+            configMAX_PRIORITIES - 5, &sendTaskHandle);
 }
 
 void comms_bt_stop_tasks(void){
