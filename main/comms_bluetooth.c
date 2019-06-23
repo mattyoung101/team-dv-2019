@@ -37,28 +37,6 @@ static void bt_gap_restart_disc(void){
     ESP_LOGI(TAG, "Restarting GAP discovery...");
 }
 
-// FIXME: this is broken as fuck right now and causes a serious panic on core 0 that also crashes the core dumper itself
-void comms_bt_reinit(void){
-    ESP_LOGI(TAG, "Reinitialising Bluetooth stack");
-    
-    // tear down Bluetooth
-    ESP_LOGI(TAG, "Shutting down");
-    ESP_ERROR_CHECK(esp_spp_deinit());
-    ESP_ERROR_CHECK(esp_bluedroid_disable());
-    ESP_ERROR_CHECK(esp_bluedroid_deinit());
-    ESP_ERROR_CHECK(esp_bt_controller_disable());
-    ESP_LOGI(TAG, "Shutdown");
-
-    // re-init Bluetooth
-    ESP_LOGI(TAG, "Restarting");
-    if (isMaster){
-        comms_bt_init_master();
-    } else {
-        comms_bt_init_slave();
-    }
-    ESP_LOGI(TAG, "Done");
-}
-
 /** decode data and push to packet queue */
 static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle){
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
