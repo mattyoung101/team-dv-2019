@@ -259,7 +259,7 @@ extern float TSOP_TUNING[TSOP_NUM];
 // Defence FSM defines
 #define DEFEND_DISTANCE 30
 #define SURGE_DISTANCE 40
-#define SURGE_STRENGTH 140
+#define SURGE_STRENGTH 130
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270

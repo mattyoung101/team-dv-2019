@@ -132,12 +132,13 @@ void comms_bt_send_task(void *pvParameter){
         RS_SEM_LOCK;
         sendMsg.onLine = robotState.inOnLine;
         strcpy(sendMsg.fsmState, stateMachine->currentState->name);
-        ESP_LOGD(TAG, "Current state: %s", stateMachine->currentState->name);
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
         sendMsg.goalLength = robotState.inGoalLength;
         RS_SEM_UNLOCK;
+
+        ESP_LOGD(TAG, "Current state: %s, switch ok: %s", sendMsg.fsmState, sendMsg.switchOk ? "yes" : "no");
 
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         if (pb_encode(&stream, BTProvide_fields, &sendMsg)){
