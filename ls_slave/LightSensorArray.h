@@ -3,11 +3,11 @@
 
 #include <Arduino.h>
 #define LS_NUM 48
-#define DEBUG_DATA false
+//#define DEBUG_DATA true
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 300
+#define LS_CALIBRATION_BUFFER 100
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 400

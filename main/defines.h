@@ -59,21 +59,21 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 4
+#define FORWARD_KP 3
 #define FORWARD_KI 0
-#define FORWARD_KD 0.0001
+#define FORWARD_KD 0.000001
 #define FORWARD_MAX 100
 
-#define SIDE_KP 3.2
+#define SIDE_KP 2
 #define SIDE_KI 0
-#define SIDE_KD 0.0001
+#define SIDE_KD 0.000001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 4
+#define INTERCEPT_KP 2
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.001
+#define INTERCEPT_KD 0.0001
 #define INTERCEPT_MAX 100
-#define INTERCEPT_MIN 40
+#define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -93,9 +93,9 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 1.5
+#define GOAL_KP 1.0
 #define GOAL_KI 0
-#define GOAL_KD 0.2
+#define GOAL_KD 0.1
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -125,12 +125,11 @@ extern int16_t CAM_OFFSET_Y;
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 #define HALFWAY_DISTANCE 45
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
-#define IDLE_MIN_SPEED 30 // The lowest speed for which the robot will move while positioning
-
+#define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 
 // Motors and Encoders
@@ -244,15 +243,15 @@ extern float TSOP_TUNING[TSOP_NUM];
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 100 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 3 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 357
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 355
 #define IN_FRONT_ANGLE_BUFFER 15
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 50 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.0001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330

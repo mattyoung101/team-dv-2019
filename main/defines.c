@@ -27,18 +27,18 @@ void defines_init(uint8_t robotId){
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = 0;
+        TSOP_CORRECTION = -10;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     } else {
         float values[] = {1.0f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f,
                         0.6f, 0.6f, 0.6f, 1.0f, 1.0f, 1.0f, 1.1f, 1.0f};
-        MOTOR_FL_REVERSED = true;
+        MOTOR_FL_REVERSED = false;
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
-        ROBOT_MODE = MODE_ATTACK;
+        ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = 0;

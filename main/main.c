@@ -135,7 +135,7 @@ void master_task(void *pvParameter){
         // robotState.outSpeed = 0;
         update_line(&robotState);
 
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);

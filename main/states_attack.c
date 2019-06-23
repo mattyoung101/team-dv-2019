@@ -63,7 +63,7 @@ void state_attack_idle_update(state_machine_t *fsm){
 
     imu_correction(&robotState);
     rs.outIsAttack = true;
-    rs.outSwitchOk = true;
+    rs.outSwitchOk = false;
 
     // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
     if (rs.inBallStrength > 0.0f) {
