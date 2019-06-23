@@ -37,6 +37,7 @@ typedef struct {
     float inLastAngle;
     // Other stuff
     float inBatteryVoltage;
+    uint8_t inRobotId;
 
     // Outputs
     int16_t outSpeed;

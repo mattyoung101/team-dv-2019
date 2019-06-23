@@ -58,6 +58,7 @@ void master_task(void *pvParameter){
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     defines_init(robotId);
     ESP_LOGI(TAG, "Running as robot #%d", robotId);
+    robotState.inRobotId = robotId;
     if (robotId == 0){
         comms_bt_init_master();
     } else {
