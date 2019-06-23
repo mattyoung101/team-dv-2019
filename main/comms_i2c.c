@@ -122,12 +122,12 @@ static void nano_comms_task(void *pvParameters){
 
         if (buf[0] == I2C_BEGIN_DEFAULT){
             if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-                nanoData.lineAngle = UNPACK_16(buf[1], buf[2]) / IMU_MULTIPLIER;
-                nanoData.lineSize = UNPACK_16(buf[3], buf[4]) / IMU_MULTIPLIER;
+                nanoData.lineAngle = UNPACK_16(buf[1], buf[2]) / I2C_MULTIPLIER;
+                nanoData.lineSize = UNPACK_16(buf[3], buf[4]) / I2C_MULTIPLIER;
                 nanoData.isOnLine = (bool) buf[5];
                 nanoData.isLineOver = (bool) buf[6];
-                nanoData.lastAngle = UNPACK_16(buf[7], buf[8]) / IMU_MULTIPLIER;
-                nanoData.batteryVoltage = UNPACK_16(buf[9], buf[10]) / IMU_MULTIPLIER;
+                nanoData.lastAngle = UNPACK_16(buf[7], buf[8]) / I2C_MULTIPLIER;
+                nanoData.batteryVoltage = UNPACK_16(buf[9], buf[10]) / I2C_MULTIPLIER;
                 xSemaphoreGive(nanoDataSem);
             } else {
                 ESP_LOGE(TAG, "Failed to unlock nano data semaphore!");

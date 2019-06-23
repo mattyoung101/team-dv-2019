@@ -177,10 +177,13 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
 
 uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     static const char *TAG = "NanoRead";
+    uint16_t scaledHeading = (uint16_t) (robotState.inHeading / I2C_MULTIPLIER);
+    uint8_t headingBytes[] = {HIGH_BYTE_16(scaledHeading), LOW_BYTE_16(scaledHeading)};
     
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE));
+    ESP_ERROR_CHECK(i2c_master_write(cmd, headingBytes, 2, I2C_ACK_MODE));
     // Send repeated start
     ESP_ERROR_CHECK(i2c_master_start(cmd));
     // now send device address (indicating read) & read data
@@ -217,7 +220,7 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
     if(robotState->inOnLine || robotState->inLineOver) {
-        line_correction(&robotState);
+        line_correction(robotState);
         if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
             if(robotState->inLineOver) {
                 robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLineAngle - robotState->inHeading, 360.0f) : 
