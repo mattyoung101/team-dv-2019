@@ -8,12 +8,24 @@ bool MOTOR_FR_REVERSED = false;
 bool MOTOR_BL_REVERSED = false;
 bool MOTOR_BR_REVERSED = false;
 uint8_t ROBOT_MODE = 254;
+
+// --- Camera --- //
 int16_t CAM_OFFSET_X;
 int16_t CAM_OFFSET_Y;
+
+// --- TSOPS --- //
 int16_t TSOP_CORRECTION;
+
+// --- Goalie --- //
 uint8_t DEFEND_DISTANCE;
 uint8_t SURGE_DISTANCE;
 uint8_t SURGE_STRENGTH;
+
+// --- Orbit --- //
+uint8_t BALL_FAR_STRENGTH;
+uint8_t BALL_CLOSE_STRENGTH;
+uint8_t ORBIT_SPEED_SLOW;
+uint8_t ORBIT_SPEED_FAST;
 
 // Code which sets per-robot values, i.e. values that cannot be set at compile time using #defines
 
@@ -34,6 +46,10 @@ void defines_init(uint8_t robotId){
         DEFEND_DISTANCE = 42;
         SURGE_DISTANCE = 47;
         SURGE_STRENGTH = 150;
+        BALL_FAR_STRENGTH = 100;
+        BALL_CLOSE_STRENGTH = 115;
+        ORBIT_SPEED_SLOW = 30;
+        ORBIT_SPEED_FAST = 60;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
@@ -51,6 +67,10 @@ void defines_init(uint8_t robotId){
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 45;
         SURGE_STRENGTH = 130;
+        BALL_FAR_STRENGTH = 100;
+        BALL_CLOSE_STRENGTH = 130;
+        ORBIT_SPEED_SLOW = 30;
+        ORBIT_SPEED_FAST = 50;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

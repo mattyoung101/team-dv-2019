@@ -235,10 +235,10 @@ extern float TSOP_TUNING[TSOP_NUM];
 #define DMP_RATE 200 // DMP update rate in Hz, max is 200
 
 // Orbit
-#define BALL_FAR_STRENGTH 100
-#define BALL_CLOSE_STRENGTH 130
-#define ORBIT_SPEED_SLOW 30
-#define ORBIT_SPEED_FAST 50
+extern uint8_t BALL_FAR_STRENGTH;
+extern uint8_t BALL_CLOSE_STRENGTH;
+extern uint8_t ORBIT_SPEED_SLOW;
+extern uint8_t ORBIT_SPEED_FAST;
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble

@@ -46,12 +46,12 @@ double lerp(int fromValue, int toValue, int progress){
     return fromValue + (toValue - fromValue) * progress;
 }
 
-void loop() {
+void loop() {  
   ls.read();
   ls.calculateClusters();
   ls.calculateLine();
 
-  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
+  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), 0.0f);
   ls.lineCalc();
 
   inputVoltage = V_REF * (double)analogRead(V_BAT)/1023;
@@ -80,17 +80,17 @@ void loop() {
 
   // LED Stuff
   if(batteryVoltage < V_BAT_MIN){
-    if(batteryVoltage < V_BAT_BAD){
-      if(criticalVoltageTimer.timeHasPassed()){
-        digitalWrite(BLINK_LED, ledOn);
-        ledOn = !ledOn;
-      }else{
+//    if(batteryVoltage < V_BAT_BAD){
+//      if(criticalVoltageTimer.timeHasPassed()){
+//        digitalWrite(BLINK_LED, ledOn);
+//        ledOn = !ledOn;
+//      }else{
         if(lowVoltageTimer.timeHasPassed()){
           digitalWrite(BLINK_LED, ledOn);
           ledOn = !ledOn;
         }
-      }
-    }
+//      }
+//    }
   } else {
     if(ledTimer.timeHasPassed()){
       digitalWrite(BLINK_LED, ledOn);

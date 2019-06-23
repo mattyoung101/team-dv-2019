@@ -161,9 +161,9 @@ void orbit(robot_state_t *robotState){
 
     // I hate to do this but...
     if(robotState->inRobotId == 0){
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.4 * powf(E, 0.12 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.5 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.04 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -252,7 +252,7 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
     if(robotState->inOnLine || robotState->inLineOver) {
-        line_correction(robotState);
+        // line_correction(robotState);
         if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
             if(robotState->inLineOver) {
                 robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLineAngle - robotState->inHeading, 360.0f) : 
