@@ -60,9 +60,12 @@ void comms_bt_receive_task(void *pvParameter){
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE",
             isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my goal dist: %d, other goal dist: %f", robotState.inGoalLength, recvMsg.goalLength);
+            
+            
 
             if (recvMsg.goalLength < robotState.inGoalLength){
-                ESP_LOGI(TAG, "Conflict resolution: other robot is closest to goal, do nothing");
+                ESP_LOGI(TAG, "Conflict resolution: other robot is closest to goal, switch to attack");
+                fsm_change_state(stateMachine, &stateAttackPursue);
             } else {
                 ESP_LOGI(TAG, "Conflict resolution: I'm closest to goal, switch to defence");
                 fsm_change_state(stateMachine, &stateDefenceDefend);
