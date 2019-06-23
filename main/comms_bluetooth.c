@@ -13,6 +13,7 @@ static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 static bool isMaster = false;
 static bool isFirstRun = true;
 static uint8_t totalErrors = 0;
+static bool firstConnection = true;
 
 /** Initialises Bluetooth stack **/
 static void bt_init(void){
@@ -90,6 +91,13 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     
     xTaskCreate(comms_bt_send_task, "BTSendTask", 2048, (void*) param->open.handle, 
             configMAX_PRIORITIES - 5, &sendTaskHandle);
+
+    // change into our default mode if it's the first connection
+    if (firstConnection){
+        ESP_LOGI(TAG, "First connection, changing into default mode");
+        fsm_change_state(stateMachine, ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
+        firstConnection = false;
+    }
 }
 
 void comms_bt_stop_tasks(void){
