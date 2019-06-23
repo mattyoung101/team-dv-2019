@@ -160,7 +160,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     
     RS_SEM_LOCK
     rs.outIsAttack = true;
-    rs.outSwitchOk = false; // we're trying to shoot so piss off
+    rs.outSwitchOk = true; // we're trying to shoot so piss off
     RS_SEM_UNLOCK
     goal_correction(&robotState);
     timer_check();

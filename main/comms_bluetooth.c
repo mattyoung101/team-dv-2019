@@ -76,7 +76,9 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
         fsm_change_state(stateMachine, ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
         firstConnection = false;
     }
-    
+
+    vTaskDelay(pdMS_TO_TICKS(15));
+
     xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
             configMAX_PRIORITIES - 4, &receiveTaskHandle);
     
