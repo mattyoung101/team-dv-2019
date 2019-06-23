@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include "esp_log.h"
 #include "DG_dynarr.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
 
 // State machine with stack history, based on/inspired by:
 // https://github.com/libgdx/gdx-ai/blob/master/gdx-ai/src/com/badlogic/gdx/ai/fsm/StackStateMachine.java
@@ -27,6 +29,7 @@ DA_TYPEDEF(fsm_state_t*, fsm_state_history_t);
 struct state_machine_t {
     fsm_state_t *currentState;
     fsm_state_history_t stateHistory;
+    SemaphoreHandle_t semaphore;
 };
 
 extern state_machine_t *stateMachine;
@@ -41,5 +44,5 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState);
 void fsm_revert_state(state_machine_t *fsm);
 /** Returns true if the given state machine is in the state provided by the string "name" **/
 bool fsm_in_state(state_machine_t *fsm, char *name);
-/** Returns the current state name **/
+/** Thread safe function to get the current state name **/
 char *fsm_get_current_state_name(state_machine_t *fsm);

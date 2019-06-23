@@ -16,6 +16,8 @@ state_machine_t* fsm_new(fsm_state_t *startState){
 
     state_machine_t* fsm = calloc(1, sizeof(state_machine_t));
     fsm->currentState = &stateGeneralNothing;
+    fsm->semaphore = xSemaphoreCreateBinary();
+    xSemaphoreGive(fsm->semaphore);
     // change into the start state, to make sure startState->enter is called
     fsm_change_state(fsm, startState); 
     return fsm;
@@ -26,17 +28,22 @@ void fsm_update(state_machine_t *fsm){
 }
 
 static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newState, bool pushToStack){
-    if (pushToStack) da_push(fsm->stateHistory, fsm->currentState);
-    fsm->currentState->exit(fsm);
-    
-    fsm->currentState = newState;
-    fsm->currentState->enter(fsm);
+    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        if (pushToStack) da_push(fsm->stateHistory, fsm->currentState);
+        fsm->currentState->exit(fsm);
+        
+        fsm->currentState = newState;
+        fsm->currentState->enter(fsm);
 
-    log_once_reset();
+        log_once_reset();
+        xSemaphoreGive(fsm->semaphore);
+    } else {
+        ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot change states.");
+    }
 }
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
-    ESP_LOGI(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);
+    ESP_LOGI(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);    
     fsm_internal_change_state(fsm, newState, true);
 }
 
@@ -53,9 +60,16 @@ void fsm_revert_state(state_machine_t *fsm){
 }
 
 bool fsm_in_state(state_machine_t *fsm, char *name){
-    return strcmp(fsm->currentState->name, name) == 0;
+    return strcmp(fsm_get_current_state_name(fsm), name) == 0;
 }
 
 char *fsm_get_current_state_name(state_machine_t *fsm){
-    return fsm->currentState->name;
+    if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        char *state = fsm->currentState->name; // TODO may need to strdup here?
+        xSemaphoreGive(fsm->semaphore);
+        return state;
+    } else {
+        ESP_LOGE(TAG, "Failed to unlock FSM semaphore, cannot return state name");
+        return "ERROR";
+    }
 }

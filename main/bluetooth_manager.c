@@ -90,7 +90,7 @@ void comms_bt_receive_task(void *pvParameter){
             // only one robot (robot 0) will be able to broadcast switch statements to save them both from
             // switching at the same time
             if (robotState.outSwitchOk && !cooldownOn && robotState.inRobotId == 0){
-                ESP_LOGI(TAG, "I'm also willing to switch: switching NOW!");
+                ESP_LOGI(TAG, "========== I'm also willing to switch: switching NOW! ==========");
                 esp_spp_write(handle, 6, switchBuffer);
                 
                 // invert state
@@ -107,7 +107,7 @@ void comms_bt_receive_task(void *pvParameter){
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
-            // TODO it spam prints here when it shouldn't
+            // TODO it spam prints here when it shouldn't, sometimes
             ESP_LOGW(TAG, "Other robot is NO LONGER willing to switch");
             wasSwitchOk = false;
             alreadyPrinted = false;
@@ -131,7 +131,7 @@ void comms_bt_send_task(void *pvParameter){
 
         RS_SEM_LOCK;
         sendMsg.onLine = robotState.inOnLine;
-        strcpy(sendMsg.fsmState, stateMachine->currentState->name);
+        strcpy(sendMsg.fsmState, fsm_get_current_state_name(stateMachine));
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
@@ -148,6 +148,6 @@ void comms_bt_send_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(25));
+        vTaskDelay(pdMS_TO_TICKS(15));
     }
 }

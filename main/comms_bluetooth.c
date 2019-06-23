@@ -41,8 +41,7 @@ static void bt_gap_restart_disc(void){
 static void bt_pb_decode_and_push(uint16_t size, uint8_t *data, uint32_t handle){
     // check if the buffer is exactly equivalent to the string "SWITCH" in which case switch
     if (memcmp(data, switch_buffer, size) == 0){
-        ESP_LOGI(TAG, "Switch request received: switching NOW!");
-        
+        ESP_LOGI(TAG, "========== Switch request received: switching NOW! ==========");
         // invert state
         if (robotState.outIsAttack){
             fsm_change_state(stateMachine, &stateDefenceDefend);
@@ -77,6 +76,7 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
         firstConnection = false;
     }
 
+    // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
     vTaskDelay(pdMS_TO_TICKS(15));
 
     xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
