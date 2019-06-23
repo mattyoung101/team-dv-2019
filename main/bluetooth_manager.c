@@ -59,13 +59,11 @@ void comms_bt_receive_task(void *pvParameter){
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE",
             isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my goal dist: %d, other goal dist: %f", robotState.inGoalLength, recvMsg.goalLength);
-            
-            
 
             if (recvMsg.goalLength <= 0.01f){
                 ESP_LOGI(TAG, "Conflict resolution: other robot cannot see goal, I will become defender");
                 fsm_change_state(stateMachine, &stateDefenceDefend);
-            } else if (!robotState.inGoalVisible){
+            } else if (robotState.inGoalLength <= 0.01f){
                 ESP_LOGI(TAG, "Conflict resolution: I cannot see goal, becoming attacker");
                 fsm_change_state(stateMachine, &stateAttackPursue);
             } else {
@@ -134,6 +132,7 @@ void comms_bt_send_task(void *pvParameter){
         RS_SEM_LOCK;
         sendMsg.onLine = robotState.inOnLine;
         strcpy(sendMsg.fsmState, stateMachine->currentState->name);
+        ESP_LOGD(TAG, "Current state: %s", stateMachine->currentState->name);
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
