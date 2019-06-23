@@ -93,7 +93,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    imu_correction(&robotState);
+    goal_correction(&robotState);
     timer_check();
 
     // Check criteria:
@@ -123,8 +123,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
-    else imu_correction(&robotState);
+    // if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
+    // else imu_correction(&robotState);
+    goal_correction(&robotState);
     timer_check();
 
     // fuck

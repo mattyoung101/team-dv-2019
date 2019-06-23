@@ -159,16 +159,28 @@ void orbit(robot_state_t *robotState){
     // orbit requires angles in -180 to +180 range
     float tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
+    // I hate to do this but...
+    if(robotState->inRobotId == 0){
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.4 * powf(E, 0.12 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
+        float distanceMultiplier = constrain(0.04 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
+
+        robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
+        // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
+        robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
+    } else {
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.4 * powf(E, 0.12 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
+        float distanceMultiplier = constrain(0.04 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
+
+        robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
+        // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
+        robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
+    }
+
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.4 * powf(E, 0.12 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-    float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-    float distanceMultiplier = constrain(0.04 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
-    float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
-
-    robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
-    // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
-    robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
-
     // printf("ballAngleDifference: %f, strengthFactor: %f, distanceMultiplier: %f, angleAddition: %f\n", ballAngleDifference, 
     // strengthFactor, distanceMultiplier, angleAddition);
 }
