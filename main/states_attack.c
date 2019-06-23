@@ -62,8 +62,9 @@ void state_attack_idle_update(state_machine_t *fsm){
     static const char *TAG = "AttackIdleState";
 
     imu_correction(&robotState);
-    RS_SEM_LOCK
     rs.outIsAttack = true;
+    
+    RS_SEM_LOCK
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
 
@@ -71,7 +72,7 @@ void state_attack_idle_update(state_machine_t *fsm){
     if (rs.inBallStrength > 0.0f) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
-    } else if (!rs.inGoalVisible) {
+    } else if (!rs.inOtherGoalVisible) {
         LOG_ONCE(TAG, "Goal not visible, braking");
         FSM_MOTOR_BRAKE;
     }

@@ -29,7 +29,7 @@ void setup() {
     Wire.onRequest(requestEvent);
   #endif
   
-  Serial.begin(9600);
+  Serial.begin(115200);
 
   pinMode(BLINK_LED,OUTPUT);
   pinMode(V_BAT,INPUT);
@@ -54,19 +54,23 @@ void loop() {
   inputVoltage = V_REF * (double)analogRead(V_BAT)/1023;
   batteryVoltage = (float)((inputVoltage * (R1 + R2)) / R2) + V_BAT_OFFSET;
 
-//  Serial.print(batteryVoltage);
-
-//  Serial.print("lineAngle: ");
-//  Serial.print(ls.getLineAngle());
-//  Serial.print("\t");
-//  Serial.print("lineSize: ");
-//  Serial.print(ls.getLineSize());
-//  Serial.print("\t");
-//  Serial.print("isOnLine: ");
-//  Serial.print(ls.isOnLine);
-//  Serial.print("\t");
-//  Serial.print("lineOver: ");
-//  Serial.print(ls.lineOver);
+  Serial.print("batteryVoltage: ");
+  Serial.print(batteryVoltage);
+  Serial.print("\t");
+  Serial.print("lineAngle: ");
+  Serial.print(ls.getLineAngle());
+  Serial.print("\t");
+  Serial.print("lineSize: ");
+  Serial.print(ls.getLineSize());
+  Serial.print("\t");
+  Serial.print("firsAngle: ");
+  Serial.print(ls.firstAngle);
+  Serial.print("\t");
+  Serial.print("isOnLine: ");
+  Serial.print(ls.isOnLine);
+  Serial.print("\t");
+  Serial.print("lineOver: ");
+  Serial.print(ls.lineOver);
 
   // LED Stuff
   if(batteryVoltage < V_BAT_MIN){
@@ -105,6 +109,8 @@ void requestEvent(){
   Wire.write(lowByte((uint16_t) (ls.getLineSize() * 100.0)));
   Wire.write(ls.isOnLine);
   Wire.write(ls.lineOver);
+  Wire.write(highByte((uint16_t) (ls.firstAngle * 100.0)));
+  Wire.write(lowByte((uint16_t) (ls.firstAngle * 100.0)));
   Wire.write(highByte((uint16_t) (batteryVoltage * 100.0)));
   Wire.write(lowByte((uint16_t) (batteryVoltage * 100.0)));
 }

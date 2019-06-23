@@ -7,6 +7,7 @@ pid_config_t goalPID = {GOAL_KP, GOAL_KI, GOAL_KD, GOAL_MAX_CORRECTION, 0.0f};
 pid_config_t headingPID = {HEADING_KP, HEADING_KI, HEADING_KD, HEADING_MAX_CORRECTION, 0.0f};
 pid_config_t idlePID = {IDLE_KP, IDLE_KI, IDLE_KD, IDLE_MAX_CORRECTION, 0.0f};
 pid_config_t goaliePID = {GOALIE_KP, GOALIE_KI, GOALIE_KD, GOALIE_MAX, 0.0f};
+pid_config_t lineavoidPID = {LINEAVOID_KP, LINEAVOID_KI, LINEAVOID_KD, LINEAVOID_MAX, 0.0f};
 
 // Movement PIDs
 pid_config_t coordPID = {COORD_KP, COORD_KI, COORD_KP, COORD_MAX, 0.0f};
@@ -98,6 +99,11 @@ void goal_correction(robot_state_t *robotState){
     }
 }
 
+void line_correction(robot_state_t *robotState){
+    robotState->outOrientation = (int16_t) -pid_update(&lineavoidPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+                            + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID
+}
+
 inline float get_magnitude(int16_t x, int16_t y){
     return sqrtf((float) (x * x + y * y)); // Cheeky pythag theorem
 }
@@ -134,9 +140,9 @@ void orbit(robot_state_t *robotState){
     float tempAngle = robotState->inBallAngle > 180 ? robotState->inBallAngle - 360 : robotState->inBallAngle;
 
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
-    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.4 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+    float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.4 * powf(E, 0.12 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
     float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-    float distanceMultiplier = constrain(0.02 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+    float distanceMultiplier = constrain(0.04 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
     float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
     robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -211,12 +217,15 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
     if(robotState->inOnLine || robotState->inLineOver) {
+        line_correction(&robotState);
         if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
             if(robotState->inLineOver) {
                 robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLineAngle - robotState->inHeading, 360.0f) : 
-                fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+                fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+                // printf("CASE 1\n");
             } else {
                 robotState->outDirection = fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+                // printf("CASE 2\n");
             }
             robotState->outSpeed = OVER_LINE_SPEED;
         } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
@@ -224,13 +233,18 @@ void update_line(robot_state_t *robotState) { // Completely forgot how this all 
                 robotState->outDirection = fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
                 robotState->outSpeed = 0;
                 robotState->outShouldBrake = true;
+                // printf("CASE 3\n");
             } else {
                 robotState->outSpeed = LINE_TRACK_SPEED;
+                // printf("CASE 4\n");
             }
         } else {
             if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
+            // printf("CASE 5\n");
         }
     }
+
+    // printf("LineAngle: %f, LastAngle: %f, LineOver: %d, OutDirection: %d\n",robotState->inLineAngle,robotState->inLastAngle,robotState->inLineOver,robotState->outDirection);
 }
 
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
