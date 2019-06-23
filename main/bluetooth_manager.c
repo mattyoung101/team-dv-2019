@@ -50,8 +50,8 @@ void comms_bt_receive_task(void *pvParameter){
             isAttack = strstr(recvMsg.fsmState, "Attack");
             xTimerReset(packetTimer.timer, portMAX_DELAY);
 
-            ESP_LOGD(TAG, "Received BT packet: state: %s, goal length: %f, switch ok: %s, isAttack: %s", 
-            recvMsg.fsmState, recvMsg.goalLength, recvMsg.switchOk ? "yes" : "no", isAttack ? "yes" : "no");
+            // ESP_LOGD(TAG, "Received BT packet: state: %s, goal length: %f, switch ok: %s, isAttack: %s", 
+            // recvMsg.fsmState, recvMsg.goalLength, recvMsg.switchOk ? "yes" : "no", isAttack ? "yes" : "no");
         }
 
         // conflict resolution: whichever robot is closest to the goal loses the conflict and becomes defender
@@ -104,6 +104,9 @@ void comms_bt_receive_task(void *pvParameter){
                 cooldownOn = true;
                 xTimerStart(cooldownTimer.timer, portMAX_DELAY);
                 alreadyPrinted = false;
+            } else {
+                ESP_LOGI(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
+                robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
@@ -131,14 +134,19 @@ void comms_bt_send_task(void *pvParameter){
 
         RS_SEM_LOCK;
         sendMsg.onLine = robotState.inOnLine;
-        strcpy(sendMsg.fsmState, fsm_get_current_state_name(stateMachine));
+        
+        char *stateName = fsm_get_current_state_name(stateMachine); // thread safe get name function, uses strdup
+        strcpy(sendMsg.fsmState, stateName); // put into struct
+        free(stateName); // since we use strdup, we gotta free it
+        stateName = NULL; // good practice
+
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
         sendMsg.goalLength = robotState.inGoalLength;
         RS_SEM_UNLOCK;
 
-        ESP_LOGD(TAG, "Current state: %s, switch ok: %s", sendMsg.fsmState, sendMsg.switchOk ? "yes" : "no");
+        // ESP_LOGD(TAG, "Current state: %s, switch ok: %s", sendMsg.fsmState, sendMsg.switchOk ? "yes" : "no");
 
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         if (pb_encode(&stream, BTProvide_fields, &sendMsg)){

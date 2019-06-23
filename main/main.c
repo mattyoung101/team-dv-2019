@@ -44,7 +44,7 @@ state_machine_t *stateMachine = NULL;
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
-void master_task(void *pvParameter){
+static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
 
@@ -133,10 +133,9 @@ void master_task(void *pvParameter){
 
         // update the actual FSM
         fsm_update(stateMachine);
-        // robotState.outSpeed = 0;
-        update_line(&robotState);
 
-        // print_ball_data(&robotState);
+        // line over runs after the FSM to override it
+        update_line(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
@@ -148,7 +147,7 @@ void master_task(void *pvParameter){
 }
 
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
-void slave_task(void *pvParameter){
+static void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
     uint8_t robotId = 69;
@@ -176,7 +175,7 @@ void slave_task(void *pvParameter){
             tsop_update(NULL);
         }
         tsop_calc();
-        
+
         // update IMU
         simu_calc();
 
@@ -211,7 +210,6 @@ void slave_task(void *pvParameter){
 
         // activate/deactivate debug LED if we're on the line
         gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
-
         esp_task_wdt_reset();
 
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);

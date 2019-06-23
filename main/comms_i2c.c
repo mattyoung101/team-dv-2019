@@ -171,6 +171,7 @@ void comms_i2c_init_slave(void){
         .slave.slave_addr = I2C_ESP_SLAVE_ADDR
     };
     ESP_ERROR_CHECK(i2c_param_config(I2C_NUM_0, &conf));
+    ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFFF));
     ESP_ERROR_CHECK(i2c_driver_install(I2C_NUM_0, conf.mode, 512, 128, 0));
 
     xTaskCreate(comms_i2c_receive_task, "I2CReceiveTask", 8192, NULL, configMAX_PRIORITIES - 1, NULL);

@@ -43,6 +43,8 @@ static void fsm_internal_change_state(state_machine_t *fsm, fsm_state_t *newStat
 }
 
 void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
+    if (fsm->currentState == newState) return;
+
     ESP_LOGI(TAG, "Switching states from %s to %s", fsm->currentState->name, newState->name);    
     fsm_internal_change_state(fsm, newState, true);
 }
@@ -65,7 +67,7 @@ bool fsm_in_state(state_machine_t *fsm, char *name){
 
 char *fsm_get_current_state_name(state_machine_t *fsm){
     if (xSemaphoreTake(fsm->semaphore, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-        char *state = fsm->currentState->name; // TODO may need to strdup here?
+        char *state = strdup(fsm->currentState->name);
         xSemaphoreGive(fsm->semaphore);
         return state;
     } else {

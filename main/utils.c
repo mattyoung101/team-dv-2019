@@ -180,7 +180,6 @@ uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     static const char *TAG = "NanoRead";
     uint16_t scaledHeading = (uint16_t) (heading * I2C_MULTIPLIER);
     uint8_t headingBytes[] = {0xB, HIGH_BYTE_16(scaledHeading), LOW_BYTE_16(scaledHeading)};
-    printf("heading bytes: %d, %d, scaled heading: %d\n", headingBytes[0], headingBytes[1], scaledHeading);
     
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     ESP_ERROR_CHECK(i2c_master_start(cmd));

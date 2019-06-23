@@ -89,7 +89,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
     goal_correction(&robotState);
 
     // check the timer conditions first, so that we don't get switched out of before we can check
-    if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 30, IN_FRONT_MAX_ANGLE - 30) 
+    if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) 
         && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
         LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, starting surge timer");
         RS_SEM_LOCK;
@@ -100,7 +100,6 @@ void state_defence_defend_enter(state_machine_t *fsm){
         LOG_ONCE(TAG, "Stopping surge timer as criteria is no longer satisfied");
         dv_timer_stop(&surgeTimer);
     }
-
 
     // Check criteria: goal visible and ball visible
     if (!rs.inGoalVisible){

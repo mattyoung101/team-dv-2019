@@ -69,7 +69,7 @@ extern pid_config_t forwardPID;
 /** Revert state in FSM **/
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
 /** printf with a newline automatically attached on the end **/
-#define printfln(format, __VA__ARGS__) do { printf(format "\n", ## __VA__ARGS__); } while(0);
+#define printfln(f_, ...) printf((f_ "\n"), __VA_ARGS__)
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
