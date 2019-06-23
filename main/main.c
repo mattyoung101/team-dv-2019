@@ -52,7 +52,7 @@ void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     cam_init();
-    ESP_LOGI(TAG, "========== Master hardware init OK ==========");
+    ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
     // read robot ID from NVS and init Bluetooth
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
@@ -157,7 +157,7 @@ void slave_task(void *pvParameter){
     simu_calibrate();
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
 
-    ESP_LOGI(TAG, "========== Slave hardware init OK ==========");
+    ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
     esp_task_wdt_add(NULL);
     
     while (true) {

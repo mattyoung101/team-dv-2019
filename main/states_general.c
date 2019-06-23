@@ -25,7 +25,7 @@ void dv_timer_stop(dv_timer_t *timer){
 void dv_timer_check_create(dv_timer_t *timer, char *timerName, int32_t timeout, void *const parameter, 
                             TimerCallbackFunction_t callback){
     if (timer->timer == NULL){
-        ESP_LOGI("CreateTimer", "Creating timer: %s", timerName);
+        // ESP_LOGI("CreateTimer", "Creating timer: %s", timerName);
         timer->timer = xTimerCreate(timerName, pdMS_TO_TICKS(timeout), false, parameter, callback);
     }
 }

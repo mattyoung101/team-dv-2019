@@ -92,7 +92,9 @@ void state_defence_defend_enter(state_machine_t *fsm){
     if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 30, IN_FRONT_MAX_ANGLE - 30) 
         && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
         LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, starting surge timer");
+        RS_SEM_LOCK;
         rs.outSwitchOk = true;
+        RS_SEM_UNLOCK;
         dv_timer_start(&surgeTimer);
     } else {
         LOG_ONCE(TAG, "Stopping surge timer as criteria is no longer satisfied");
@@ -135,7 +137,9 @@ void state_defence_surge_update(state_machine_t *fsm){
     imu_correction(&robotState);
 
     rs.outIsAttack = false;
+    RS_SEM_LOCK;
     rs.outSwitchOk = true;
+    RS_SEM_UNLOCK;
 
     if (rs.inGoalLength > SURGE_DISTANCE || !rs.inGoalVisible){
         LOG_ONCE(TAG, "Too far from goal, switching to defend");
