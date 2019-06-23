@@ -100,6 +100,25 @@ void goal_correction(robot_state_t *robotState){
     }
 }
 
+void other_goal_correction(robot_state_t *robotState){
+    if (robotState->inOtherGoalVisible && robotState->inOtherGoalLength < GOAL_TRACK_DIST){
+        // if the goal is visible use goal correction
+        if (!robotState->outIsAttack){ // If attacking
+            robotState->outOrientation = (int16_t) pid_update(&goalPID, floatMod(floatMod((float)robotState->inOtherGoalAngle, 360.0f) 
+                                    + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Use normal goal PID
+            // printf("Attack goal correction");
+        } else {
+            robotState->outOrientation = (int16_t) pid_update(&goaliePID, floatMod(floatMod((float)robotState->inOtherGoalAngle, 360.0f)
+                                    , 360.0f) - 180.0f, 0.0f, 0.0f); // Use goalie PID. Also I don't remember how the hell this works but apparently it did
+            // printf("Defend goal correction");
+        }
+    } else {
+        // otherwise just IMU correct
+        imu_correction(robotState);
+        // printf("Cannot see goal");
+    }
+}
+
 void line_correction(robot_state_t *robotState){
     robotState->outOrientation = (int16_t) -pid_update(&lineavoidPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
                             + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID

@@ -51,7 +51,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     static const char *TAG = "DefendIdleState";
 
     rs.outIsAttack = false;
-    imu_correction(&robotState);
+    goal_correction(&robotState);
 
     if (!rs.inGoalVisible){
         // LOG_ONCE(TAG, "Goal not visible, switching to reverse");
@@ -62,7 +62,13 @@ void state_defence_idle_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
+    // position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
+
+    float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
+    float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+    
+    rs.outDirection = fmodf(RAD_DEG * (atan2f(0.0f, distanceMovement)), 360.0f);
+    rs.outSpeed = get_magnitude(0.0f, distanceMovement);
 }
 
 // Defend
@@ -107,6 +113,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength <= 0.0f){
         LOG_ONCE(TAG, "Ball not visible, switching to idle");
+        // LOG_ONCE(TAG, "Cancelling switch state to Idle cos driftin REEEEEE");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } 
 
@@ -118,7 +125,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
         float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 - 360 range
         float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
 
-        float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_));
+        float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
         float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         
         float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Centre on the ball
@@ -133,7 +140,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
 // Surge
 void state_defence_surge_update(state_machine_t *fsm){
     static const char *TAG = "DefendSurgeState";
-    imu_correction(&robotState);
+    goal_correction(&robotState);
 
     rs.outIsAttack = false;
     RS_SEM_LOCK;

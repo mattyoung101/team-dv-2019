@@ -11,6 +11,9 @@ uint8_t ROBOT_MODE = 254;
 int16_t CAM_OFFSET_X;
 int16_t CAM_OFFSET_Y;
 int16_t TSOP_CORRECTION;
+uint8_t DEFEND_DISTANCE;
+uint8_t SURGE_DISTANCE;
+uint8_t SURGE_STRENGTH;
 
 // Code which sets per-robot values, i.e. values that cannot be set at compile time using #defines
 
@@ -25,9 +28,12 @@ void defines_init(uint8_t robotId){
         MOTOR_BL_REVERSED = true;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_ATTACK;
-        CAM_OFFSET_X = 56;
-        CAM_OFFSET_Y = 56;
+        CAM_OFFSET_X = 57;
+        CAM_OFFSET_Y = 57;
         TSOP_CORRECTION = -10;
+        DEFEND_DISTANCE = 42;
+        SURGE_DISTANCE = 47;
+        SURGE_STRENGTH = 150;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
@@ -42,6 +48,9 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = 0;
+        DEFEND_DISTANCE = 30;
+        SURGE_DISTANCE = 45;
+        SURGE_STRENGTH = 130;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

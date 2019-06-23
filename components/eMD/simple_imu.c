@@ -65,8 +65,7 @@ void simu_calibrate(void){
     calibrationGyro /= IMU_CALIBRATION_COUNT;
     ESP_LOGI("SimpleIMU", "Final calibration: %f", calibrationGyro);
     
-    // value I got was -3.393250 at home, so just skip this calibration run
-    // calibrationGyro = -3.393250;
+    // calibrationGyro = -10.864258;
 
     ESP_LOGI("SIMU", "Calibration complete");
 }

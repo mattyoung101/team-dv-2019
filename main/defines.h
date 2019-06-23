@@ -59,10 +59,10 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3
+#define FORWARD_KP 10
 #define FORWARD_KI 0
-#define FORWARD_KD 0.000001
-#define FORWARD_MAX 100
+#define FORWARD_KD 0.00001
+#define FORWARD_MAX 200
 
 #define SIDE_KP 2
 #define SIDE_KI 0
@@ -214,7 +214,7 @@ extern int16_t TSOP_CORRECTION; // at 0 degrees TSOPs actually print a different
 extern float TSOP_TUNING[TSOP_NUM];
 
 // IMU
-#define IMU_CALIBRATION_COUNT 100
+#define IMU_CALIBRATION_COUNT 180
 #define IMU_CALIBRATION_TIME 20
 #define IMU_THRESHOLD 1000
 #define I2C_MULTIPLIER 100.0f
@@ -257,9 +257,9 @@ extern float TSOP_TUNING[TSOP_NUM];
 #define GOAL_MAX_ANGLE 330
 
 // Defence FSM defines
-#define DEFEND_DISTANCE 30
-#define SURGE_DISTANCE 45
-#define SURGE_STRENGTH 130
+extern uint8_t DEFEND_DISTANCE;
+extern uint8_t SURGE_DISTANCE;
+extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MAX_ANGLE 270

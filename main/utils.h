@@ -98,6 +98,7 @@ bool is_angle_between(float target, float angle1, float angle2);
 void imu_correction(robot_state_t *robotState);
 /** Runs goal correction **/
 void goal_correction(robot_state_t *robotState);
+void other_goal_correction(robot_state_t *robotState);
 
 float get_magnitude(int16_t x, int16_t y);
 float get_angle(int16_t x, int16_t y);

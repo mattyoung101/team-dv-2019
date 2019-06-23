@@ -11,9 +11,11 @@
 #define R2 300000
 #define V_BAT_OFFSET 0.333
 #define V_BAT_MIN 11.1
+#define V_BAT_BAD 10.0
 
 Timer ledTimer(500000);
-Timer lowVoltageTimer(1000);
+Timer lowVoltageTimer(100000);
+Timer criticalVoltageTimer(10000);
 bool ledOn;
 
 LightSensorArray ls = LightSensorArray();
@@ -78,9 +80,16 @@ void loop() {
 
   // LED Stuff
   if(batteryVoltage < V_BAT_MIN){
-    if(lowVoltageTimer.timeHasPassed()){
-      digitalWrite(BLINK_LED, ledOn);
-      ledOn = !ledOn;
+    if(batteryVoltage < V_BAT_BAD){
+      if(criticalVoltageTimer.timeHasPassed()){
+        digitalWrite(BLINK_LED, ledOn);
+        ledOn = !ledOn;
+      }else{
+        if(lowVoltageTimer.timeHasPassed()){
+          digitalWrite(BLINK_LED, ledOn);
+          ledOn = !ledOn;
+        }
+      }
     }
   } else {
     if(ledTimer.timeHasPassed()){
