@@ -27,6 +27,7 @@ void setup() {
   #if I2C_ON
     Wire.begin(0x12);
     Wire.onRequest(requestEvent);
+    Wire.onReceive(receiveEvent);
   #endif
   
   Serial.begin(115200);
@@ -53,7 +54,7 @@ void loop() {
 
   inputVoltage = V_REF * (double)analogRead(V_BAT)/1023;
   batteryVoltage = (float)((inputVoltage * (R1 + R2)) / R2) + V_BAT_OFFSET;
-
+ 
   Serial.print("batteryVoltage: ");
   Serial.print(batteryVoltage);
   Serial.print("\t");
@@ -71,6 +72,9 @@ void loop() {
   Serial.print("\t");
   Serial.print("lineOver: ");
   Serial.print(ls.lineOver);
+  Serial.print("\t");
+  Serial.print("heading: ");
+  Serial.print(heading);
 
   // LED Stuff
   if(batteryVoltage < V_BAT_MIN){
@@ -102,8 +106,6 @@ void requestEvent(){
   = 10 bytes + 1 start byte 
   = 11 bytes total
   */
-  uint16_t rawHeading = word(Wire.read(), Wire.read());
-  heading = rawHeading / 100.0;
 
   Wire.write(0xB);
   Wire.write(highByte((uint16_t) (ls.getLineAngle() * 100.0)));
@@ -117,3 +119,20 @@ void requestEvent(){
   Wire.write(highByte((uint16_t) (batteryVoltage * 100.0)));
   Wire.write(lowByte((uint16_t) (batteryVoltage * 100.0)));
 }
+
+void receiveEvent(int bytes){
+  if (Wire.available() >= 3 && Wire.read() == 0xB){
+    uint8_t shit = Wire.read();
+    uint8_t fuck = Wire.read();
+//    Serial.print("NUmbers: ");
+//    Serial.print(shit);
+//    Serial.print(", ");
+//    Serial.println(fuck);
+    uint16_t rawHeading = word(shit, fuck);
+    heading = rawHeading / 100.0;
+//    Serial.println(heading);
+  } else {
+//    Serial.println("Fuck you");
+  }
+}
+
