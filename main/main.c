@@ -29,7 +29,6 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "i2c.pb.h"
-#include "rgb_led.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -52,6 +51,7 @@ static void master_task(void *pvParameter){
     motor_init();
     comms_i2c_init_slave();
     cam_init();
+    gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT);
     ESP_LOGI(TAG, "=============== Master hardware init OK ===============");
 
     // read robot ID from NVS and init Bluetooth
@@ -66,8 +66,7 @@ static void master_task(void *pvParameter){
     }
 
     // Initialise FSM, start out in defence until we get a BT connection
-    // stateMachine = fsm_new(&stateDefenceDefend);
-    stateMachine = fsm_new(&stateAttackPursue);
+    stateMachine = fsm_new(&stateDefenceDefend);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
