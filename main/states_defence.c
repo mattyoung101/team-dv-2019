@@ -53,6 +53,8 @@ void state_defence_idle_update(state_machine_t *fsm){
     rs.outIsAttack = false;
     goal_correction(&robotState);
 
+    rs.outSpeed = 0.0f;
+
     if (!rs.inGoalVisible){
         // LOG_ONCE(TAG, "Goal not visible, switching to reverse");
         LOG_ONCE(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
@@ -64,11 +66,11 @@ void state_defence_idle_update(state_machine_t *fsm){
 
     // position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 
-    float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
-    float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+    // float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
+    // float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
     
-    rs.outDirection = fmodf(RAD_DEG * (atan2f(0.0f, distanceMovement)), 360.0f);
-    rs.outSpeed = get_magnitude(0.0f, distanceMovement);
+    // rs.outDirection = fmodf(RAD_DEG * (atan2f(0.0f, distanceMovement)), 360.0f);
+    // rs.outSpeed = get_magnitude(0.0f, distanceMovement);
 }
 
 // Defend
