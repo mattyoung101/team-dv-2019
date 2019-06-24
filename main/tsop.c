@@ -86,7 +86,7 @@ void tsop_calc(void){
     // convert them to cartesian
     for (int i = 0; i < TSOP_NUM; i++){
         float r = readings[i].X;
-        float theta = readings[i].Y;
+        float theta = -1.0 * (readings[i].Y - 90.0f);
         readings[i].X = r * cosfd(theta);
         readings[i].Y = r * sinfd(theta);
     }
@@ -108,7 +108,7 @@ void tsop_calc(void){
     float sumX = sum.X;
     float sumY = sum.Y;
     tsopStrength = sqrtf(sq(sumX) + sq(sumY));
-    tsopAngle = fmodf((atan2f(sumY, sumX) * RAD_DEG) + 360.0f, 360.0f);
+    tsopAngle = fmodf(450 - (atan2f(sumY, sumX) * RAD_DEG), 360.0f);
     
     movavg_push(angleAvg, tsopAngle);
     movavg_push(strengthAvg, tsopStrength);

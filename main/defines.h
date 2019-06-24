@@ -125,7 +125,7 @@ extern int16_t CAM_OFFSET_Y;
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
