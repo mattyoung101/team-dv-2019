@@ -74,7 +74,7 @@ void defines_init(uint8_t robotId){
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 130;
         ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 60;
+        ORBIT_SPEED_FAST = 70;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

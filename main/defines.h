@@ -177,7 +177,7 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_LINE_OVER_BUFFER 80
 #define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
-#define OVER_LINE_SPEED 100
+#define OVER_LINE_SPEED 80
 #define LINE_TRACK_SPEED 30
 #define LINE_SPEED_MULTIPLIER 0.5
 
@@ -243,8 +243,8 @@ extern uint8_t ORBIT_SPEED_FAST;
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 80 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 7 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 353
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 355
 #define IN_FRONT_ANGLE_BUFFER 50
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state

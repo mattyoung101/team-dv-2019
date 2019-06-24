@@ -138,6 +138,7 @@ static void master_task(void *pvParameter){
         // line over runs after the FSM to override it
         update_line(&robotState);
 
+        print_motion_data(&robotState);
         print_line_data(&robotState);
         
         // goal_correction(&robotState);
