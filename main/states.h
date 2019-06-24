@@ -97,8 +97,8 @@ extern fsm_state_t stateAttackOrbit;
 void state_attack_dribble_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackDribble;
 
-// Shoot state: NOTE this is not currently used since we don't have a kicker
-void state_attack_shoot_update(state_machine_t *fsm);
+// Shoot state: kicks the ball, then reverts to previous state
+void state_attack_shoot_enter(state_machine_t *fsm);
 extern fsm_state_t stateAttackShoot;
 
 // Avoid double defence state: Does not move into the goalie box to avoid double defence

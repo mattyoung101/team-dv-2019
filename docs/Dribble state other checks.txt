@@ -1,0 +1,10 @@
+    // } else if (rs.inBallStrength <= DRIBBLE_BALL_TOO_FAR - IN_FRONT_STRENGTH_BUFFER){
+    //     LOG_ONCE(TAG, "Ball too far away, reverting, strength: %f, thresh: %d", robotState.inBallStrength,
+    //             DRIBBLE_BALL_TOO_FAR - IN_FRONT_STRENGTH_BUFFER);
+    //     FSM_REVERT;
+    // }
+    /*} else if (!is_angle_between(rs.inGoalAngle, GOAL_MIN_ANGLE, GOAL_MAX_ANGLE) || !rs.inGoalVisible){
+        LOG_ONCE(TAG, "Not facing goal, reverting, goal angle: %d, range: %d-%d", rs.inGoalAngle, GOAL_MIN_ANGLE, 
+        GOAL_MAX_ANGLE);
+        FSM_REVERT;
+    }*/ 

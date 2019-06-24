@@ -18,7 +18,6 @@ set(COMPONENT_SRCS "defines.c"
                    "mplexer.c"
                    "movavg.c"
                    "comms_bluetooth.c"
-                   "rgb_led.c"
                    "bluetooth_manager.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)

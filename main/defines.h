@@ -255,6 +255,7 @@ extern uint8_t ORBIT_SPEED_FAST;
 #define ACCEL_PROG 0.0001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
+#define GOAL_SHOOT_DIST 30 // if we are within this distance, shoot
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;
@@ -270,6 +271,10 @@ extern uint8_t SURGE_STRENGTH;
 #define MODE_ATTACK 0
 #define MODE_DEFEND 1
 extern uint8_t ROBOT_MODE;
+
+// Kicker
+#define KICKER_PIN 2
+#define KICKER_TIMEOUT 25 // ms
 
 // RGB LEDs
 #define LED_PIN 13
