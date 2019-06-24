@@ -66,6 +66,7 @@ static void master_task(void *pvParameter){
     // }
 
     // Initialise FSM, start out in defence until we get a BT connection
+    // stateMachine = fsm_new(&stateDefenceDefend);
     stateMachine = fsm_new(&stateAttackPursue);
 
     // Wait for the slave to calibrate IMU and send over the first packets
@@ -136,6 +137,8 @@ static void master_task(void *pvParameter){
 
         // line over runs after the FSM to override it
         update_line(&robotState);
+
+        // print_goal_data(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);

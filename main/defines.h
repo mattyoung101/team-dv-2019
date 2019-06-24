@@ -75,9 +75,9 @@
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
-#define GOALIE_KP 1.5
+#define GOALIE_KP 1.0
 #define GOALIE_KI 0
-#define GOALIE_KD 0.2
+#define GOALIE_KD 0.1
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -125,7 +125,7 @@ extern int16_t CAM_OFFSET_Y;
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal

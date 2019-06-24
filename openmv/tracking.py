@@ -6,8 +6,8 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(22, 78, -6, 62, 19, 52),  # yellow
-             (41, 100, -128, -14, -40, -8)] # blue
+thresholds = [(50, 67, -3, 73, 5, 63),  # yellow
+             (73, 100, -37, -7, -51, 0)] # blue
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -49,7 +49,7 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=(-6.02073, -5.243186, 0.9616871))
+rgb_gain_db=(-5.753914, -6.02073, -0.06828868))
 
 sensor.set_brightness(0)
 sensor.set_contrast(0)

@@ -255,17 +255,17 @@ void update_line(robot_state_t *robotState) { // Completely forgot how this all 
         // line_correction(robotState);
         if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
             if(robotState->inLineOver) {
-                robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLineAngle - robotState->inHeading, 360.0f) : 
-                fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+                robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLineAngle /*- robotState->inHeading*/, 360.0f) : 
+                fmodf(robotState->inLastAngle /*- robotState->inHeading*/ + 180.0f, 360.0f);
                 // printf("CASE 1\n");
             } else {
-                robotState->outDirection = fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+                robotState->outDirection = fmodf(robotState->inLineAngle /*- robotState->inHeading*/ + 180.0f, 360.0f);
                 // printf("CASE 2\n");
             }
             robotState->outSpeed = OVER_LINE_SPEED;
         } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
             if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
-                robotState->outDirection = fmodf(robotState->inLineAngle - robotState->inHeading + 180.0f, 360.0f);
+                robotState->outDirection = fmodf(robotState->inLineAngle /*- robotState->inHeading*/ + 180.0f, 360.0f);
                 robotState->outSpeed = 0;
                 robotState->outShouldBrake = true;
                 // printf("CASE 3\n");
