@@ -13,9 +13,10 @@ fsm_state_t stateAttackDoubleDefence = {&state_nothing_enter, &state_nothing_exi
 fsm_state_t stateAttackShoot = {&state_attack_shoot_enter, &state_nothing_update, &state_nothing_exit, "AttackShoot"};
 
 static dv_timer_t idleTimer = {NULL, false};
-static dv_timer_t dribbleTimer = {NULL, false};
+static dv_timer_t shootTimer = {NULL, false};
 static float accelProgress = 0.0f;
 static float accelBegin = 0.0f;
+static bool canShoot = true;
 
 // shortcut lol
 #define rs robotState
@@ -33,19 +34,16 @@ static void idle_timer_callback(TimerHandle_t timer){
     FSM_CHANGE_STATE(Idle);
 }
 
-static void dribble_timer_callback(TimerHandle_t timer){
-    static const char *TAG = "DribbleTimerCallback";
-    ESP_LOGI(TAG, "Dribble timer has gone off, switch to dribble state");
-
-    state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
-    dv_timer_stop(&dribbleTimer);
-    FSM_CHANGE_STATE(Dribble);
+static void shoot_timer_callback(TimerHandle_t timer){
+    static const char *TAG = "ShootTimerCallback";
+    ESP_LOGI(TAG, "Shoot timer gone off, enabling shooting again");
+    canShoot = true;
+    dv_timer_stop(&shootTimer);
 }
 
-/** instantiates the idle timer if it is null **/
 static void create_timers_if_needed(state_machine_t *fsm){
     dv_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
-    dv_timer_check_create(&dribbleTimer, "DribbleTimer", DRIBBLE_TIMEOUT, (void*) fsm, dribble_timer_callback);
+    dv_timer_check_create(&shootTimer, "ShootTimer", SHOOT_TIMEOUT, NULL, shoot_timer_callback);
 }
 
 /** checks if any of the timers should be disabled based on current robot data */
@@ -63,9 +61,8 @@ void state_attack_idle_update(state_machine_t *fsm){
     static const char *TAG = "AttackIdleState";
 
     goal_correction(&robotState);
-    rs.outIsAttack = true;
-    
     RS_SEM_LOCK
+    rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
 
@@ -139,14 +136,11 @@ void state_attack_orbit_update(state_machine_t *fsm){
 
     // fuck
     if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
-        LOG_ONCE(TAG, "Ball and angle in correct spot, starting dribble timer, strength: %f, angle: %f, orbit dist thresh: %d"
+        LOG_ONCE(TAG, "Ball and angle in correct spot, changing intro dribble, strength: %f, angle: %f, orbit dist thresh: %d"
                 " angle range: %d-%d", robotState.inBallStrength, robotState.inBallAngle, ORBIT_DIST, IN_FRONT_MIN_ANGLE, 
                 IN_FRONT_MAX_ANGLE);
-        // dv_timer_start(&dribbleTimer);
         accelBegin = rs.outSpeed;
         FSM_CHANGE_STATE(Dribble);
-    } else {
-        // dv_timer_stop(&dribbleTimer);
     }
 
     // Check criteria:
@@ -186,8 +180,8 @@ void state_attack_dribble_update(state_machine_t *fsm){
                 IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
         FSM_REVERT;
     } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
-                IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST){
-        LOG_ONCE(TAG, "Ball in front and goal close, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
+                IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
+        LOG_ONCE(TAG, "Ball in front, goal close and shoot permitted, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
         rs.inGoalLength);
         FSM_CHANGE_STATE(Shoot);
     }
@@ -205,6 +199,9 @@ void state_attack_dribble_update(state_machine_t *fsm){
 void state_attack_shoot_enter(state_machine_t *fsm){
     static const char *TAG = "ShootState";
     ESP_LOGD(TAG, "Activating kicker!");
+    
+    canShoot = false;
+    dv_timer_start(&shootTimer);
     
     gpio_set_level(KICKER_PIN, 1);
     vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
