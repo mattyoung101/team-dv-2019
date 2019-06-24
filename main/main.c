@@ -29,7 +29,7 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "i2c.pb.h"
-#include "rgb_led.h"
+#include "mpu_wrapper.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -164,9 +164,9 @@ static void slave_task(void *pvParameter){
     i2c_scanner();
 
     // Initialise hardware
+    mpuw_init();
     tsop_init();
-    simu_init();
-    simu_calibrate();
+    
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
 
     ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
@@ -180,7 +180,7 @@ static void slave_task(void *pvParameter){
         tsop_calc();
 
         // update IMU
-        simu_calc();
+        mpuw_update();
 
         // setup protobuf byte stream, variables will be disposed of after loop ends (afaik)
         memset(pbBuf, 0, PROTOBUF_SIZE);

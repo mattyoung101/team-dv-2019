@@ -30,7 +30,7 @@
 
 // we are using the MPU9250, which according to the Invensense website is made of an MPU-6500 and a AK8963 magnetometer
 // however, the AK8963 doesn't seem to work right now, so we just use the 6500
-#define MPU9250
+#define MPU6500
 
 /* The following functions must be defined for this platform:
  * i2c_write(unsigned char slave_addr, unsigned char reg_addr,
@@ -1415,8 +1415,6 @@ int mpu_set_compass_sample_rate(unsigned short rate)
 #ifdef AK89xx_SECONDARY
     unsigned char div;
     if (!rate || rate > st.chip_cfg.sample_rate || rate > MAX_COMPASS_SAMPLE_RATE){
-        printf("You goofed, rate: %d, sample rate: %d, max compass rate: %d\n", rate, st.chip_cfg.sample_rate,
-        MAX_COMPASS_SAMPLE_RATE);
         return -1;
     }
 

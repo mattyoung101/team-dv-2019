@@ -18,8 +18,8 @@ set(COMPONENT_SRCS "defines.c"
                    "mplexer.c"
                    "movavg.c"
                    "comms_bluetooth.c"
-                   "rgb_led.c"
                    "bluetooth_manager.c"
+                   "magnetometer.c"
                    )
 set(COMPONENT_ADD_INCLUDEDIRS .)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D LOG_LOCAL_LEVEL=ESP_LOG_DEBUG")

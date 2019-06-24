@@ -59,7 +59,8 @@ void comms_bt_receive_task(void *pvParameter){
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE",
             isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my goal dist: %d, other goal dist: %f", robotState.inGoalLength, recvMsg.goalLength);
-
+            
+            // TODO check if I can't see goal first and verify I can see goal to become defender
             if (recvMsg.goalLength <= 0.01f){
                 ESP_LOGI(TAG, "Conflict resolution: other robot cannot see goal, I will become defender");
                 fsm_change_state(stateMachine, &stateDefenceDefend);

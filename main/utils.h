@@ -145,3 +145,6 @@ void print_motion_data(robot_state_t *robotState);
 bool log_once_check(char *msg);
 /** Resets the list of already logged messages **/
 void log_once_reset();
+
+/** calculates CRC16, based on AVR Libc implementation */
+uint16_t crc16_update(uint16_t crc, uint8_t a);
