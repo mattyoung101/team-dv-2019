@@ -61,7 +61,7 @@ static void timer_check(){
 void state_attack_idle_update(state_machine_t *fsm){
     static const char *TAG = "AttackIdleState";
 
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     rs.outIsAttack = true;
     
     RS_SEM_LOCK
@@ -101,7 +101,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     timer_check();
 
     // Check criteria:
@@ -131,9 +131,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    // if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
-    // else imu_correction(&robotState);
-    goal_correction(&robotState);
+    if(is_angle_between(rs.inBallAngle, 90, 270)) goal_correction(&robotState);
+    else imu_correction(&robotState);
+    // imu_correction(&robotState);
     timer_check();
 
     // fuck

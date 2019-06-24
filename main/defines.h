@@ -42,9 +42,9 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.8
+#define HEADING_KP 0.4
 #define HEADING_KI 0
-#define HEADING_KD 0.042
+#define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
 #define LINEAVOID_KP 2
@@ -75,9 +75,9 @@
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
-#define GOALIE_KP 1.0
+#define GOALIE_KP 0.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.1
+#define GOALIE_KD 0.2
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -93,9 +93,9 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 1.0
+#define GOAL_KP 0.8
 #define GOAL_KI 0
-#define GOAL_KD 0.1
+#define GOAL_KD 0.05
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -242,17 +242,17 @@ extern uint8_t ORBIT_SPEED_FAST;
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
-#define ORBIT_DIST 100 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 355
-#define IN_FRONT_ANGLE_BUFFER 15
+#define ORBIT_DIST 80 // switch from orbit to pursue if value is more than this
+#define IN_FRONT_MIN_ANGLE 7 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MAX_ANGLE 353
+#define IN_FRONT_ANGLE_BUFFER 50
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.0001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.000001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 
