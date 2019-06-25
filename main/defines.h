@@ -93,9 +93,9 @@
 #define LRF_MAX 100
 
 // --- Goal Correction --- //
-#define GOAL_KP 0.6
+#define GOAL_KP 0.5
 #define GOAL_KI 0
-#define GOAL_KD 0.04
+#define GOAL_KD 0.03
 #define GOAL_MAX_CORRECTION 100
 
 // Maths
@@ -242,8 +242,8 @@ extern uint8_t ORBIT_SPEED_FAST;
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 175 // if less than this, switch out of dribble
-#define ORBIT_DIST 120 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
+#define IN_FRONT_MIN_ANGLE 1 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
 #define IN_FRONT_ANGLE_BUFFER 90
 #define IN_FRONT_STRENGTH_BUFFER 40
