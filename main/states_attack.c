@@ -174,24 +174,32 @@ void state_attack_dribble_update(state_machine_t *fsm){
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?
     if (robotState.inBallStrength <= 0.0f){
-        LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallAngle);
+        LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallStrength);
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
-    } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER)){
+    } else if (rs.inBallAngle > IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER && rs.inBallAngle < IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
         FSM_REVERT;
-    } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
-                IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
-        LOG_ONCE(TAG, "Ball in front, goal close and shoot permitted, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
-        rs.inGoalLength);
-        FSM_CHANGE_STATE(Shoot);
     }
+    
+    // } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER)){
+    //     LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
+    //             IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
+    //     FSM_REVERT;
+    // }
+    // } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
+    //             IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
+    //     LOG_ONCE(TAG, "Ball in front, goal close and shoot permitted, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
+    //     rs.inGoalLength);
+    //     FSM_CHANGE_STATE(Shoot);
+    // }
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
     robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, accelProgress); 
     // Just yeet towards the ball (which is forwards)
-    robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
+    // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
+    robotState.outDirection = 0;
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;

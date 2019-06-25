@@ -59,14 +59,15 @@ static void master_task(void *pvParameter){
     defines_init(robotId);
     ESP_LOGI(TAG, "Running as robot #%d", robotId);
     robotState.inRobotId = robotId;
-    if (robotId == 0){
-        comms_bt_init_master();
-    } else {
-        comms_bt_init_slave();
-    }
+    // if (robotId == 0){
+    //     comms_bt_init_master();
+    // } else {
+    //     comms_bt_init_slave();
+    // }
 
     // Initialise FSM, start out in defence until we get a BT connection
-    stateMachine = fsm_new(&stateDefenceDefend);
+    // stateMachine = fsm_new(&stateDefenceDefend);
+    stateMachine = fsm_new(&stateAttackPursue);
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
@@ -135,10 +136,10 @@ static void master_task(void *pvParameter){
         fsm_update(stateMachine);
 
         // line over runs after the FSM to override it
-        update_line(&robotState);
+        // update_line(&robotState);
 
         print_motion_data(&robotState);
-        print_line_data(&robotState);
+        // print_ball_data(&robotState);
         
         // goal_correction(&robotState);
 
@@ -203,7 +204,7 @@ static void slave_task(void *pvParameter){
         }
         msg.heading = heading;
         msg.tsopAngle = tsopAngle;
-        msg.tsopStrength = tsopStrength;
+        msg.tsopStrength = tsopAvgStrength;
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
