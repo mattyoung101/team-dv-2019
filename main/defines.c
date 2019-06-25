@@ -72,9 +72,9 @@ void defines_init(uint8_t robotId){
         SURGE_DISTANCE = 50;
         SURGE_STRENGTH = 140;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 140;
+        BALL_CLOSE_STRENGTH = 145;
         ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 60;
+        ORBIT_SPEED_FAST = 50;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }
