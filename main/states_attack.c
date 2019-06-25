@@ -171,12 +171,15 @@ void state_attack_dribble_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
         FSM_REVERT;
-    } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) 
+    } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
                 && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
         LOG_ONCE(TAG, "Ball in front, goal close and shoot permitted, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
         rs.inGoalLength);
         FSM_CHANGE_STATE_GENERAL(Shoot);
     }
+
+    // ESP_LOGI(TAG, "Not shooting, goal angle: %d, goal length: %d, can shoot: %s", robotState.inGoalAngle,
+    // robotState.inGoalLength, canShoot ? "yes" : "no");
     
     // } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER)){
     //     LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,

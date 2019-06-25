@@ -2,7 +2,7 @@
 #include "utils.h"
 
 fsm_state_t stateGeneralNothing = {&state_nothing_enter, &state_nothing_exit, &state_nothing_update, "GeneralNothing"};
-fsm_state_t stateGeneralShoot = {&state_general_shoot_enter, &state_general_shoot_update, &state_nothing_exit, "GeneralShoot"};
+fsm_state_t stateGeneralShoot = {&state_general_shoot_enter, &state_nothing_exit, &state_general_shoot_update, "GeneralShoot"};
 static dv_timer_t shootTimer = {NULL, false};
 
 // shortcut cos i hate typing
