@@ -50,10 +50,8 @@ inline int32_t map(int32_t x, int32_t in_min, int32_t in_max, int32_t out_min, i
 
 bool is_angle_between(float target, float angle1, float angle2){
 	// make the angle from angle1 to angle2 to be <= 180 degrees
-	// int rAngle = ((angle2 - angle1) % 360 + 360) % 360;
 	float rAngle = fmodf(fmodf(angle2 - angle1, 360.0f) + 360.0f, 360.0f);
 	if (rAngle >= 180.0f){
-		// std::swap(angle1, angle2);
 		float a1 = angle1;
 		angle1 = angle2;
 		angle2 = a1;

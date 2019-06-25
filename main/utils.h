@@ -134,7 +134,7 @@ void print_position_data(robot_state_t *robotState);
 /** Display motion data **/
 void print_motion_data(robot_state_t *robotState);
 /** 
- * Logs a message using ESP_LOGD< only if it hasn't already been logged since the last call to log_once_reset()
+ * Logs a message using ESP_LOGD only if it hasn't already been logged since the last call to log_once_reset()
  * log_once_reset() is automatically called by the FSM when a state change or revert occurs
  **/
 #define LOG_ONCE(tag, fmt, ...) do { \

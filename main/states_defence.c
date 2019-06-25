@@ -149,11 +149,10 @@ void state_defence_surge_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball is not in capture zone, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     } else if (!rs.inBTConnection && canShoot){
-        LOG_ONCE(TAG, "No BT connection, shooting");
+        LOG_ONCE(TAG, "No Bluetooth connection, willing to shoot, shooting");
         FSM_CHANGE_STATE_GENERAL(Shoot);
     }
 
-    // LOG_ONCE(TAG, "Yeet");
     // EPIC YEET MODE
     rs.outDirection = rs.inBallAngle;
     rs.outSpeed = SURGE_SPEED;
