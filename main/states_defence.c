@@ -51,9 +51,7 @@ void state_defence_idle_update(state_machine_t *fsm){
     static const char *TAG = "DefendIdleState";
 
     rs.outIsAttack = false;
-    goal_correction(&robotState);
-
-    rs.outSpeed = 0.0f;
+    imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
         // LOG_ONCE(TAG, "Goal not visible, switching to reverse");
@@ -64,13 +62,7 @@ void state_defence_idle_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
-    // position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
-
-    // float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
-    // float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
-    
-    // rs.outDirection = fmodf(RAD_DEG * (atan2f(0.0f, distanceMovement)), 360.0f);
-    // rs.outSpeed = get_magnitude(0.0f, distanceMovement);
+    position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
 // Defend
@@ -94,7 +86,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
 
     // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
     // else imu_correction(&robotState); // Face the back of the robot to the goal
-    goal_correction(&robotState);
+    imu_correction(&robotState);
 
     // check the timer conditions first, so that we don't get switched out of before we can check
     if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) 
@@ -124,14 +116,14 @@ void state_defence_defend_enter(state_machine_t *fsm){
         // Ball is behind, orbit so we don't score an own goal
         orbit(&robotState);
     } else {
-        float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle;
-        float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 - 360 range
+        float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
+        float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 -> 360 range
         float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
 
-        float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
+        float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
         float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         
-        float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Centre on the ball
+        float sidewaysMovement = -pid_update(&interceptPID, goalAngle, fmodf(tempAngle + 180, 360.0f), 0.0f); // Position robot between ball and centre of goal (dunno if this works)
         if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
 
         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
@@ -143,7 +135,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
 // Surge
 void state_defence_surge_update(state_machine_t *fsm){
     static const char *TAG = "DefendSurgeState";
-    goal_correction(&robotState);
+    imu_correction(&robotState);
 
     RS_SEM_LOCK
     rs.outSwitchOk = true;
@@ -162,6 +154,7 @@ void state_defence_surge_update(state_machine_t *fsm){
     }
 
     // LOG_ONCE(TAG, "Yeet");
+    // EPIC YEET MODE
     rs.outDirection = rs.inBallAngle;
     rs.outSpeed = SURGE_SPEED;
 }

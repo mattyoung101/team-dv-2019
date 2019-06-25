@@ -91,7 +91,7 @@ void LightSensorArray::read() {
             Serial.print(data[i]);
 //            Serial.print(" ");
         #elif DEBUG_RAW
-            if(i < 24){
+            if(i >= 24){
               Serial.print(readSensor(i));
               Serial.print(", ");
             }
@@ -263,5 +263,5 @@ void LightSensorArray::lineCalc() {
   }
 
   if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
-  if(!lineOver) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
+  if(!lineOver && firstAngle == NO_LINE_ANGLE) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
 }

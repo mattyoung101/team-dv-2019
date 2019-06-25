@@ -51,7 +51,7 @@ void loop() {
   ls.calculateClusters();
   ls.calculateLine();
 
-  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), 0.0f);
+  ls.updateLine((float)ls.getLineAngle(), (float)ls.getLineSize(), heading);
   ls.lineCalc();
 
   inputVoltage = V_REF * (double)analogRead(V_BAT)/1023;
