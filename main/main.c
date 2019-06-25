@@ -59,15 +59,21 @@ static void master_task(void *pvParameter){
     defines_init(robotId);
     ESP_LOGI(TAG, "Running as robot #%d", robotId);
     robotState.inRobotId = robotId;
-    // if (robotId == 0){
-    //     comms_bt_init_master();
-    // } else {
-    //     comms_bt_init_slave();
-    // }
+
+    #ifdef BLUETOOTH_ENABLED
+    if (robotId == 0){
+        comms_bt_init_master();
+    } else {
+        comms_bt_init_slave();
+    }
+    #endif
 
     // Initialise FSM, start out in defence until we get a BT connection
-    // stateMachine = fsm_new(&stateDefenceDefend);
+    #ifdef BLUETOOTH_ENABLED
+    stateMachine = fsm_new(&stateDefenceDefend);
+    #else
     stateMachine = fsm_new(&stateAttackPursue);
+    #endif
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
