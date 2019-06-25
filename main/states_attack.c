@@ -199,7 +199,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     robotState.outSpeed = lerp(accelBegin, DRIBBLE_SPEED, accelProgress); 
     // Just yeet towards the ball (which is forwards)
     // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle;
-    robotState.outDirection = 0;
+    robotState.outDirection = robotState.inBallAngle;
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;
