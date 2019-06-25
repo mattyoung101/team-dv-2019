@@ -33,8 +33,12 @@ void defines_init(uint8_t robotId){
     ESP_LOGI(TAG, "Initialising values as robot ID #%d", robotId);
 
     if (robotId == 0){
-        float values[] = {1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
-                        0.7f, 0.7f, 0.7f, 1.0f, 1.0f, 1.0f, 1.2f, 1.2f};
+        // float values[] = {1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
+        //                 0.7f, 0.7f, 0.7f, 1.0f, 1.0f, 1.0f, 1.2f, 1.2f};
+        float values[] = {
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
+            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+        };
         MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = true;
@@ -68,13 +72,13 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = -30;
-        DEFEND_DISTANCE = 30;
+        DEFEND_DISTANCE = 35;
         SURGE_DISTANCE = 50;
         SURGE_STRENGTH = 140;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 145;
         ORBIT_SPEED_SLOW = 40;
-        ORBIT_SPEED_FAST = 65;
+        ORBIT_SPEED_FAST = 60;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

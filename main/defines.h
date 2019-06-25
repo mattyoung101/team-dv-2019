@@ -59,17 +59,17 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 10
+#define FORWARD_KP 3
 #define FORWARD_KI 0
-#define FORWARD_KD 0.00001
+#define FORWARD_KD 0
 #define FORWARD_MAX 200
 
-#define SIDE_KP 2
+#define SIDE_KP 1
 #define SIDE_KI 0
-#define SIDE_KD 0.000001
+#define SIDE_KD 0
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 2
+#define INTERCEPT_KP 2.5
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0.0001
 #define INTERCEPT_MAX 100
@@ -77,7 +77,7 @@
 
 #define GOALIE_KP 0.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.2
+#define GOALIE_KD 0.01
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -125,12 +125,13 @@ extern int16_t CAM_OFFSET_Y;
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 #define HALFWAY_DISTANCE 45
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
+#define GOAL_WIDTH 80
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
