@@ -29,6 +29,8 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "i2c.pb.h"
+#include "vl53l0x_api.h"
+#include "vl53l0x_platform.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -162,8 +164,15 @@ static void master_task(void *pvParameter){
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
 static void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
-    static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
+    uint8_t pbBuf[PROTOBUF_SIZE] = {0};
+    char lrfError[VL53L0X_MAX_STRING_LENGTH] = {0};
     uint8_t robotId = 69;
+    VL53L0X_Dev_t lrf;
+    VL53L0X_RangingMeasurementData_t RangingMeasurementData;
+    uint8_t isApertureSpads;
+    uint8_t VhvSettings;
+    uint8_t PhaseCal;
+    uint32_t refSpadCount;
 
     // Initialise software
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
@@ -179,6 +188,21 @@ static void slave_task(void *pvParameter){
     simu_calibrate();
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
 
+    ESP_LOGI(TAG, "Initialising LRF...");
+    // base initialisation
+    LRF_ERROR_CHECK(VL53L0X_StaticInit(&lrf));
+    LRF_ERROR_CHECK(VL53L0X_PerformRefCalibration(&lrf, &VhvSettings, &PhaseCal));
+    LRF_ERROR_CHECK(VL53L0X_PerformRefSpadManagement(&lrf, &refSpadCount, &isApertureSpads));
+    LRF_ERROR_CHECK(VL53L0X_SetDeviceMode(&lrf, VL53L0X_DEVICEMODE_SINGLE_RANGING));
+    LRF_ERROR_CHECK(VL53L0X_SetLimitCheckEnable(&lrf, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, 1));
+
+    // ST's example code does this section, not really sure what it does except for the measurement timing budget
+    LRF_ERROR_CHECK(VL53L0X_SetLimitCheckEnable(&lrf, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, 1));    
+    LRF_ERROR_CHECK(VL53L0X_SetLimitCheckValue(&lrf, VL53L0X_CHECKENABLE_SIGNAL_RATE_FINAL_RANGE, (FixPoint1616_t)(0.25*65536)));
+    LRF_ERROR_CHECK(VL53L0X_SetLimitCheckValue(&lrf, VL53L0X_CHECKENABLE_SIGMA_FINAL_RANGE, (FixPoint1616_t)(18*65536)));			
+    LRF_ERROR_CHECK(VL53L0X_SetMeasurementTimingBudgetMicroSeconds(&lrf, 15000));
+    ESP_LOGI(TAG, "LRF initialised successfully");
+
     ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
     esp_task_wdt_add(NULL);
     
@@ -191,6 +215,10 @@ static void slave_task(void *pvParameter){
 
         // update IMU
         simu_calc();
+
+        // read LRF
+        LRF_ERROR_CHECK(VL53L0X_PerformSingleRangingMeasurement(&lrf, &RangingMeasurementData));
+        ESP_LOGD(TAG, "LRF measurement: %d mm", RangingMeasurementData.RangeMilliMeter);
 
         // setup protobuf byte stream, variables will be disposed of after loop ends (afaik)
         memset(pbBuf, 0, PROTOBUF_SIZE);
@@ -224,10 +252,6 @@ static void slave_task(void *pvParameter){
         // activate/deactivate debug LED if we're on the line
         gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
         esp_task_wdt_reset();
-
-        // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
-        // ESP_LOGD(TAG, "%f", heading);
-        // vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 

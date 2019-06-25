@@ -72,6 +72,14 @@ extern pid_config_t forwardPID;
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
 /** printf with a newline automatically attached on the end **/
 #define printfln(f_, ...) printf((f_ "\n"), __VA_ARGS__)
+/** Error check for VL53L0X */
+#define LRF_ERROR_CHECK(code) do { \
+    VL53L0X_Error err = (code); \
+    if (err != VL53L0X_ERROR_NONE){ \
+        VL53L0X_GetPalErrorString(err, lrfError); \
+        ESP_LOG_BUFFER_CHAR_LEVEL("VL53L0X Error", lrfError, VL53L0X_MAX_STRING_LENGTH, ESP_LOG_ERROR); \
+    } \
+} while (0);
 
 int32_t mod(int32_t x, int32_t m);
 float floatMod(float x, float m);
