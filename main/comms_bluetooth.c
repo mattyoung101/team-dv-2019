@@ -315,8 +315,10 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
 
 static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     bt_init();
-    if (isFirstRun) { ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb)); }
-    if (isFirstRun) { ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb)); }
+    if (isFirstRun) {
+         ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
+         ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
+    }
     ESP_ERROR_CHECK(esp_spp_init(ESP_SPP_MODE_CB));
     
     // Simple Secure Paring (SSP) params
@@ -333,7 +335,7 @@ static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     if (packetQueue == NULL){
         packetQueue = xQueueCreate(PACKET_QUEUE_LENGTH, BTProvide_size);
     }
-
+    
     if (isFirstRun){
         isFirstRun = false;
     }

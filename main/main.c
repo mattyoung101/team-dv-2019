@@ -59,19 +59,26 @@ static void master_task(void *pvParameter){
     defines_init(robotId);
     ESP_LOGI(TAG, "Running as robot #%d", robotId);
     robotState.inRobotId = robotId;
+
+    #ifdef BLUETOOTH_ENABLED
     if (robotId == 0){
         comms_bt_init_master();
     } else {
         comms_bt_init_slave();
     }
+    #endif
 
     // Initialise FSM, start out in defence until we get a BT connection
+    #ifdef BLUETOOTH_ENABLED
     stateMachine = fsm_new(&stateDefenceDefend);
-    // stateMachine = fsm_new(&stateAttackPursue);
+    #else
+    stateMachine = fsm_new(&stateAttackPursue);
+    #endif
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
     vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
+    ESP_LOGI(TAG, "Running!");
 
     esp_task_wdt_add(NULL);
 
@@ -228,15 +235,24 @@ void motor_test_task(void *pvParameter){
     static const char *TAG = "MotorTestTask";
 
     motor_init();
+    ESP_ERROR_CHECK(gpio_set_direction(33, GPIO_MODE_OUTPUT));
     ESP_LOGI(TAG, "Motor test init OK");
 
     while (true){
-        motor_calc(0, 0, 75.0f);
-        motor_move(false);
-        vTaskDelay(pdMS_TO_TICKS(2500));
+        // ESP_LOGI(TAG, "Going forward");
+        // motor_calc(0, 0, 75.0f);
+        // motor_move(false);
+        // vTaskDelay(pdMS_TO_TICKS(2500));
         
-        motor_calc(180, 0, 75.0f);
-        motor_move(false);
+        // ESP_LOGI(TAG, "Going backwards");
+        // motor_calc(180, 0, 75.0f);
+        // motor_move(false);
+        // vTaskDelay(pdMS_TO_TICKS(2500));
+
+        ESP_LOGI(TAG, "Kicking");
+        ESP_ERROR_CHECK(gpio_set_level(33, 1));
+        vTaskDelay(pdMS_TO_TICKS(2500));
+        ESP_ERROR_CHECK(gpio_set_level(33, 0));
         vTaskDelay(pdMS_TO_TICKS(2500));
     }
 }
