@@ -45,9 +45,11 @@ void comms_bt_receive_task(void *pvParameter){
     while (true){
         BTProvide recvMsg = BTProvide_init_zero;
         bool isAttack = false;
+        bool isInShootState = false;
 
         if (xQueueReceive(packetQueue, &recvMsg, portMAX_DELAY)){
             isAttack = strstr(recvMsg.fsmState, "Attack");
+            isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
 
             // ESP_LOGD(TAG, "Received BT packet: state: %s, goal length: %f, switch ok: %s, isAttack: %s", 
@@ -55,7 +57,8 @@ void comms_bt_receive_task(void *pvParameter){
         }
 
         // conflict resolution: whichever robot is closest to the goal loses the conflict and becomes defender
-        if ((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) {
+        // if in shoot state, ignore conflict as both robots can be shooting without conflict
+        if (((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) && !isInShootState) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE",
             isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my goal dist: %d, other goal dist: %f", robotState.inGoalLength, recvMsg.goalLength);

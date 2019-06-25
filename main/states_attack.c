@@ -4,19 +4,17 @@
 
 robot_state_t robotState = {0};
 SemaphoreHandle_t robotStateSem = NULL;
+bool canShoot = true;
 
 fsm_state_t stateAttackIdle = {&state_nothing_enter, &state_nothing_exit, &state_attack_idle_update, "AttackIdle"};
 fsm_state_t stateAttackPursue = {&state_attack_pursue_enter, &state_nothing_exit, &state_attack_pursue_update, "AttackPursue"};
 fsm_state_t stateAttackOrbit = {&state_nothing_enter, &state_nothing_exit, &state_attack_orbit_update, "AttackOrbit"};
 fsm_state_t stateAttackDribble = {&state_nothing_enter, &state_nothing_exit, &state_attack_dribble_update, "AttackDribble"};
 fsm_state_t stateAttackDoubleDefence = {&state_nothing_enter, &state_nothing_exit, &state_attack_doubledefence_update, "AttackDoubleDefence"};
-fsm_state_t stateAttackShoot = {&state_attack_shoot_enter, &state_nothing_update, &state_nothing_exit, "AttackShoot"};
 
 static dv_timer_t idleTimer = {NULL, false};
-static dv_timer_t shootTimer = {NULL, false};
 static float accelProgress = 0.0f;
 static float accelBegin = 0.0f;
-static bool canShoot = true;
 
 // shortcut lol
 #define rs robotState
@@ -34,16 +32,8 @@ static void idle_timer_callback(TimerHandle_t timer){
     FSM_CHANGE_STATE(Idle);
 }
 
-static void shoot_timer_callback(TimerHandle_t timer){
-    static const char *TAG = "ShootTimerCallback";
-    ESP_LOGI(TAG, "Shoot timer gone off, enabling shooting again");
-    canShoot = true;
-    dv_timer_stop(&shootTimer);
-}
-
 static void create_timers_if_needed(state_machine_t *fsm){
     dv_timer_check_create(&idleTimer, "IdleTimer", IDLE_TIMEOUT, (void*) fsm, idle_timer_callback);
-    dv_timer_check_create(&shootTimer, "ShootTimer", SHOOT_TIMEOUT, NULL, shoot_timer_callback);
 }
 
 /** checks if any of the timers should be disabled based on current robot data */
@@ -179,11 +169,11 @@ void state_attack_dribble_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
         FSM_REVERT;
-    } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, 
-                IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
+    } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER) 
+                && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
         LOG_ONCE(TAG, "Ball in front, goal close and shoot permitted, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
         rs.inGoalLength);
-        FSM_CHANGE_STATE(Shoot);
+        FSM_CHANGE_STATE_GENERAL(Shoot);
     }
 
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
@@ -193,21 +183,6 @@ void state_attack_dribble_update(state_machine_t *fsm){
 
     // Update progress for linear interpolation
     accelProgress += ACCEL_PROG;
-}
-
-// Shoot
-void state_attack_shoot_enter(state_machine_t *fsm){
-    static const char *TAG = "ShootState";
-    ESP_LOGD(TAG, "Activating kicker!");
-    
-    canShoot = false;
-    dv_timer_start(&shootTimer);
-    
-    gpio_set_level(KICKER_PIN, 1);
-    vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
-    gpio_set_level(KICKER_PIN, 0);
-    
-    FSM_REVERT;
 }
 
 // Avoid Double Defence

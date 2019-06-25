@@ -75,6 +75,9 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
         fsm_change_state(stateMachine, ROBOT_MODE == MODE_ATTACK ? &stateAttackPursue : &stateDefenceDefend);
         firstConnection = false;
     }
+    RS_SEM_LOCK
+    robotState.inBTConnection = true;
+    RS_SEM_UNLOCK
 
     // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
     vTaskDelay(pdMS_TO_TICKS(15));
@@ -98,6 +101,10 @@ void comms_bt_stop_tasks(void){
         vTaskDelete(sendTaskHandle);
         sendTaskHandle = NULL;
     }
+
+    RS_SEM_LOCK
+    robotState.inBTConnection = false;
+    RS_SEM_UNLOCK
 }
 
 //////////////////////////// MASTER (ACCEPTOR) //////////////////////////// 
