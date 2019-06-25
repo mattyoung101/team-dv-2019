@@ -1,6 +1,9 @@
 #include "states.h"
+#include "utils.h"
 
-fsm_state_t stateGeneralNothing = {&state_nothing_enter, &state_nothing_exit, &state_nothing_update, "StateNothing"};
+fsm_state_t stateGeneralNothing = {&state_nothing_enter, &state_nothing_exit, &state_nothing_update, "GeneralNothing"};
+fsm_state_t stateGeneralShoot = {&state_general_shoot_enter, &state_general_shoot_update, &state_nothing_exit, "GeneralShoot"};
+static dv_timer_t shootTimer = {NULL, false};
 
 // shortcut cos i hate typing
 #define rs robotState
@@ -25,11 +28,43 @@ void dv_timer_stop(dv_timer_t *timer){
 void dv_timer_check_create(dv_timer_t *timer, char *timerName, int32_t timeout, void *const parameter, 
                             TimerCallbackFunction_t callback){
     if (timer->timer == NULL){
-        // ESP_LOGI("CreateTimer", "Creating timer: %s", timerName);
+        ESP_LOGI("CreateTimer", "Creating timer: %s", timerName);
         timer->timer = xTimerCreate(timerName, pdMS_TO_TICKS(timeout), false, parameter, callback);
     }
 }
 
+static void shoot_timer_callback(TimerHandle_t timer){
+    static const char *TAG = "ShootTimerCallback";
+    ESP_LOGI(TAG, "Shoot timer gone off, enabling shooting again");
+
+    canShoot = true;
+    dv_timer_stop(&shootTimer);
+}
+
+// Shoot
+void state_general_shoot_enter(state_machine_t *fsm){
+    static const char *TAG = "ShootState";
+    if (!canShoot){
+        ESP_LOGE(TAG, "Illegal state change: shoot not permitted at this time. Fix your code!");
+        return;
+    }
+    LOG_ONCE(TAG, "Activating kicker");
+    
+    canShoot = false;
+    dv_timer_check_create(&shootTimer, "ShootTimer", SHOOT_TIMEOUT, NULL, shoot_timer_callback);
+    dv_timer_start(&shootTimer);
+    
+    gpio_set_level(KICKER_PIN, 1);
+    vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
+    gpio_set_level(KICKER_PIN, 0);
+}
+
+void state_general_shoot_update(state_machine_t *fsm){
+    // we revert here as reverting in enter seems to cause problems
+    FSM_REVERT;
+}
+
+// Nothing. Empty states for when no state function is declared.
 void state_nothing_enter(state_machine_t *fsm){
     ESP_LOGV("StateNothing", "Entered");
 }

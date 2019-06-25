@@ -38,6 +38,7 @@ typedef struct {
     // Other stuff
     float inBatteryVoltage;
     uint8_t inRobotId;
+    bool inBTConnection;
 
     // Outputs
     int16_t outSpeed;
@@ -52,6 +53,8 @@ typedef struct {
     TimerHandle_t timer;
     bool running;
 } dv_timer_t;
+
+extern bool canShoot;
 
 /** locks the robot state semaphore */
 #define RS_SEM_LOCK if (xSemaphoreTake(robotStateSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))) {
@@ -97,10 +100,6 @@ extern fsm_state_t stateAttackOrbit;
 void state_attack_dribble_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackDribble;
 
-// Shoot state: kicks the ball, then reverts to previous state
-void state_attack_shoot_enter(state_machine_t *fsm);
-extern fsm_state_t stateAttackShoot;
-
 // Avoid double defence state: Does not move into the goalie box to avoid double defence
 void state_attack_doubledefence_update(state_machine_t *fsm);
 extern fsm_state_t stateAttackDoubleDefence;
@@ -125,3 +124,8 @@ extern fsm_state_t stateDefenceSurge;
 
 /////////// GENERAL FSM /////////
 extern fsm_state_t stateGeneralNothing;
+
+// Shoot state: kicks the ball, then reverts to previous state
+void state_general_shoot_enter(state_machine_t *fsm);
+void state_general_shoot_update(state_machine_t *fsm);
+extern fsm_state_t stateGeneralShoot;

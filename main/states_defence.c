@@ -92,6 +92,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
     if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) 
         && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
         LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, starting surge timer");
+        
         RS_SEM_LOCK;
         rs.outSwitchOk = true;
         RS_SEM_UNLOCK;
@@ -136,10 +137,10 @@ void state_defence_surge_update(state_machine_t *fsm){
     static const char *TAG = "DefendSurgeState";
     imu_correction(&robotState);
 
-    rs.outIsAttack = false;
-    RS_SEM_LOCK;
+    RS_SEM_LOCK
     rs.outSwitchOk = true;
-    RS_SEM_UNLOCK;
+    rs.outIsAttack = false;
+    RS_SEM_UNLOCK
 
     if (rs.inGoalLength > SURGE_DISTANCE || !rs.inGoalVisible){
         LOG_ONCE(TAG, "Too far from goal, switching to defend");
@@ -147,6 +148,9 @@ void state_defence_surge_update(state_machine_t *fsm){
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 20, IN_FRONT_MAX_ANGLE - 20) || rs.inBallStrength < SURGE_STRENGTH - 30){
         LOG_ONCE(TAG, "Ball is not in capture zone, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
+    } else if (!rs.inBTConnection && canShoot){
+        LOG_ONCE(TAG, "No BT connection, shooting");
+        FSM_CHANGE_STATE_GENERAL(Shoot);
     }
 
     // LOG_ONCE(TAG, "Yeet");

@@ -47,9 +47,9 @@ extern pid_config_t forwardPID;
         return 1; \
     } } while (0);
 /** Starts counting on the performance timer. The variable "pfBegin" must be undefined **/
-#define PERF_dv_timer_start int64_t pfBegin = esp_timer_get_time();
+#define PERF_TIMER_START int64_t pfBegin = esp_timer_get_time();
 /** Stops the performance timer and logs to UART. **/
-#define PERF_dv_timer_stop ESP_LOGD("PerfTimer", "%lld us", (esp_timer_get_time() - pfBegin));
+#define PERF_TIMER_STOP ESP_LOGD("PerfTimer", "%lld us", (esp_timer_get_time() - pfBegin));
 /** Cosine in degrees of x in degrees **/
 #define cosfd(x) (cosf(x * DEG_RAD) * RAD_DEG)
 /** Sin in degrees of x in degrees **/
@@ -66,6 +66,8 @@ extern pid_config_t forwardPID;
 #define FSM_CHANGE_STATE(STATE) do { fsm_change_state(fsm, &stateAttack ##STATE); return; } while (0);
 /** Switch to a state in defence FSM **/
 #define FSM_CHANGE_STATE_DEFENCE(STATE) do { fsm_change_state(fsm, &stateDefence ##STATE); return; } while (0);
+/** Switch to a state in general fsm */
+#define FSM_CHANGE_STATE_GENERAL(STATE) do { fsm_change_state(fsm, &stateGeneral ##STATE); return; } while (0);
 /** Revert state in FSM **/
 #define FSM_REVERT do { fsm_revert_state(fsm); return; } while (0);
 /** printf with a newline automatically attached on the end **/
