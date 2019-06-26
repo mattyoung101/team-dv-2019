@@ -19,7 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
+// #define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_YELLOW
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -43,14 +44,14 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.4
+#define HEADING_KP 0.8
 #define HEADING_KI 0
 #define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
-#define LINEAVOID_KP 2
+#define LINEAVOID_KP 0.6
 #define LINEAVOID_KI 0
-#define LINEAVOID_KD 0.5
+#define LINEAVOID_KD 0.05
 #define LINEAVOID_MAX 100
 
 // --- Idle Correction --- //
@@ -60,14 +61,14 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3
+#define FORWARD_KP 4.5
 #define FORWARD_KI 0
 #define FORWARD_KD 0
-#define FORWARD_MAX 200
+#define FORWARD_MAX 100
 
-#define SIDE_KP 1
+#define SIDE_KP 1.5
 #define SIDE_KI 0
-#define SIDE_KD 0
+#define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
 #define INTERCEPT_KP 2.5
@@ -126,13 +127,12 @@ extern int16_t CAM_OFFSET_Y;
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_BLUE
 #define HALFWAY_DISTANCE 45
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 80
+#define GOAL_WIDTH 40
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -179,7 +179,7 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_LINE_OVER_BUFFER 80
 #define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
-#define OVER_LINE_SPEED 80
+#define OVER_LINE_SPEED 100
 #define LINE_TRACK_SPEED 30
 #define LINE_SPEED_MULTIPLIER 0.5
 
@@ -266,6 +266,7 @@ extern uint8_t SURGE_DISTANCE;
 extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
+#define DEFEND_MIN_STRENGTH 100
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge

@@ -40,19 +40,19 @@ void defines_init(uint8_t robotId){
             1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
         };
         MOTOR_FL_REVERSED = true;
-        MOTOR_FR_REVERSED = true;
+        MOTOR_FR_REVERSED = false;
         MOTOR_BL_REVERSED = true;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 57;
         CAM_OFFSET_Y = 57;
-        TSOP_CORRECTION = -10;
-        DEFEND_DISTANCE = 42;
-        SURGE_DISTANCE = 47;
-        SURGE_STRENGTH = 150;
+        TSOP_CORRECTION = -20;
+        DEFEND_DISTANCE = 30;
+        SURGE_DISTANCE = 45;
+        SURGE_STRENGTH = 130;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 115;
-        ORBIT_SPEED_SLOW = 30;
+        BALL_CLOSE_STRENGTH = 145;
+        ORBIT_SPEED_SLOW = 40;
         ORBIT_SPEED_FAST = 60;
         
         // fuckin C bullshit workaround to set values
@@ -74,7 +74,7 @@ void defines_init(uint8_t robotId){
         TSOP_CORRECTION = -30;
         DEFEND_DISTANCE = 35;
         SURGE_DISTANCE = 50;
-        SURGE_STRENGTH = 140;
+        SURGE_STRENGTH = 130;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 145;
         ORBIT_SPEED_SLOW = 40;

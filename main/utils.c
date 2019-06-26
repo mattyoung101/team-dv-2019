@@ -248,33 +248,39 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 }
 
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
-    if(robotState->inOnLine || robotState->inLineOver) {
-        // line_correction(robotState);
-        if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
-            if(robotState->inLineOver) {
-                // robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLastAngle - robotState->inHeading, 360.0f) : 
-                // fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-                robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f - robotState->inHeading, 360.0f);
-                printf("CASE 1\n");
-            } else {
-                robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-                printf("CASE 2\n");
-            }
-            robotState->outSpeed = OVER_LINE_SPEED;
-        } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
-            if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
-                robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-                robotState->outSpeed = 0;
-                robotState->outShouldBrake = true;
-                printf("CASE 3\n");
-            } else {
-                robotState->outSpeed = LINE_TRACK_SPEED;
-                printf("CASE 4\n");
-            }
-        } else {
-            if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
-            printf("CASE 5\n");
-        }
+    // if(robotState->inOnLine || robotState->inLineOver) {
+    //     // line_correction(robotState);
+    //     if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
+    //         if(robotState->inLineOver) {
+    //             // robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLastAngle - robotState->inHeading, 360.0f) : 
+    //             // fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+    //             robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f - robotState->inHeading, 360.0f);
+    //             printf("CASE 1\n");
+    //         } else {
+    //             robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+    //             printf("CASE 2\n");
+    //         }
+    //         robotState->outSpeed = OVER_LINE_SPEED;
+    //     } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
+    //         if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
+    //             robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+    //             robotState->outSpeed = 0;
+    //             robotState->outShouldBrake = true;
+    //             printf("CASE 3\n");
+    //         } else {
+    //             robotState->outSpeed = LINE_TRACK_SPEED;
+    //             printf("CASE 4\n");
+    //         }
+    //     } else {
+    //         if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
+    //         printf("CASE 5\n");
+    //     }
+    // }
+
+    if(robotState->inOnLine || robotState->inLineOver){
+        line_correction(robotState);
+        robotState->outDirection = fmodf(robotState->inLastAngle + 180, 360.0f);
+        robotState->outSpeed = OVER_LINE_SPEED;
     }
 
     // printf("LineAngle: %f, LastAngle: %f, LineOver: %d, OutDirection: %d\n",robotState->inLineAngle,robotState->inLastAngle,robotState->inLineOver,robotState->outDirection);

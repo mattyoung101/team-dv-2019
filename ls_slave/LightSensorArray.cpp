@@ -54,6 +54,18 @@ void LightSensorArray::changeMUXChannel(uint8_t channel) {
     digitalWrite(MUX_A3, (channel >> 3) & 0x1);
     digitalWrite(MUX_A4, (channel >> 4) & 0x1);
 
+//    bool binary[5] = {false};
+//    float decimal = channel;
+//    for(uint8_t i = 4; i >= 0 && decimal >= 1; i--){
+//        binary[i] = ((uint8_t)decimal) % 2;
+//        decimal /= 2;
+//    }
+//    digitalWrite(MUX_A0, binary[4]);
+//    digitalWrite(MUX_A1, binary[3]);
+//    digitalWrite(MUX_A2, binary[2]);
+//    digitalWrite(MUX_A3, binary[1]);
+//    digitalWrite(MUX_A4, binary[0]);
+
     digitalWrite(MUX_WR, HIGH);
 }
 
@@ -77,7 +89,7 @@ int LightSensorArray::readSensor(int sensor) {
 
     // This changes the pins on both multiplexers. I had some optimisations written up in the ESP32 version
     // to read both mux channels at once, but the Arduino IDE sucks and I got other shit to do.
-    changeMUXChannel(sensor % 24);
+    changeMUXChannel(sensor % (LS_NUM/2));
         
     return analogRead(mux);
 }
@@ -85,7 +97,9 @@ int LightSensorArray::readSensor(int sensor) {
 void LightSensorArray::read() {
     // Read all 48 sensors
     for (int i = 0; i < LS_NUM; i++) {
-        if(i == 47 || i == 46 || i == 45 || i == 44 || i == 43 || i == 42 || i == 41 || i == 17 || i == 18 || i == 19 || i ==20 || i ==21 || i == 22 || i == 23) continue; // Robot 0
+//        Serial.print(i);
+//        Serial.print("\t");
+//        if(i == 47 || i == 46 || i == 45 || i == 44 || i == 43 || i == 42 || i == 41 || i == 17 || i == 18 || i == 19 || i ==20 || i ==21 || i == 22 || i == 23) continue; // Robot 0
         data[i] = readSensor(i) > thresholds[i];
         #if DEBUG_DATA
             Serial.print(data[i]);
@@ -257,11 +271,20 @@ void LightSensorArray::updateLine(float angle, float size, float heading) {
 }
 
 void LightSensorArray::lineCalc() {
+  // Fuck up detection code
+  if(lineAngle == NO_LINE_ANGLE && lastSize >= HALFWAY_SIZE - HALFWAY_SIZE_BUFFER && lastSize <= HALFWAY_SIZE + HALFWAY_SIZE_BUFFER){ // If the line disappeared, but the line size indicated that the line is about halfway up the robot. we fucked up
+    lineAngle = lastAngle;
+    lineSize = lastSize;
+  }
+  
   if(isOnLine && firstAngle != NO_LINE_ANGLE){ // Check if touching the line and not crossed over
-    if(abs(lineAngle-firstAngle)>80 && abs(lineAngle-firstAngle)<260) lineOver = true; // Detecting if the line angle has changed by a lot
+    if(abs(lineAngle-firstAngle)>LS_LINEOVER_BUFFER) lineOver = true; // Detecting if the line angle has changed by a lot
     else lineOver = false;
   }
 
   if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
   if(!lineOver && firstAngle == NO_LINE_ANGLE) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
+
+  lastAngle = lineAngle; // Set the previous angle for use in fuck up detection
+  lastSize = lineSize;
 }

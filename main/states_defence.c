@@ -57,8 +57,8 @@ void state_defence_idle_update(state_machine_t *fsm){
         // LOG_ONCE(TAG, "Goal not visible, switching to reverse");
         LOG_ONCE(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
         // FSM_CHANGE_STATE_DEFENCE(Reverse);
-    } else if (rs.inBallStrength > 0.0f){
-        LOG_ONCE(TAG, "Ball is visible, switching to defend");
+    } else if (rs.inBallStrength >= DEFEND_MIN_STRENGTH){
+        LOG_ONCE(TAG, "Ball is close enough, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
@@ -106,8 +106,8 @@ void state_defence_defend_enter(state_machine_t *fsm){
     if (!rs.inGoalVisible){
         LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
         FSM_CHANGE_STATE_DEFENCE(Reverse);
-    } else if (rs.inBallStrength <= 0.0f){
-        LOG_ONCE(TAG, "Ball not visible, switching to idle");
+    } else if (rs.inBallStrength <= DEFEND_MIN_STRENGTH){
+        LOG_ONCE(TAG, "Ball too far away, switching to Idle");
         // LOG_ONCE(TAG, "Cancelling switch state to Idle cos driftin REEEEEE");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } 
@@ -124,10 +124,10 @@ void state_defence_defend_enter(state_machine_t *fsm){
         float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
         float distanceMovement = pid_update(&forwardPID, verticalDistance, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         
-        float sidewaysDistance = robotState.inGoalAngle * sinf(DEG_RAD * goalAngle_);
-        if(!is_angle_between(fabsf(rs.inGoalAngle), 220, 140) && sign(tempAngle) != sign(b)){
-            printf("At edge of goal\n");
-            position(&robotState, DEFEND_DISTANCE, sign(sidewaysDistance) * 35, rs.inGoalAngle, rs.inGoalLength, true);
+        float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
+        if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
+            // printf("At edge of goal\n");
+            position(&robotState, DEFEND_DISTANCE, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
         } else {
             float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
             if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
@@ -137,7 +137,6 @@ void state_defence_defend_enter(state_machine_t *fsm){
             // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, sidewaysMovement);
         }
         // printf("%f\n", sign(sidewaysDistance) * 35);
-        // printf("sidewaysDistance: %f, tempAngle: %f, goalAngle_: %f\n", sidewaysDistance, tempAngle, goalAngle_);
         // printf("sidewaysDistance: %f, tempAngle: %f, goalAngle_: %f\n", sidewaysDistance, tempAngle, goalAngle_);
     }
 }
