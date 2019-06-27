@@ -94,7 +94,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
 
     // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
     // else imu_correction(&robotState); // Face the back of the robot to the goal
-    imu_correction(&robotState);
+    goal_correction(&robotState);
 
     // check the timer conditions first, so that we don't get switched out of before we can check
     if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) 
@@ -133,17 +133,17 @@ void state_defence_defend_enter(state_machine_t *fsm){
         float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         
         float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
-        // if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
-        //     // printf("At edge of goal\n");
-        //     position(&robotState, DEFEND_DISTANCE, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
-        // } else {
+        if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
+            // printf("At edge of goal\n");
+            position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
+        } else {
             float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
             if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
 
             rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
             rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
             // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, sidewaysMovement);
-        // }
+        }
         // printf("%f\n", sign(sidewaysDistance) * 35);
         // printf("sidewaysDistance: %f, tempAngle: %f, goalAngle_: %f\n", sidewaysDistance, tempAngle, goalAngle_);
     }

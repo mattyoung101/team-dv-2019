@@ -71,13 +71,13 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 2.5
+#define INTERCEPT_KP 5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0001
-#define INTERCEPT_MAX 60
+#define INTERCEPT_KD 0.1
+#define INTERCEPT_MAX 70
 #define INTERCEPT_MIN 0
 
-#define GOALIE_KP 0.5
+#define GOALIE_KP 0.8
 #define GOALIE_KI 0
 #define GOALIE_KD 0.01
 #define GOALIE_MAX 100
@@ -278,7 +278,7 @@ extern uint8_t ROBOT_MODE;
 // Kicker
 #define KICKER_PIN 33
 #define KICKER_TIMEOUT 25 // ms
-#define SHOOT_TIMEOUT 2000 // ms
+#define SHOOT_TIMEOUT 3000 // ms
 
 // RGB LEDs
 #define LED_PIN 13
