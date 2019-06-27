@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_BLUE
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -179,9 +179,10 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_LINE_OVER_BUFFER 80
 #define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
-#define OVER_LINE_SPEED 100
+#define LINE_AVOID_SPEED 100
 #define LINE_TRACK_SPEED 30
 #define LINE_SPEED_MULTIPLIER 0.5
+#define LINE_AVOID_TIME 1500 // ms
 
 #define LS_MUX0_OUT ADC1_CHANNEL_5
 #define LS_MUX1_OUT ADC1_CHANNEL_6

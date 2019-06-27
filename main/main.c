@@ -159,7 +159,7 @@ static void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(100000)); // Random delay at of loop to allow motors to spin
+        vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
     }
 }
 
