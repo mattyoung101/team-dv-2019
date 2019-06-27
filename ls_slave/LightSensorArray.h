@@ -7,11 +7,16 @@
 #define DEBUG_RAW false
 
 #define LS_CALIBRATION_COUNT 10
-#define LS_CALIBRATION_BUFFER 100
+#define LS_CALIBRATION_BUFFER 500
 #define LS_ES_DEFAULT 69
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 400
 #define LS_NUM_MULTIPLIER 7.5 // 360 / LS_NUM
+#define LS_LINEOVER_BUFFER 90
+
+// Stupid fuck up detection code
+#define HALFWAY_SIZE 1
+#define HALFWAY_SIZE_BUFFER 0.2 // TODO: actually check what the sizes are lol
 
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
@@ -45,6 +50,8 @@ public:
     float lineAngle = NO_LINE_ANGLE;
     float lineSize = NO_LINE_SIZE;
     float firstAngle = NO_LINE_ANGLE;
+    float lastAngle = NO_LINE_ANGLE;
+    float lastSize = NO_LINE_SIZE;
 
     bool data[LS_NUM]; // Array of if sensors see white or not
     bool filledInData[LS_NUM]; // Data after sensors are filled in (if an off sensor has two adjacent on sensors, it will be turned on)

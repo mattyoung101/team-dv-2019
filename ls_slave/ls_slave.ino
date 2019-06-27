@@ -56,6 +56,10 @@ void loop() {
 
   inputVoltage = V_REF * (double)analogRead(V_BAT)/1023;
   batteryVoltage = (float)((inputVoltage * (R1 + R2)) / R2) + V_BAT_OFFSET;
+
+//  Serial.print(ls.readSensor(16));
+//  Serial.print("\t");
+//  Serial.print(ls.readSensor(23));
  
   Serial.print("batteryVoltage: ");
   Serial.print(batteryVoltage);

@@ -144,14 +144,17 @@ static void master_task(void *pvParameter){
         fsm_update(stateMachine);
 
         // line over runs after the FSM to override it
-        // update_line(&robotState);
+        update_line(&robotState);
 
-        // print_motion_data(&robotState);
-        // print_ball_data(&robotState);
+        // print_goal_data(&robotState);
+        print_motion_data(&robotState);
         
         // goal_correction(&robotState);
+        
+        // robotState.outSpeed = 0;
 
         // run motors
+        // motor_calc(90.0f, robotState.outOrientation, 100.0f);
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
@@ -189,7 +192,6 @@ static void slave_task(void *pvParameter){
             tsop_update(NULL);
         }
         tsop_calc();
-
         // update IMU
         simu_calc();
 

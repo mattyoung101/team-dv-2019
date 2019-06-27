@@ -19,7 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
+// #define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_YELLOW
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -43,14 +44,14 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.4
+#define HEADING_KP 0.8
 #define HEADING_KI 0
 #define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
-#define LINEAVOID_KP 2
+#define LINEAVOID_KP 0.6
 #define LINEAVOID_KI 0
-#define LINEAVOID_KD 0.5
+#define LINEAVOID_KD 0.05
 #define LINEAVOID_MAX 100
 
 // --- Idle Correction --- //
@@ -60,17 +61,17 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 10
+#define FORWARD_KP 4.5
 #define FORWARD_KI 0
-#define FORWARD_KD 0.00001
-#define FORWARD_MAX 200
+#define FORWARD_KD 0
+#define FORWARD_MAX 100
 
-#define SIDE_KP 2
+#define SIDE_KP 1.5
 #define SIDE_KI 0
-#define SIDE_KD 0.000001
+#define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 2
+#define INTERCEPT_KP 2.5
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0.0001
 #define INTERCEPT_MAX 100
@@ -78,7 +79,7 @@
 
 #define GOALIE_KP 0.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.2
+#define GOALIE_KD 0.01
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -126,12 +127,12 @@ extern int16_t CAM_OFFSET_Y;
 #define GOAL_YELLOW 0
 #define GOAL_BLUE 1
 #define GOAL_OFF 2
-#define ENEMY_GOAL GOAL_YELLOW
 #define HALFWAY_DISTANCE 45
 #define COORD_THRESHOLD 0
 #define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
+#define GOAL_WIDTH 40
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
@@ -178,7 +179,7 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_LINE_OVER_BUFFER 80
 #define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
-#define OVER_LINE_SPEED 80
+#define OVER_LINE_SPEED 100
 #define LINE_TRACK_SPEED 30
 #define LINE_SPEED_MULTIPLIER 0.5
 
@@ -242,9 +243,9 @@ extern uint8_t ORBIT_SPEED_SLOW;
 extern uint8_t ORBIT_SPEED_FAST;
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 175 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 165 // if less than this, switch out of dribble
 #define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MIN_ANGLE 4 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
 #define IN_FRONT_ANGLE_BUFFER 90
 #define IN_FRONT_STRENGTH_BUFFER 40
@@ -253,7 +254,7 @@ extern uint8_t ORBIT_SPEED_FAST;
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.00001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 30 // if we are within this distance, shoot
@@ -264,6 +265,7 @@ extern uint8_t SURGE_DISTANCE;
 extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
+#define DEFEND_MIN_STRENGTH 100
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge

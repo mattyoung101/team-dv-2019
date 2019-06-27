@@ -168,9 +168,9 @@ void orbit(robot_state_t *robotState){
         // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
     } else {
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.25 * powf(E, 0.2 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.35 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.09 * strengthFactor * powf(E, 3 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -202,7 +202,6 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
 
     // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
     // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
-
 }
 
 uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
@@ -249,33 +248,39 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 }
 
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
-    if(robotState->inOnLine || robotState->inLineOver) {
-        // line_correction(robotState);
-        if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
-            if(robotState->inLineOver) {
-                // robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLastAngle - robotState->inHeading, 360.0f) : 
-                // fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-                robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f - robotState->inHeading, 360.0f);
-                printf("CASE 1\n");
-            } else {
-                robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-                printf("CASE 2\n");
-            }
-            robotState->outSpeed = OVER_LINE_SPEED;
-        } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
-            if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
-                robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-                robotState->outSpeed = 0;
-                robotState->outShouldBrake = true;
-                printf("CASE 3\n");
-            } else {
-                robotState->outSpeed = LINE_TRACK_SPEED;
-                printf("CASE 4\n");
-            }
-        } else {
-            if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
-            printf("CASE 5\n");
-        }
+    // if(robotState->inOnLine || robotState->inLineOver) {
+    //     // line_correction(robotState);
+    //     if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
+    //         if(robotState->inLineOver) {
+    //             // robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLastAngle - robotState->inHeading, 360.0f) : 
+    //             // fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+    //             robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f - robotState->inHeading, 360.0f);
+    //             printf("CASE 1\n");
+    //         } else {
+    //             robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+    //             printf("CASE 2\n");
+    //         }
+    //         robotState->outSpeed = OVER_LINE_SPEED;
+    //     } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
+    //         if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
+    //             robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
+    //             robotState->outSpeed = 0;
+    //             robotState->outShouldBrake = true;
+    //             printf("CASE 3\n");
+    //         } else {
+    //             robotState->outSpeed = LINE_TRACK_SPEED;
+    //             printf("CASE 4\n");
+    //         }
+    //     } else {
+    //         if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
+    //         printf("CASE 5\n");
+    //     }
+    // }
+
+    if(robotState->inOnLine || robotState->inLineOver){
+        line_correction(robotState);
+        robotState->outDirection = fmodf(robotState->inLastAngle + 180, 360.0f);
+        robotState->outSpeed = OVER_LINE_SPEED;
     }
 
     // printf("LineAngle: %f, LastAngle: %f, LineOver: %d, OutDirection: %d\n",robotState->inLineAngle,robotState->inLastAngle,robotState->inLineOver,robotState->outDirection);
