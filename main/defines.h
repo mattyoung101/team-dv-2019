@@ -44,12 +44,12 @@
 
 // --- IMU Correction --- //
 // Note: this needs to be reversed (-pid_update)
-#define HEADING_KP 0.8
+#define HEADING_KP 0.5
 #define HEADING_KI 0
 #define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
-#define LINEAVOID_KP 0.6
+#define LINEAVOID_KP 0.5
 #define LINEAVOID_KI 0
 #define LINEAVOID_KD 0.05
 #define LINEAVOID_MAX 100
@@ -244,8 +244,8 @@ extern uint8_t ORBIT_SPEED_FAST;
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 165 // if less than this, switch out of dribble
-#define ORBIT_DIST 110 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 4 // angle range in which the ball is considered to be in front of the robot
+#define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
+#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
 #define IN_FRONT_ANGLE_BUFFER 90
 #define IN_FRONT_STRENGTH_BUFFER 40

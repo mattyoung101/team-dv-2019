@@ -2,6 +2,8 @@
 #define LIGHT_SENSOR_ARRAY_H
 
 #include <Arduino.h>
+#include "Timer.h"
+
 #define LS_NUM 48
 #define DEBUG_DATA false
 #define DEBUG_RAW false
@@ -12,11 +14,9 @@
 #define NO_LINE_ANGLE 400
 #define NO_LINE_SIZE 400
 #define LS_NUM_MULTIPLIER 7.5 // 360 / LS_NUM
-#define LS_LINEOVER_BUFFER 90
-
-// Stupid fuck up detection code
-#define HALFWAY_SIZE 1
-#define HALFWAY_SIZE_BUFFER 0.2 // TODO: actually check what the sizes are lol
+#define LS_LINEOVER_BUFFER_LEFT 100
+#define LS_LINEOVER_BUFFER_RIGHT 90
+#define NO_LINE_TIMER 200000
 
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
@@ -42,7 +42,7 @@ public:
     double getLineAngle();
     double getLineSize();
 
-    void updateLine(float angle, float size, float heading); // Function for updating variables
+    void updateLine(float lineDir, float lineSize, float heading); // Function for updating variables
     void lineCalc(); // Function for line tracking
 
     bool isOnLine = false;
@@ -63,14 +63,33 @@ public:
 
     int numClusters = 0; // Number of clusters found
 
+    Timer noLineTimer = Timer(NO_LINE_TIMER);
+
 private:
     void resetClusters();
+    
+    float floatMod(float x, float m) {
+        float r = fmod(x, m);
+        return r < 0 ? r + m : r;
+    }
+    
+    float angleBetween(float angleCounterClockwise, float angleClockwise) {
+        return floatMod(angleClockwise - angleCounterClockwise, 360);
+    }
+    
+    float smallestAngleBetween(float angleCounterClockwise, float angleClockwise) {
+        float ang = angleBetween(angleCounterClockwise, angleClockwise);
+        return fmin(ang, 360 - ang);
+    }
 
     // Index = LS num, value = mux binary
     // >= 24, next mux
     uint8_t muxLUT[LS_NUM] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, // mux 0
                               0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23}; // mux 1
-
+    bool onField;
+    double fieldLineAngle = -1;
+    double fieldLineSize = -1; 
+    bool noLine = false;
     double angle; // Line angle
     double size; // Line size
 };

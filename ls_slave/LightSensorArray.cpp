@@ -41,12 +41,13 @@ void LightSensorArray::init() {
     pinMode(LS1, INPUT);
 
     digitalWrite(MUX_EN, LOW);
+    digitalWrite(MUX_WR, LOW);
 }
 
 void LightSensorArray::changeMUXChannel(uint8_t channel) {
     // Change the multiplexer channel
 
-    digitalWrite(MUX_WR, LOW);
+//    digitalWrite(MUX_WR, LOW);
 
     digitalWrite(MUX_A0, channel & 0x1);
     digitalWrite(MUX_A1, (channel >> 1) & 0x1);
@@ -54,19 +55,7 @@ void LightSensorArray::changeMUXChannel(uint8_t channel) {
     digitalWrite(MUX_A3, (channel >> 3) & 0x1);
     digitalWrite(MUX_A4, (channel >> 4) & 0x1);
 
-//    bool binary[5] = {false};
-//    float decimal = channel;
-//    for(uint8_t i = 4; i >= 0 && decimal >= 1; i--){
-//        binary[i] = ((uint8_t)decimal) % 2;
-//        decimal /= 2;
-//    }
-//    digitalWrite(MUX_A0, binary[4]);
-//    digitalWrite(MUX_A1, binary[3]);
-//    digitalWrite(MUX_A2, binary[2]);
-//    digitalWrite(MUX_A3, binary[1]);
-//    digitalWrite(MUX_A4, binary[0]);
-
-    digitalWrite(MUX_WR, HIGH);
+//    digitalWrite(MUX_WR, HIGH);
 }
 
 void LightSensorArray::calibrate() {
@@ -264,21 +253,28 @@ double LightSensorArray::getLineSize() {
 }
 
 void LightSensorArray::updateLine(float angle, float size, float heading) {
-  isOnLine = angle == NO_LINE_ANGLE ? false : true;
-  lineAngle = angle == NO_LINE_ANGLE ? angle : mod(angle + heading, 360);
+
+//  isOnLine = angle != NO_LINE_ANGLE;
+  if(angle != NO_LINE_ANGLE){
+    noLineTimer.update();
+    isOnLine = true;
+    lineAngle = mod(angle + heading, 360);
+  } // Will constantly update the timer as long as the line is visible
+  
+  if(noLineTimer.timeHasPassedNoUpdate()){
+    isOnLine = false; // If there has been no update for a given amount of time, this timer will go off and the robot will think it has passed back over the line
+    lineAngle = angle;
+  }
+  
+//  lineAngle = angle == NO_LINE_ANGLE ? angle : mod(angle + heading, 360);
   if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
   else lineSize = size;
 }
 
-void LightSensorArray::lineCalc() {
-  // Fuck up detection code
-  if(lineAngle == NO_LINE_ANGLE && lastSize >= HALFWAY_SIZE - HALFWAY_SIZE_BUFFER && lastSize <= HALFWAY_SIZE + HALFWAY_SIZE_BUFFER){ // If the line disappeared, but the line size indicated that the line is about halfway up the robot. we fucked up
-    lineAngle = lastAngle;
-    lineSize = lastSize;
-  }
-  
+void LightSensorArray::lineCalc() {  
   if(isOnLine && firstAngle != NO_LINE_ANGLE){ // Check if touching the line and not crossed over
-    if(abs(lineAngle-firstAngle)>LS_LINEOVER_BUFFER) lineOver = true; // Detecting if the line angle has changed by a lot
+    if((abs(lineAngle - firstAngle) > LS_LINEOVER_BUFFER_LEFT) && (abs(lineAngle - firstAngle) < (360 - LS_LINEOVER_BUFFER_RIGHT))) lineOver = true; // Detecting if the line angle has changed by a lot
+//    if(smallestAngleBetween(lineAngle, firstAngle) < LS_LINEOVER_BUFFER)
     else lineOver = false;
   }
 

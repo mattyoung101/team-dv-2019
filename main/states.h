@@ -47,6 +47,7 @@ typedef struct {
     bool outShouldBrake;
     bool outIsAttack;
     bool outSwitchOk;
+    bool outLineBallWaiting;
 } robot_state_t;
 
 typedef struct {

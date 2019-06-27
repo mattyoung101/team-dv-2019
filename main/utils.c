@@ -66,15 +66,15 @@ bool is_angle_between(float target, float angle1, float angle2){
 }
 
 void imu_correction(robot_state_t *robotState){
-    // if (robotState->outSpeed <= IDLE_MIN_SPEED){ // Check if robot is moving
-    //     robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
-    //                             + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID
-    //     // printf("IDLE PID");
-    // } else {
+    if (robotState->outSpeed <= IDLE_MIN_SPEED){ // Check if robot is moving
+        robotState->outOrientation = (int16_t) -pid_update(&idlePID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
+                                + 180.0f, 360.0f) - 180.0f, 0.0f, 0.0f); // Correct with idle PID
+        // printf("IDLE PID\n");
+    } else {
         robotState->outOrientation = (int16_t) -pid_update(&headingPID, floatMod(floatMod((float)robotState->inHeading, 360.0f) 
                                 + 180.0f, 360.0f) - 180, 0.0f, 0.0f); // Correct with heading PID
-    //     // printf("HEADING PID");
-    // }
+        // printf("HEADING PID\n");
+    }
     
     // printf("IMU Correcting: %d\n", robotState->outOrientation);
 }
@@ -159,9 +159,9 @@ void orbit(robot_state_t *robotState){
 
     // I hate to do this but...
     if(robotState->inRobotId == 0){
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.5 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -247,6 +247,9 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
     }
 }
 
+static uint16_t lastLastLineAngle = LS_NO_LINE_ANGLE;
+static float lineOverProgress = 0.0f;
+
 void update_line(robot_state_t *robotState) { // Completely forgot how this all works
     // if(robotState->inOnLine || robotState->inLineOver) {
     //     // line_correction(robotState);
@@ -277,10 +280,52 @@ void update_line(robot_state_t *robotState) { // Completely forgot how this all 
     //     }
     // }
 
+    // first time on the line since ball waiting was reset last
+    if (robotState->inOnLine || robotState->inLineOver) {
+        robotState->outLineBallWaiting = true;
+        lastLastLineAngle = robotState->inLastAngle;
+        // ESP_LOGD("LS", "Seeing line, last line angle: %d", lastLastLineAngle);
+    } else {
+        // ESP_LOGD("LS", "Can't see line, resetting progress");
+        lineOverProgress = 0.0f;
+    }
+
+    // do the line logic
+    if (robotState->outLineBallWaiting){
+        uint16_t lastAnglePlus = mod(lastLastLineAngle - 60, 360);
+        uint16_t lastAngleMinus = mod(lastLastLineAngle + 60, 360);
+        int16_t ballAngle = robotState->inBallAngle - robotState->inHeading;
+
+        if (robotState->inBallStrength <= 0.1f || robotState->inBallStrength >= 110.0f){
+            robotState->outLineBallWaiting = false;
+            lastLastLineAngle = LS_NO_LINE_ANGLE;
+        }
+
+        // ESP_LOGD("LS", "Waiting, lastAnglePlus: %d, lastAngleMinus: %d", lastAnglePlus, lastAngleMinus);
+        if (is_angle_between(ballAngle , lastAnglePlus, lastAngleMinus)){
+            // ESP_LOGD("LS", "Ball outside line, waiting");
+            robotState->outSpeed = 0;
+        } else {
+            // ESP_LOGD("LS", "Ball back on field, hitting the yeet");
+            robotState->outLineBallWaiting = false;
+            lastLastLineAngle = LS_NO_LINE_ANGLE;
+        }
+    }
+
+    // if touching line, avoid it
     if(robotState->inOnLine || robotState->inLineOver){
         line_correction(robotState);
+
+        lineOverProgress += 0.005; // TODO make a define for this
+        float lerpedSpeed = constrain(lerp((float) OVER_LINE_SPEED, 0.0f, lineOverProgress), 0, OVER_LINE_SPEED);
+
         robotState->outDirection = fmodf(robotState->inLastAngle + 180, 360.0f);
-        robotState->outSpeed = OVER_LINE_SPEED;
+        robotState->outSpeed = lerpedSpeed;
+
+        // if (lerpedSpeed <= 50.0f){
+        //     robotState->outShouldBrake = true;
+        // }
+        // printf("%f\n", lerpedSpeed);
     }
 
     // printf("LineAngle: %f, LastAngle: %f, LineOver: %d, OutDirection: %d\n",robotState->inLineAngle,robotState->inLastAngle,robotState->inLineOver,robotState->outDirection);
