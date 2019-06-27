@@ -80,7 +80,7 @@ void motor_calc(int16_t direction, int16_t orientation, float speed){
 void motor_write_controller(float speed, gpio_num_t inOnePin, gpio_num_t inTwoPin, gpio_num_t pwmPin, 
                             bool reversed, bool brake){
         // constrained speed shorthand
-        float s = constrain(abs(speed), 0.0f, 100.0f);
+        float s = constrain(abs(speed), 0.0f, MOTOR_SPEED_CAP);
 
         // write to the right MCPWM pin
         switch (pwmPin){

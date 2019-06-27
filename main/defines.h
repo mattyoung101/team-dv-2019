@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_BLUE
+// #define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_YELLOW
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -73,13 +73,13 @@
 
 #define INTERCEPT_KP 5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.1
-#define INTERCEPT_MAX 70
+#define INTERCEPT_KD 0.05
+#define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
-#define GOALIE_KP 0.8
+#define GOALIE_KP 0.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.01
+#define GOALIE_KD 0.03
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -162,6 +162,7 @@ extern bool MOTOR_BR_REVERSED;
 #define TORQUE_SCALAR 1
 #define FRONT_MOTOR_ANGLE 60
 #define BACK_MOTOR_ANGLE 45
+#define MOTOR_SPEED_CAP 100.0f // max speed motors are allowed to go to in %
 
 // Light sensor
 #define LS_CALIBRATION_COUNT 10
@@ -179,9 +180,10 @@ extern bool MOTOR_BR_REVERSED;
 #define LS_LINE_OVER_BUFFER 80
 #define LINE_BIG_SIZE 0
 #define LINE_SMALL_SIZE 0
-#define OVER_LINE_SPEED 100
+#define LINE_AVOID_SPEED 100
 #define LINE_TRACK_SPEED 30
 #define LINE_SPEED_MULTIPLIER 0.5
+#define LINE_AVOID_TIME 1500 // ms
 
 #define LS_MUX0_OUT ADC1_CHANNEL_5
 #define LS_MUX1_OUT ADC1_CHANNEL_6
@@ -247,7 +249,7 @@ extern uint8_t ORBIT_SPEED_FAST;
 #define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
 #define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
-#define IN_FRONT_ANGLE_BUFFER 90
+#define IN_FRONT_ANGLE_BUFFER 10
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40

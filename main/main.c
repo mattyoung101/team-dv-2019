@@ -144,9 +144,9 @@ static void master_task(void *pvParameter){
         fsm_update(stateMachine);
 
         // line over runs after the FSM to override it
-        update_line(&robotState);
+        // update_line(&robotState);
 
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
         // print_motion_data(&robotState);
         // print_position_data(&robotState);
         
@@ -196,7 +196,7 @@ static void slave_task(void *pvParameter){
         // update IMU
         simu_calc();
 
-        // setup protobuf byte stream, variables will be disposed of after loop ends (afaik)
+        // setup protobuf byte stream, variables will be disposed of after loop ends
         memset(pbBuf, 0, PROTOBUF_SIZE);
         SensorUpdate msg = SensorUpdate_init_zero;
         pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);

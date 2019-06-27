@@ -249,86 +249,30 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 
 static uint16_t lastLastLineAngle = LS_NO_LINE_ANGLE;
 static float lineOverProgress = 0.0f;
+static dv_timer_t lineOverTimer = {NULL, false};
+static bool shouldAvoidLine = false;
 
-void update_line(robot_state_t *robotState) { // Completely forgot how this all works
-    // if(robotState->inOnLine || robotState->inLineOver) {
-    //     // line_correction(robotState);
-    //     if(robotState->inLineSize > LINE_BIG_SIZE || robotState->inLineSize == -1) {
-    //         if(robotState->inLineOver) {
-    //             // robotState->outDirection = robotState->inOnLine ? fmodf(robotState->inLastAngle - robotState->inHeading, 360.0f) : 
-    //             // fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-    //             robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f - robotState->inHeading, 360.0f);
-    //             printf("CASE 1\n");
-    //         } else {
-    //             robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-    //             printf("CASE 2\n");
-    //         }
-    //         robotState->outSpeed = OVER_LINE_SPEED;
-    //     } else if(robotState->inLineSize >= LINE_SMALL_SIZE && robotState->inBallAngle != TSOP_NO_BALL_ANGLE) {
-    //         if(fabsf(robotState->inLastAngle + robotState->inBallAngle) < 90.0f && fabsf(robotState->inLastAngle + robotState->inBallAngle) > 270.0f) {
-    //             robotState->outDirection = fmodf(robotState->inLastAngle - robotState->inHeading + 180.0f, 360.0f);
-    //             robotState->outSpeed = 0;
-    //             robotState->outShouldBrake = true;
-    //             printf("CASE 3\n");
-    //         } else {
-    //             robotState->outSpeed = LINE_TRACK_SPEED;
-    //             printf("CASE 4\n");
-    //         }
-    //     } else {
-    //         if(robotState->inOnLine) robotState->outSpeed *= LINE_SPEED_MULTIPLIER;
-    //         printf("CASE 5\n");
-    //     }
-    // }
+static void line_over_timer_callback(TimerHandle_t timer){
+    ESP_LOGD("LS", "Line over timer gone off, no longer yeeting");
+    shouldAvoidLine = false;
+    dv_timer_stop(&lineOverTimer);
+}
 
-    // first time on the line since ball waiting was reset last
-    if (robotState->inOnLine || robotState->inLineOver) {
-        robotState->outLineBallWaiting = true;
-        lastLastLineAngle = robotState->inLastAngle;
-        // ESP_LOGD("LS", "Seeing line, last line angle: %d", lastLastLineAngle);
-    } else {
-        // ESP_LOGD("LS", "Can't see line, resetting progress");
-        lineOverProgress = 0.0f;
+void update_line(robot_state_t *robotState) {
+    dv_timer_check_create(&lineOverTimer, "LineOverTimer", LINE_AVOID_TIME, NULL, line_over_timer_callback);
+
+    // if we touched the line, avoid it
+    if (robotState->inOnLine || robotState->inLineOver){
+        ESP_LOGD("LS", "Touched line, yeeting in opposite direction");
+        shouldAvoidLine = true;
+        dv_timer_start(&lineOverTimer);
     }
 
-    // do the line logic
-    if (robotState->outLineBallWaiting){
-        uint16_t lastAnglePlus = mod(lastLastLineAngle - 60, 360);
-        uint16_t lastAngleMinus = mod(lastLastLineAngle + 60, 360);
-        int16_t ballAngle = robotState->inBallAngle - robotState->inHeading;
-
-        if (robotState->inBallStrength <= 0.1f || robotState->inBallStrength >= 110.0f){
-            robotState->outLineBallWaiting = false;
-            lastLastLineAngle = LS_NO_LINE_ANGLE;
-        }
-
-        // ESP_LOGD("LS", "Waiting, lastAnglePlus: %d, lastAngleMinus: %d", lastAnglePlus, lastAngleMinus);
-        if (is_angle_between(ballAngle , lastAnglePlus, lastAngleMinus)){
-            // ESP_LOGD("LS", "Ball outside line, waiting");
-            robotState->outSpeed = 0;
-        } else {
-            // ESP_LOGD("LS", "Ball back on field, hitting the yeet");
-            robotState->outLineBallWaiting = false;
-            lastLastLineAngle = LS_NO_LINE_ANGLE;
-        }
+    // if we're avoiding the line, move away from it at the opposite to the line angle
+    if (shouldAvoidLine){
+        robotState->outSpeed = LINE_AVOID_SPEED;
+        robotState->outDirection = fmodf(robotState->inLineAngle + 180.0f, 360.0f);
     }
-
-    // if touching line, avoid it
-    if(robotState->inOnLine || robotState->inLineOver){
-        line_correction(robotState);
-
-        lineOverProgress += 0.005; // TODO make a define for this
-        float lerpedSpeed = constrain(lerp((float) OVER_LINE_SPEED, 0.0f, lineOverProgress), 0, OVER_LINE_SPEED);
-
-        robotState->outDirection = fmodf(robotState->inLastAngle + 180, 360.0f);
-        robotState->outSpeed = lerpedSpeed;
-
-        // if (lerpedSpeed <= 50.0f){
-        //     robotState->outShouldBrake = true;
-        // }
-        // printf("%f\n", lerpedSpeed);
-    }
-
-    // printf("LineAngle: %f, LastAngle: %f, LineOver: %d, OutDirection: %d\n",robotState->inLineAngle,robotState->inLastAngle,robotState->inLineOver,robotState->outDirection);
 }
 
 hmm_vec2 vec2_polar_to_cartesian(hmm_vec2 vec){
