@@ -159,7 +159,7 @@ void orbit(robot_state_t *robotState){
 
     // I hate to do this but...
     if(robotState->inRobotId == 0){
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
         float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)

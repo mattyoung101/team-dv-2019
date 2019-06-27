@@ -121,7 +121,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    if(is_angle_between(rs.inBallAngle, 200, 340)) goal_correction(&robotState);
+    if(is_angle_between(rs.inBallAngle, 30, 330)) goal_correction(&robotState);
     else imu_correction(&robotState);
     // imu_correction(&robotState);
     timer_check();
