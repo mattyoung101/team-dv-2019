@@ -61,21 +61,22 @@ void comms_bt_receive_task(void *pvParameter){
         if (((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) && !isInShootState) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
+            ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
             
-            if (recvMsg.goalLength <= 0.01f){
-                ESP_LOGI(TAG, "Conflict resolution: other robot cannot see goal, I will become defender");
+            if (robotState.inBallStrength <= 0.1f){
+                ESP_LOGI(TAG, "Conflict resolution: I cannot see ball, becoming defender");
                 fsm_change_state(stateMachine, &stateDefenceDefend);
-            } else if (robotState.inGoalLength <= 0.01f){
-                ESP_LOGI(TAG, "Conflict resolution: I cannot see goal, becoming attacker");
+            } else if (recvMsg.ballStrength <= 0.1f){
+                ESP_LOGI(TAG, "Conflict resolution: other robot cannot see ball, becoming attacker");
                 fsm_change_state(stateMachine, &stateAttackPursue);
             } else {
-                // both robots can see the goal (or neither robot can see the goal, but that shouldn't happen)
-                if (recvMsg.goalLength < robotState.inGoalLength){
-                    ESP_LOGI(TAG, "Conflict resolution: other robot is closest to goal, switch to attack");
-                    fsm_change_state(stateMachine, &stateAttackPursue);
-                } else {
-                    ESP_LOGI(TAG, "Conflict resolution: I'm closest to goal, switch to defence");
+                // both robots can see the ball
+                if (recvMsg.ballStrength < robotState.inBallStrength){
+                    ESP_LOGI(TAG, "Conflict resolution: other robot is closest to ball, switch to defence");
                     fsm_change_state(stateMachine, &stateDefenceDefend);
+                } else {
+                    ESP_LOGI(TAG, "Conflict resolution: I'm closest to ball, switch to attack");
+                    fsm_change_state(stateMachine, &stateAttackPursue);
                 }
             }
         }
@@ -146,6 +147,8 @@ void comms_bt_send_task(void *pvParameter){
         sendMsg.robotY = robotState.inY;
         sendMsg.switchOk = robotState.outSwitchOk;
         sendMsg.goalLength = robotState.inGoalLength;
+        sendMsg.ballAngle = robotState.inBallAngle;
+        sendMsg.ballStrength = robotState.inBallStrength;
         RS_SEM_UNLOCK;
 
         // ESP_LOGD(TAG, "Current state: %s, switch ok: %s", sendMsg.fsmState, sendMsg.switchOk ? "yes" : "no");

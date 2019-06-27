@@ -74,12 +74,12 @@
 #define INTERCEPT_KP 2.5
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0.0001
-#define INTERCEPT_MAX 60
+#define INTERCEPT_MAX 40
 #define INTERCEPT_MIN 0
 
 #define GOALIE_KP 0.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.01
+#define GOALIE_KD 0.03
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -162,6 +162,7 @@ extern bool MOTOR_BR_REVERSED;
 #define TORQUE_SCALAR 1
 #define FRONT_MOTOR_ANGLE 60
 #define BACK_MOTOR_ANGLE 45
+#define MOTOR_SPEED_CAP 100.0f // max speed motors are allowed to go to in %
 
 // Light sensor
 #define LS_CALIBRATION_COUNT 10

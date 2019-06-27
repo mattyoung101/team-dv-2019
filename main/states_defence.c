@@ -89,21 +89,15 @@ void state_defence_defend_enter(state_machine_t *fsm){
     static const char *TAG = "DefendDefendState";
 
     accelProgress = 0;
-
     rs.outIsAttack = false;
 
     // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
     // else imu_correction(&robotState); // Face the back of the robot to the goal
-    imu_correction(&robotState);
+    goal_correction(&robotState);
 
     // check the timer conditions first, so that we don't get switched out of before we can check
-    if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) 
-        && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
+    if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) && rs.inBallStrength >= SURGE_STRENGTH){
         LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, starting surge timer");
-        
-        RS_SEM_LOCK;
-        rs.outSwitchOk = true;
-        RS_SEM_UNLOCK;
         dv_timer_start(&surgeTimer);
     } else {
         LOG_ONCE(TAG, "Stopping surge timer as criteria is no longer satisfied");
@@ -174,11 +168,11 @@ void state_defence_surge_update(state_machine_t *fsm){
 
     // EPIC YEET MODE
     // Linear acceleration to give robot time to goal correct and so it doesn't slip
-    robotState.outSpeed = lerp(50, DRIBBLE_SPEED, accelProgress); 
+    robotState.outSpeed = lerp(50.0f, DRIBBLE_SPEED, accelProgress); 
     // Just yeet towards the ball (which is forwards)
     // robotState.outDirection = robotState.inGoalVisible ? robotState.inGoalAngle : robotState.inBallAngle * 1.05;
     robotState.outDirection = robotState.inBallAngle;
 
     // Update progress for linear interpolation
-    accelProgress += ACCEL_PROG;
+    accelProgress += 0.0001;
 }
