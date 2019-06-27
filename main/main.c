@@ -146,15 +146,16 @@ static void master_task(void *pvParameter){
         // line over runs after the FSM to override it
         update_line(&robotState);
 
-        // print_ball_data(&robotState);
+        print_ball_data(&robotState);
         // print_motion_data(&robotState);
+        // print_position_data(&robotState);
         
         // goal_correction(&robotState);
         
         // robotState.outSpeed = 0;
 
         // run motors
-        // motor_calc(90.0f, robotState.outOrientation, 100.0f);
+        // motor_calc(90.0f, 0, 10.0f);
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
