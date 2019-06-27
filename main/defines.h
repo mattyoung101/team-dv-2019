@@ -74,7 +74,7 @@
 #define INTERCEPT_KP 2.5
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0.0001
-#define INTERCEPT_MAX 100
+#define INTERCEPT_MAX 60
 #define INTERCEPT_MIN 0
 
 #define GOALIE_KP 0.5
@@ -265,7 +265,7 @@ extern uint8_t SURGE_DISTANCE;
 extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
-#define DEFEND_MIN_STRENGTH 90
+#define DEFEND_MIN_STRENGTH 70
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
