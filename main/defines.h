@@ -66,7 +66,7 @@
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
 
-#define SIDE_KP 1.5
+#define SIDE_KP 4
 #define SIDE_KI 0
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100

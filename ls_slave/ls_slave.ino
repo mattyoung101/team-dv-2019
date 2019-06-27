@@ -137,15 +137,15 @@ void receiveEvent(int bytes){
   if (Wire.available() >= 3 && Wire.read() == 0xB){
     uint8_t shit = Wire.read();
     uint8_t fuck = Wire.read();
-    Serial.print("NUmbers: ");
-    Serial.print(shit);
-    Serial.print(", ");
-    Serial.println(fuck);
+//    Serial.print("NUmbers: ");
+//    Serial.print(shit);
+//    Serial.print(", ");
+//    Serial.println(fuck);
     uint16_t rawHeading = word(shit, fuck);
     heading = rawHeading / 100.0;
-    Serial.println(heading);
+//    Serial.println(heading);
   } else {
-    Serial.println("Fuck you");
+//    Serial.println("Fuck you");
   }
 }
 

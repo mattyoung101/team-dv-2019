@@ -253,8 +253,6 @@ double LightSensorArray::getLineSize() {
 }
 
 void LightSensorArray::updateLine(float angle, float size, float heading) {
-
-//  isOnLine = angle != NO_LINE_ANGLE;
   if(angle != NO_LINE_ANGLE){
     noLineTimer.update();
     isOnLine = true;
@@ -266,7 +264,6 @@ void LightSensorArray::updateLine(float angle, float size, float heading) {
     lineAngle = angle;
   }
   
-//  lineAngle = angle == NO_LINE_ANGLE ? angle : mod(angle + heading, 360);
   if(lineSize != NO_LINE_SIZE) lineSize = lineOver ? 2 - size : size;
   else lineSize = size;
 }
@@ -280,6 +277,9 @@ void LightSensorArray::lineCalc() {
 
   if(!isOnLine && !lineOver) firstAngle = NO_LINE_ANGLE; // Check if returned back into the field
   if(!lineOver && firstAngle == NO_LINE_ANGLE) firstAngle = lineAngle; // If the robot has just touched the line, we will ignore line over
+
+  if(!lineOver || isOnLine) lineOverTimeout.update(); // Update timer if on the field
+  if(lineOverTimeout.timeHasPassedNoUpdate()) lineOver = false; // Reset line over if out of field for more than 1.5 seconds
 
   lastAngle = lineAngle; // Set the previous angle for use in fuck up detection
   lastSize = lineSize;

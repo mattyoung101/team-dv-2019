@@ -17,6 +17,7 @@
 #define LS_LINEOVER_BUFFER_LEFT 100
 #define LS_LINEOVER_BUFFER_RIGHT 90
 #define NO_LINE_TIMER 200000
+#define LINEOVER_TIMEOUT 1500000
 
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
@@ -64,6 +65,7 @@ public:
     int numClusters = 0; // Number of clusters found
 
     Timer noLineTimer = Timer(NO_LINE_TIMER);
+    Timer lineOverTimeout = Timer(LINEOVER_TIMEOUT);
 
 private:
     void resetClusters();

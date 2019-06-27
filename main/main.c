@@ -144,11 +144,11 @@ static void master_task(void *pvParameter){
         fsm_update(stateMachine);
 
         // line over runs after the FSM to override it
-        // update_line(&robotState);
+        update_line(&robotState);
 
         // print_ball_data(&robotState);
-        // print_motion_data(&robotState);
-        // print_position_data(&robotState);
+        // print_goal_data(&robotState);
+        print_motion_data(&robotState);
         
         // goal_correction(&robotState);
         
@@ -316,8 +316,8 @@ void app_main(){
     // source: https://esp32.com/viewtopic.php?t=900#p3879
     if (mode == AUTOMODE_MASTER){
         ESP_LOGI("AppMain", "Running as master");
-        // xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
-        xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
+        xTaskCreatePinnedToCore(master_task, "MasterTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);
+        // xTaskCreate(motor_test_task, "MotorTestTask", 8192, NULL, configMAX_PRIORITIES, NULL);
     } else {
         ESP_LOGI("AppMain", "Running as slave");
         xTaskCreatePinnedToCore(slave_task, "SlaveTask", 12048, NULL, configMAX_PRIORITIES, NULL, APP_CPU_NUM);  

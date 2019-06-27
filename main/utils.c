@@ -201,7 +201,7 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
     robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
 
     // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
-    // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
+    printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
 }
 
 uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
@@ -259,19 +259,44 @@ static void line_over_timer_callback(TimerHandle_t timer){
 }
 
 void update_line(robot_state_t *robotState) {
-    dv_timer_check_create(&lineOverTimer, "LineOverTimer", LINE_AVOID_TIME, NULL, line_over_timer_callback);
+    // printf("B\n");
+    // dv_timer_check_create(&lineOverTimer, "LineOverTimer", LINE_AVOID_TIME, NULL, line_over_timer_callback);
 
-    // if we touched the line, avoid it
+    // // if we touched the line, avoid it
+    // if (robotState->inOnLine || robotState->inLineOver){
+    //     ESP_LOGD("LS", "Touched line, yeeting in opposite direction");
+    //     shouldAvoidLine = true;
+    //     dv_timer_start(&lineOverTimer);
+    // }
+
+    // // if we're avoiding the line, move away from it at the opposite to the line angle
+    // if (shouldAvoidLine){
+    //     robotState->outSpeed = LINE_AVOID_SPEED;
+    //     robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
+    // }
+
     if (robotState->inOnLine || robotState->inLineOver){
-        ESP_LOGD("LS", "Touched line, yeeting in opposite direction");
-        shouldAvoidLine = true;
-        dv_timer_start(&lineOverTimer);
-    }
-
-    // if we're avoiding the line, move away from it at the opposite to the line angle
-    if (shouldAvoidLine){
-        robotState->outSpeed = LINE_AVOID_SPEED;
-        robotState->outDirection = fmodf(robotState->inLineAngle + 180.0f, 360.0f);
+        if (robotState->inGoalVisible){
+            if (robotState->inGoalLength <= 35.0f){
+                position(robotState, 30.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+                printf("Case 1\n");
+            } else {
+                position(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+                printf("Case 2\n");
+            }
+        } else if (robotState->inOtherGoalVisible){
+            if (robotState->inGoalLength <= 35.0f){
+                position(robotState, 30.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                printf("Case 3\n");
+            } else {
+                position(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                printf("Case 4\n");
+            }
+        } else {
+            robotState->outSpeed = constrain(robotState->outSpeed, 20.0f, 100.0f);
+            robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
+            printf("Case 5\n");
+        }
     }
 }
 
