@@ -59,11 +59,9 @@ void comms_bt_receive_task(void *pvParameter){
         // conflict resolution: whichever robot is closest to the goal loses the conflict and becomes defender
         // if in shoot state, ignore conflict as both robots can be shooting without conflict
         if (((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) && !isInShootState) {
-            ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE",
-            isAttack ? "ATTACK" : "DEFENCE");
-            // ESP_LOGD(TAG, "my goal dist: %d, other goal dist: %f", robotState.inGoalLength, recvMsg.goalLength);
+            ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
+                    isAttack ? "ATTACK" : "DEFENCE");
             
-            // TODO check if I can't see goal first and verify I can see goal to become defender
             if (recvMsg.goalLength <= 0.01f){
                 ESP_LOGI(TAG, "Conflict resolution: other robot cannot see goal, I will become defender");
                 fsm_change_state(stateMachine, &stateDefenceDefend);

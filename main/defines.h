@@ -258,7 +258,6 @@ extern uint8_t ORBIT_SPEED_FAST;
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 30 // if we are within this distance, shoot
-#define SHOOT_TIMEOUT 5000 // ms
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;
@@ -279,6 +278,7 @@ extern uint8_t ROBOT_MODE;
 // Kicker
 #define KICKER_PIN 33
 #define KICKER_TIMEOUT 25 // ms
+#define SHOOT_TIMEOUT 2000 // ms
 
 // RGB LEDs
 #define LED_PIN 13
