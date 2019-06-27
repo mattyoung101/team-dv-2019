@@ -107,7 +107,7 @@ void comms_bt_receive_task(void *pvParameter){
                 xTimerStart(cooldownTimer.timer, portMAX_DELAY);
                 alreadyPrinted = false;
             } else {
-                ESP_LOGI(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
+                ESP_LOGD(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
                 robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
             }
         } else if (wasSwitchOk){

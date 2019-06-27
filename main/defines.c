@@ -48,8 +48,8 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_Y = 60;
         TSOP_CORRECTION = -18;
         DEFEND_DISTANCE = 30;
-        SURGE_DISTANCE = 45;
-        SURGE_STRENGTH = 130;
+        SURGE_DISTANCE = 35;
+        SURGE_STRENGTH = 150;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 145;
         ORBIT_SPEED_SLOW = 30;
@@ -61,19 +61,19 @@ void defines_init(uint8_t robotId){
         // float values[] = {1.2f, 1.2f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 0.8f, 1.0f,
         //                 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.1f, 1.2f};
         float values[] = {
-            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
-            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+            1.1f, 1.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
+            1.0f, 1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.1f
         };
         MOTOR_FL_REVERSED = false;
         MOTOR_FR_REVERSED = true;
-        MOTOR_BL_REVERSED = false;
-        MOTOR_BR_REVERSED = true;
+        MOTOR_BL_REVERSED = true;
+        MOTOR_BR_REVERSED = false;
         ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = -30;
+        TSOP_CORRECTION = -15;
         DEFEND_DISTANCE = 35;
-        SURGE_DISTANCE = 50;
+        SURGE_DISTANCE = 37;
         SURGE_STRENGTH = 130;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 145;

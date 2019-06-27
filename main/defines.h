@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_BLUE
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -61,7 +61,7 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 4.5
+#define FORWARD_KP 6
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -265,7 +265,7 @@ extern uint8_t SURGE_DISTANCE;
 extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
-#define DEFEND_MIN_STRENGTH 100
+#define DEFEND_MIN_STRENGTH 90
 #define DEFEND_MAX_ANGLE 270
 #define DEFEND_MIN_ANGLE 90
 #define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge

@@ -222,7 +222,7 @@ uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     }
     ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data + size - 1, 0x1));
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
-    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
     i2c_cmd_link_delete(cmd);
 
     I2C_ERR_CHECK(ret);
