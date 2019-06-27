@@ -29,6 +29,7 @@
 #include "pb_encode.h"
 #include "pb_decode.h"
 #include "i2c.pb.h"
+#include "lrf.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -155,7 +156,7 @@ static void master_task(void *pvParameter){
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
+        vTaskDelay(pdMS_TO_TICKS(100000)); // Random delay at of loop to allow motors to spin
     }
 }
 
@@ -235,25 +236,25 @@ void motor_test_task(void *pvParameter){
     static const char *TAG = "MotorTestTask";
 
     motor_init();
-    ESP_ERROR_CHECK(gpio_set_direction(33, GPIO_MODE_OUTPUT));
+    ESP_ERROR_CHECK(gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT));
     ESP_LOGI(TAG, "Motor test init OK");
 
     while (true){
-        // ESP_LOGI(TAG, "Going forward");
-        // motor_calc(0, 0, 75.0f);
-        // motor_move(false);
-        // vTaskDelay(pdMS_TO_TICKS(2500));
+        ESP_LOGI(TAG, "Going forward");
+        motor_calc(0, 0, 75.0f);
+        motor_move(false);
+        vTaskDelay(pdMS_TO_TICKS(2500));
         
-        // ESP_LOGI(TAG, "Going backwards");
-        // motor_calc(180, 0, 75.0f);
-        // motor_move(false);
-        // vTaskDelay(pdMS_TO_TICKS(2500));
+        ESP_LOGI(TAG, "Going backwards");
+        motor_calc(180, 0, 75.0f);
+        motor_move(false);
+        vTaskDelay(pdMS_TO_TICKS(2500));
 
-        ESP_LOGI(TAG, "Kicking");
-        ESP_ERROR_CHECK(gpio_set_level(33, 1));
-        vTaskDelay(pdMS_TO_TICKS(2500));
-        ESP_ERROR_CHECK(gpio_set_level(33, 0));
-        vTaskDelay(pdMS_TO_TICKS(2500));
+        // ESP_LOGI(TAG, "Kicking");
+        // ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 1));
+        // vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
+        // ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 0));
+        // vTaskDelay(pdMS_TO_TICKS(2000));
     }
 }
 
