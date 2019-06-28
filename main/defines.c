@@ -71,14 +71,14 @@ void defines_init(uint8_t robotId){
         ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = -15;
+        TSOP_CORRECTION = -25;
         DEFEND_DISTANCE = 35;
         SURGE_DISTANCE = 40;
         SURGE_STRENGTH = 160;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 145;
+        BALL_CLOSE_STRENGTH = 140;
         ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 30;
+        ORBIT_SPEED_FAST = 40;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

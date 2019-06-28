@@ -168,9 +168,9 @@ void orbit(robot_state_t *robotState){
         // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
     } else {
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.35 * powf(E, 0.15 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 3.2 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -201,7 +201,7 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
     robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
 
     // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
-    printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
+    // printf("goalAngle_: %f, verticalDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
 }
 
 uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
@@ -279,23 +279,23 @@ void update_line(robot_state_t *robotState) {
         if (robotState->inGoalVisible){
             if (robotState->inGoalLength <= 35.0f){
                 position(robotState, 30.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
-                printf("Case 1\n");
+                // printf("Case 1\n");
             } else {
                 position(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
-                printf("Case 2\n");
+                // printf("Case 2\n");
             }
         } else if (robotState->inOtherGoalVisible){
             if (robotState->inGoalLength <= 35.0f){
                 position(robotState, 30.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
-                printf("Case 3\n");
+                // printf("Case 3\n");
             } else {
                 position(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
-                printf("Case 4\n");
+                // printf("Case 4\n");
             }
         } else {
             robotState->outSpeed = constrain(robotState->outSpeed, 20.0f, 100.0f);
             robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
-            printf("Case 5\n");
+            // printf("Case 5\n");
         }
     }
 }

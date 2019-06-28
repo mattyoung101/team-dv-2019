@@ -17,7 +17,7 @@
 #define LS_LINEOVER_BUFFER_LEFT 100
 #define LS_LINEOVER_BUFFER_RIGHT 90
 #define NO_LINE_TIMER 200000
-#define LINEOVER_TIMEOUT 1500000
+#define LINEOVER_TIMEOUT 1000000
 
 #define DEG_RAD 0.017453292519943295 // multiply to convert degrees to radians
 #define RAD_DEG 57.29577951308232 // multiply to convert radians to degrees
