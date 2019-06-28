@@ -81,7 +81,7 @@ void state_defence_defend_enter(state_machine_t *fsm){
 
     // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
     // else imu_correction(&robotState); // Face the back of the robot to the goal
-    goal_correction(&robotState);
+    // imu_correction(&robotState);
 
     // Check criteria: goal visible and ball visible, should surge?
     if (!rs.inGoalVisible){
@@ -90,8 +90,9 @@ void state_defence_defend_enter(state_machine_t *fsm){
     } else if (rs.inBallStrength <= 0.01f){
         LOG_ONCE(TAG, "Ball too far away, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
-    } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 45, IN_FRONT_MAX_ANGLE - 45) && rs.inBallStrength >= SURGE_STRENGTH){
-        LOG_ONCE(TAG, "Ball in caputre zone and strenght ok, switching to surge, angle: %f, strength: %f",
+    } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 45, IN_FRONT_MAX_ANGLE - 45) 
+                && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
+        LOG_ONCE(TAG, "Ball in capture zone and strength ok, switching to surge, angle: %f, strength: %f",
                 robotState.inBallAngle, robotState.inBallStrength);
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
@@ -103,19 +104,11 @@ void state_defence_defend_enter(state_machine_t *fsm){
         float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
         float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         
-        // if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
-        //     // printf("At edge of goal\n");
-        //     position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
-        // } else {
-            float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
-            if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
+        float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
+        if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
 
-            rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
-            rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
-            // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, sidewaysMovement);
-        // }
-        // printf("%f\n", sign(sidewaysDistance) * 35);
-        // printf("sidewaysDistance: %f, tempAngle: %f, goalAngle_: %f\n", sidewaysDistance, tempAngle, goalAngle_);
+        rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
+        rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
     }
 }
 
