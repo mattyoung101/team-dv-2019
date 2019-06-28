@@ -36,8 +36,8 @@ void defines_init(uint8_t robotId){
         // float values[] = {1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
         //                 0.7f, 0.7f, 0.7f, 1.0f, 1.0f, 1.0f, 1.2f, 1.2f};
         float values[] = {
-            1.2f, 1.2f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.5f, 0.5f, 1.0f, 1.0f, 
-            1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.2f
+            1.1f, 1.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.9f, 
+            0.9f, 0.9, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0, 1.1f, 1.2f
         };
         MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = false;
