@@ -146,22 +146,25 @@ static void master_task(void *pvParameter){
         // line over runs after the FSM to override it
         update_line(&robotState);
 
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
         // print_goal_data(&robotState);
         // print_motion_data(&robotState);
         
         // goal_correction(&robotState);
-        
-        // robotState.outSpeed = 0;
 
         // run motors
-        // motor_calc(90.0f, 0, 10.0f);
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
     }
+}
+
+static bool ledOn = false;
+static void blinky_callback(TimerHandle_t callback){
+    gpio_set_level(DEBUG_LED_1, ledOn);
+    ledOn = !ledOn;
 }
 
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
@@ -173,6 +176,8 @@ static void slave_task(void *pvParameter){
     // Initialise software
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
     defines_init(robotId);
+    TimerHandle_t blinky = xTimerCreate("Blinky", pdMS_TO_TICKS(500), true, NULL, blinky_callback);
+    xTimerStart(blinky, portMAX_DELAY);
 
     // Initialise comms
     comms_i2c_init_master(I2C_NUM_0);
@@ -193,6 +198,7 @@ static void slave_task(void *pvParameter){
             tsop_update(NULL);
         }
         tsop_calc();
+
         // update IMU
         simu_calc();
 
@@ -226,7 +232,7 @@ static void slave_task(void *pvParameter){
         }
 
         // activate/deactivate debug LED if we're on the line
-        gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
+        // gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
         esp_task_wdt_reset();
 
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);

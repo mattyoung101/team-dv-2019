@@ -247,34 +247,7 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
     }
 }
 
-static uint16_t lastLastLineAngle = LS_NO_LINE_ANGLE;
-static float lineOverProgress = 0.0f;
-static dv_timer_t lineOverTimer = {NULL, false};
-static bool shouldAvoidLine = false;
-
-static void line_over_timer_callback(TimerHandle_t timer){
-    ESP_LOGD("LS", "Line over timer gone off, no longer yeeting");
-    shouldAvoidLine = false;
-    dv_timer_stop(&lineOverTimer);
-}
-
 void update_line(robot_state_t *robotState) {
-    // printf("B\n");
-    // dv_timer_check_create(&lineOverTimer, "LineOverTimer", LINE_AVOID_TIME, NULL, line_over_timer_callback);
-
-    // // if we touched the line, avoid it
-    // if (robotState->inOnLine || robotState->inLineOver){
-    //     ESP_LOGD("LS", "Touched line, yeeting in opposite direction");
-    //     shouldAvoidLine = true;
-    //     dv_timer_start(&lineOverTimer);
-    // }
-
-    // // if we're avoiding the line, move away from it at the opposite to the line angle
-    // if (shouldAvoidLine){
-    //     robotState->outSpeed = LINE_AVOID_SPEED;
-    //     robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
-    // }
-
     if (robotState->inOnLine || robotState->inLineOver){
         if (robotState->inGoalVisible){
             if (robotState->inGoalLength <= 35.0f){

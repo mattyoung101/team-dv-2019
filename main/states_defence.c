@@ -10,8 +10,6 @@ fsm_state_t stateDefenceIdle = {&state_nothing_enter, &state_nothing_exit, &stat
 fsm_state_t stateDefenceDefend = {&state_defence_defend_enter, &state_nothing_exit, &state_defence_defend_update, "DefenceDefend"};
 fsm_state_t stateDefenceSurge = {&state_nothing_enter, &state_nothing_exit, &state_defence_surge_update, "DefenceSurge"};
 
-static dv_timer_t surgeTimer = {NULL, false};
-
 float accelProgress = 0.0f;
 
 // shortcut lol
@@ -22,7 +20,6 @@ void state_defence_reverse_update(state_machine_t *fsm){
     static const char *TAG = "DefendReverseState";
 
     accelProgress = 0;
-
     rs.outIsAttack = false;
     imu_correction(&robotState);
 
@@ -72,17 +69,8 @@ void state_defence_idle_update(state_machine_t *fsm){
 }
 
 // Defend
-static void surge_timer_callback(TimerHandle_t timer){
-    static const char *TAG = "SurgeTimerCallback";
-    ESP_LOGI(TAG, "Surge timer has gone off, switching to surge state");
-
-    state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
-    dv_timer_stop(&surgeTimer);
-    FSM_CHANGE_STATE_DEFENCE(Surge);
-}
-
 void state_defence_defend_enter(state_machine_t *fsm){
-    dv_timer_check_create(&surgeTimer, "SurgeTimer", SURGE_TIMEOUT, (void*) fsm, surge_timer_callback);
+    // no longer used
  }
 
  void state_defence_defend_update(state_machine_t *fsm){
@@ -95,49 +83,37 @@ void state_defence_defend_enter(state_machine_t *fsm){
     // else imu_correction(&robotState); // Face the back of the robot to the goal
     goal_correction(&robotState);
 
-    // check the timer conditions first, so that we don't get switched out of before we can check
-    if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 40, IN_FRONT_MAX_ANGLE - 40) && rs.inBallStrength >= SURGE_STRENGTH){
-        LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, starting surge timer");
-        dv_timer_start(&surgeTimer);
-    } else {
-        LOG_ONCE(TAG, "Stopping surge timer as criteria is no longer satisfied");
-        dv_timer_stop(&surgeTimer);
-    }
-
-    // Check criteria: goal visible and ball visible
+    // Check criteria: goal visible and ball visible, should surge?
     if (!rs.inGoalVisible){
-        LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
-        FSM_CHANGE_STATE_DEFENCE(Reverse);
+        LOG_ONCE(TAG, "Goal not visible, NOT switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
+        // FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength <= 0.01f){
         LOG_ONCE(TAG, "Ball too far away, switching to Idle");
         // LOG_ONCE(TAG, "Cancelling switch state to Idle cos driftin REEEEEE");
         FSM_CHANGE_STATE_DEFENCE(Idle);
-    } 
+    } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 45, IN_FRONT_MAX_ANGLE - 45) && rs.inBallStrength >= SURGE_STRENGTH){
+        LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, switching into surge");
+        FSM_CHANGE_STATE_DEFENCE(Surge);
+    }
 
     if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
         // Ball is behind, orbit so we don't score an own goal
         orbit(&robotState);
     } else {
         float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
-        float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 -> 360 range
-        float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
-        float b = robotState.inGoalAngle > 180 ? robotState.inGoalAngle - 360 : robotState.inGoalAngle;
-
-        float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
         float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
         
-        float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
-        if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
-            // printf("At edge of goal\n");
-            position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
-        } else {
+        // if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
+        //     // printf("At edge of goal\n");
+        //     position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
+        // } else {
             float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
             if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
 
             rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
             rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
             // printf("goalAngle_: %f, verticleDistance: %f, distanceMovement: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, sidewaysMovement);
-        }
+        // }
         // printf("%f\n", sign(sidewaysDistance) * 35);
         // printf("sidewaysDistance: %f, tempAngle: %f, goalAngle_: %f\n", sidewaysDistance, tempAngle, goalAngle_);
     }
