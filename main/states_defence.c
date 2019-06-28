@@ -89,7 +89,6 @@ void state_defence_defend_enter(state_machine_t *fsm){
         // FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength <= 0.01f){
         LOG_ONCE(TAG, "Ball too far away, switching to Idle");
-        // LOG_ONCE(TAG, "Cancelling switch state to Idle cos driftin REEEEEE");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 45, IN_FRONT_MAX_ANGLE - 45) && rs.inBallStrength >= SURGE_STRENGTH){
         LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, switching into surge");
