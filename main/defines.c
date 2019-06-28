@@ -34,24 +34,24 @@ void defines_init(uint8_t robotId){
 
     if (robotId == 0){
         float values[] = {
-            1.1f, 1.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.9f, 
-            0.9f, 0.9, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0, 1.1f, 1.2f
+            1.1f, 1.1f, 1.0f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 1.0f, 1.0f, 
+            1.0f, 1.0f, 1.0f, 0.9f, 0.9f, 0.9f, 0.9f, 0.9f, 1.0f, 1.0, 1.3f, 1.3f
         };
         MOTOR_FL_REVERSED = true;
-        MOTOR_FR_REVERSED = false;
-        MOTOR_BL_REVERSED = true;
+        MOTOR_FR_REVERSED = true;
+        MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
-        CAM_OFFSET_Y = 60;
-        TSOP_CORRECTION = -18;
+        CAM_OFFSET_Y = 56;
+        TSOP_CORRECTION = 0;
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 150;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 145;
+        BALL_CLOSE_STRENGTH = 130;
         ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 30;
+        ORBIT_SPEED_FAST = 40;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));

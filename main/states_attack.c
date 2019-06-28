@@ -160,9 +160,14 @@ void state_attack_dribble_update(state_machine_t *fsm){
     goal_correction(&robotState);
     timer_check();
 
+    printfln("Strength: %f", rs.inBallStrength);
+
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?
-    if (robotState.inBallStrength <= 0.0f){
+    if (rs.inBallStrength >= 180.0f && canShoot){
+        LOG_ONCE(TAG, "Ball close enough and shoot permitted, shooting, strength: %f", rs.inBallStrength);
+        FSM_CHANGE_STATE_GENERAL(Shoot);
+    } else if (robotState.inBallStrength <= 0.0f){
         LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallStrength);
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
@@ -170,11 +175,6 @@ void state_attack_dribble_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball not in front, reverting, angle: %f, range: %d-%d", robotState.inBallAngle,
                 IN_FRONT_MIN_ANGLE + IN_FRONT_ANGLE_BUFFER, IN_FRONT_MAX_ANGLE - IN_FRONT_ANGLE_BUFFER);
         FSM_REVERT;
-    } else if (is_angle_between(rs.inGoalAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE) 
-                && robotState.inGoalLength <= GOAL_SHOOT_DIST && canShoot){
-        LOG_ONCE(TAG, "Ball in front, goal close and shoot permitted, shooting, angle: %d, goal length: %d", rs.inGoalAngle,
-        rs.inGoalLength);
-        FSM_CHANGE_STATE_GENERAL(Shoot);
     }
 
     // ESP_LOGI(TAG, "Not shooting, goal angle: %d, goal length: %d, can shoot: %s", robotState.inGoalAngle,

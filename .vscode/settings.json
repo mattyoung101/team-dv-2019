@@ -10,7 +10,8 @@
         "math.h": "c",
         "pid.h": "c",
         "esp_utils.h": "c",
-        "handmademath.h": "c"
+        "handmademath.h": "c",
+        "tsop.h": "c"
     },
     "cSpell.words": [
         "Bluedroid",
