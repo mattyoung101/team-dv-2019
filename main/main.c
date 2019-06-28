@@ -151,7 +151,8 @@ static void master_task(void *pvParameter){
         // vTaskDelay(pdMS_TO_TICKS(250));
         print_motion_data(&robotState);
         
-        // goal_correction(&robotState);
+        // robotState.outSpeed = 0;
+        // imu_correction(&robotState);
 
         // robotState.outSpeed = 0;
 
