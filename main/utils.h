@@ -105,8 +105,9 @@ void other_goal_correction(robot_state_t *robotState);
 float get_magnitude(int16_t x, int16_t y);
 float get_angle(int16_t x, int16_t y);
 void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);
-/** orbits around the ball **/
+/** Orbits around the ball **/
 void orbit(robot_state_t *robotState);
+/** Old shitty orbit code **/
 /** Positions to arbitrary point on the field **/
 void position(robot_state_t*robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed);
 /** Does line avoid calculations**/

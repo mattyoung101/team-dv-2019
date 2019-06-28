@@ -27,6 +27,8 @@ uint8_t BALL_CLOSE_STRENGTH;
 uint8_t ORBIT_SPEED_SLOW;
 uint8_t ORBIT_SPEED_FAST;
 
+uint8_t ORBIT_CONST;
+
 // Code which sets per-robot values, i.e. values that cannot be set at compile time using #defines
 
 void defines_init(uint8_t robotId){
@@ -44,7 +46,7 @@ void defines_init(uint8_t robotId){
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = 0;
+        TSOP_CORRECTION = -10;
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 150;
@@ -52,6 +54,7 @@ void defines_init(uint8_t robotId){
         BALL_CLOSE_STRENGTH = 130;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 40;
+        ORBIT_CONST = 0.2;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
@@ -75,6 +78,7 @@ void defines_init(uint8_t robotId){
         BALL_CLOSE_STRENGTH = 140;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 40;
+        ORBIT_CONST = 0.2;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

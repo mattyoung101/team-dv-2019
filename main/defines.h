@@ -244,10 +244,12 @@ extern uint8_t BALL_CLOSE_STRENGTH;
 extern uint8_t ORBIT_SPEED_SLOW;
 extern uint8_t ORBIT_SPEED_FAST;
 
+extern uint8_t ORBIT_CONST;
+
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
 #define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MIN_ANGLE 3 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
 #define IN_FRONT_ANGLE_BUFFER 40
 #define IN_FRONT_STRENGTH_BUFFER 40

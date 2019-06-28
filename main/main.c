@@ -184,13 +184,13 @@ static void slave_task(void *pvParameter){
     xTimerStart(blinky, portMAX_DELAY);
 
     // Initialise comms
-    comms_i2c_init_master(I2C_NUM_0);
-    i2c_scanner();
+    // comms_i2c_init_master(I2C_NUM_0);
+    // i2c_scanner();
 
     // Initialise hardware
     tsop_init();
-    simu_init();
-    simu_calibrate();
+    // simu_init();
+    // simu_calibrate();
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
 
     ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
@@ -204,36 +204,36 @@ static void slave_task(void *pvParameter){
         tsop_calc();
 
         // update IMU
-        simu_calc();
+        // simu_calc();
 
-        // setup protobuf byte stream, variables will be disposed of after loop ends
-        memset(pbBuf, 0, PROTOBUF_SIZE);
-        SensorUpdate msg = SensorUpdate_init_zero;
-        pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
+        // // setup protobuf byte stream, variables will be disposed of after loop ends
+        // memset(pbBuf, 0, PROTOBUF_SIZE);
+        // SensorUpdate msg = SensorUpdate_init_zero;
+        // pb_ostream_t stream = pb_ostream_from_buffer(pbBuf, PROTOBUF_SIZE);
 
-        // set the message's values
-        if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
-            msg.lastAngle = nanoData.lastAngle;
-            msg.lineAngle = nanoData.lineAngle;
-            msg.lineOver = nanoData.isLineOver;
-            msg.lineSize = nanoData.lineSize;
-            msg.onLine = nanoData.isOnLine;
-            msg.voltage = nanoData.batteryVoltage;
-            xSemaphoreGive(nanoDataSem);
-        } else {
-            ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
-        }
-        msg.heading = heading;
-        msg.tsopAngle = tsopAngle;
-        msg.tsopStrength = tsopAvgStrength;
+        // // set the message's values
+        // if (xSemaphoreTake(nanoDataSem, pdMS_TO_TICKS(SEMAPHORE_UNLOCK_TIMEOUT))){
+        //     msg.lastAngle = nanoData.lastAngle;
+        //     msg.lineAngle = nanoData.lineAngle;
+        //     msg.lineOver = nanoData.isLineOver;
+        //     msg.lineSize = nanoData.lineSize;
+        //     msg.onLine = nanoData.isOnLine;
+        //     msg.voltage = nanoData.batteryVoltage;
+        //     xSemaphoreGive(nanoDataSem);
+        // } else {
+        //     ESP_LOGW(TAG, "Failed to unlock nano data semaphore!");
+        // }
+        // msg.heading = heading;
+        // msg.tsopAngle = tsopAngle;
+        // msg.tsopStrength = tsopAvgStrength;
 
-        // encode and send it
-        if (pb_encode(&stream, SensorUpdate_fields, &msg)){
-            comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
-            vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
-        } else {
-            ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
-        }
+        // // encode and send it
+        // if (pb_encode(&stream, SensorUpdate_fields, &msg)){
+        //     comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
+        //     vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
+        // } else {
+        //     ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
+        // }
 
         // activate/deactivate debug LED if we're on the line
         // gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);

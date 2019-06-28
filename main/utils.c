@@ -159,9 +159,9 @@ void orbit(robot_state_t *robotState){
 
     // I hate to do this but...
     if(robotState->inRobotId == 0){
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.2 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.3 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 4 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -181,6 +181,21 @@ void orbit(robot_state_t *robotState){
     // ESP_LOGD(TAG, "Ball is visible, orbiting");
     // printf("ballAngleDifference: %f, strengthFactor: %f, distanceMultiplier: %f, angleAddition: %f\n", ballAngleDifference, 
     // strengthFactor, distanceMultiplier, angleAddition);
+}
+
+void shittyOrbit(robot_state_t *rs){ // Shitty orbit cos exponential is too difficult to tune for god sake
+    float tempAngle = rs->inBallAngle > 180 ? rs->inBallAngle - 360 : rs->inBallAngle;
+    float angleAddition = 0.0;
+
+    if(rs->inBallStrength > BALL_CLOSE_STRENGTH) { // If we are really close to the ball
+        angleAddition = 90; // Move perpendicular to the ball :D
+    } else if(rs->inBallStrength > BALL_FAR_STRENGTH) { // If the ball is medium distance away
+        angleAddition = constrain(fabsf(rs->inBallAngle) * ORBIT_CONST, 0, 90); // Multiply angle by a constant so we kinda to to it
+    } else { // We are very far away from the ball
+        angleAddition = 0; // Just go to the ball i don't care anymore
+    }
+    rs->outDirection = tempAngle + sign(tempAngle) * angleAddition;
+    rs->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
 }
 
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed) {
