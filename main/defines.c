@@ -33,8 +33,6 @@ void defines_init(uint8_t robotId){
     ESP_LOGI(TAG, "Initialising values as robot ID #%d", robotId);
 
     if (robotId == 0){
-        // float values[] = {1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
-        //                 0.7f, 0.7f, 0.7f, 1.0f, 1.0f, 1.0f, 1.2f, 1.2f};
         float values[] = {
             1.1f, 1.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.9f, 
             0.9f, 0.9, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0, 1.1f, 1.2f
@@ -58,8 +56,6 @@ void defines_init(uint8_t robotId){
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     } else {
-        // float values[] = {1.2f, 1.2f, 0.8f, 0.8f, 0.8f, 0.8f, 0.8f, 1.0f, 0.8f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 0.8f, 1.0f,
-        //                 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.1f, 1.2f};
         float values[] = {
             1.1f, 1.1f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 
             1.0f, 1.0f, 1.0f, 1.0f, 0.8f, 0.8f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.1f
@@ -72,9 +68,9 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = -25;
-        DEFEND_DISTANCE = 35;
-        SURGE_DISTANCE = 40;
-        SURGE_STRENGTH = 160;
+        DEFEND_DISTANCE = 30;
+        SURGE_DISTANCE = 43;
+        SURGE_STRENGTH = 165;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 140;
         ORBIT_SPEED_SLOW = 30;

@@ -35,7 +35,7 @@ void dv_timer_check_create(dv_timer_t *timer, char *timerName, int32_t timeout, 
 
 static void shoot_timer_callback(TimerHandle_t timer){
     static const char *TAG = "ShootTimerCallback";
-    ESP_LOGI(TAG, "Shoot timer gone off, enabling shooting again");
+    ESP_LOGW(TAG, "Shoot timer gone off, enabling shooting again");
 
     canShoot = true;
     dv_timer_stop(&shootTimer);
@@ -48,12 +48,12 @@ void state_general_shoot_enter(state_machine_t *fsm){
         ESP_LOGE(TAG, "Illegal state change: shoot not permitted at this time. Fix your code!");
         return;
     }
-    LOG_ONCE(TAG, "Activating kicker");
     
     canShoot = false;
     dv_timer_check_create(&shootTimer, "ShootTimer", SHOOT_TIMEOUT, NULL, shoot_timer_callback);
     dv_timer_start(&shootTimer);
     
+    ESP_LOGW(TAG, "Activating kicker");
     gpio_set_level(KICKER_PIN, 1);
     vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
     gpio_set_level(KICKER_PIN, 0);

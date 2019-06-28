@@ -11,17 +11,14 @@ TaskHandle_t sendTaskHandle = NULL;
 QueueHandle_t packetQueue = NULL;
 static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 static bool isMaster = false;
-static bool isFirstRun = true;
 static uint8_t totalErrors = 0;
 static bool firstConnection = true;
 
 /** Initialises Bluetooth stack **/
 static void bt_init(void){
-    if (isFirstRun){
-        ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
-        esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
-        ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
-    }
+    ESP_ERROR_CHECK(esp_bt_controller_mem_release(ESP_BT_MODE_BLE));
+    esp_bt_controller_config_t bt_cfg = BT_CONTROLLER_INIT_CONFIG_DEFAULT();
+    ESP_ERROR_CHECK(esp_bt_controller_init(&bt_cfg));
 
     ESP_ERROR_CHECK(esp_bt_controller_enable(ESP_BT_MODE_CLASSIC_BT));
     ESP_ERROR_CHECK(esp_bluedroid_init());
@@ -315,10 +312,8 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
 
 static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     bt_init();
-    if (isFirstRun) {
-         ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
-         ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
-    }
+    ESP_ERROR_CHECK(esp_bt_gap_register_callback(gap_cb));
+    ESP_ERROR_CHECK(esp_spp_register_callback(spp_cb));
     ESP_ERROR_CHECK(esp_spp_init(ESP_SPP_MODE_CB));
     
     // Simple Secure Paring (SSP) params
@@ -334,10 +329,6 @@ static void comms_bt_init_generic(esp_bt_gap_cb_t gap_cb, esp_spp_cb_t spp_cb){
     // create the BT packet queue
     if (packetQueue == NULL){
         packetQueue = xQueueCreate(PACKET_QUEUE_LENGTH, BTProvide_size);
-    }
-    
-    if (isFirstRun){
-        isFirstRun = false;
     }
 }
 

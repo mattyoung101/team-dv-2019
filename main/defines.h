@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_BLUE
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -61,7 +61,7 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 6
+#define FORWARD_KP 4
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -71,9 +71,9 @@
 #define SIDE_KD 0.0001
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 5
+#define INTERCEPT_KP 3
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.05
+#define INTERCEPT_KD 0.03
 #define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
@@ -268,9 +268,9 @@ extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MIN_STRENGTH 70
-#define DEFEND_MAX_ANGLE 270
-#define DEFEND_MIN_ANGLE 90
-#define SURGE_TIMEOUT 100 // ms, when the robot is in defend state and has the ball for this time, switch to surge
+#define DEFEND_MAX_ANGLE 150
+#define DEFEND_MIN_ANGLE 210
+#define KICKER_STRENGTH 180 // if ball strength greater than this, kick
 
 // General FSM defines
 #define MODE_ATTACK 0
@@ -280,7 +280,7 @@ extern uint8_t ROBOT_MODE;
 // Kicker
 #define KICKER_PIN 33
 #define KICKER_TIMEOUT 25 // ms
-#define SHOOT_TIMEOUT 3000 // ms
+#define SHOOT_TIMEOUT 2000 // ms
 
 // RGB LEDs
 #define LED_PIN 13
