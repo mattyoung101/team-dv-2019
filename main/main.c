@@ -148,6 +148,7 @@ static void master_task(void *pvParameter){
 
         // print_ball_data(&robotState);
         // print_goal_data(&robotState);
+        // vTaskDelay(pdMS_TO_TICKS(250));
         // print_motion_data(&robotState);
         
         // goal_correction(&robotState);

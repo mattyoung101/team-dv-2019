@@ -91,11 +91,12 @@ void state_defence_defend_enter(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball too far away, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 45, IN_FRONT_MAX_ANGLE - 45) && rs.inBallStrength >= SURGE_STRENGTH){
-        LOG_ONCE(TAG, "Ball is in capture zone and goal is nearby, switching into surge");
+        LOG_ONCE(TAG, "Ball in caputre zone and strenght ok, switching to surge, angle: %f, strength: %f",
+                robotState.inBallAngle, robotState.inBallStrength);
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 
-    if (!is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
+    if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
         // Ball is behind, orbit so we don't score an own goal
         orbit(&robotState);
     } else {
@@ -130,14 +131,14 @@ void state_defence_surge_update(state_machine_t *fsm){
     rs.outIsAttack = false;
     RS_SEM_UNLOCK
 
-    if (rs.inGoalLength > SURGE_DISTANCE || !rs.inGoalVisible){
-        LOG_ONCE(TAG, "Too far from goal, switching to defend");
+    if (rs.inGoalLength >= SURGE_DISTANCE || !rs.inGoalVisible){
+        LOG_ONCE(TAG, "Too far from goal, switching to defend, goal dist: %d", rs.inGoalLength);
         FSM_CHANGE_STATE_DEFENCE(Defend);
-    } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 20, IN_FRONT_MAX_ANGLE - 20) || rs.inBallStrength < SURGE_STRENGTH - 30){
+    } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 65, IN_FRONT_MAX_ANGLE - 65) || rs.inBallStrength < SURGE_STRENGTH - 30){
         LOG_ONCE(TAG, "Ball is not in capture zone, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
-    } else if (!rs.inBTConnection && canShoot){
-        LOG_ONCE(TAG, "No Bluetooth connection, willing to shoot, shooting");
+    } else if (!rs.inBTConnection && canShoot && robotState.inBallStrength >= KICKER_STRENGTH){
+        LOG_ONCE(TAG, "Shoot conditions are good, shooting, ball strength: %f", robotState.inBallStrength);
         FSM_CHANGE_STATE_GENERAL(Shoot);
     }
 

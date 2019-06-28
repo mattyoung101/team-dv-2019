@@ -270,6 +270,7 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MIN_STRENGTH 70
 #define DEFEND_MAX_ANGLE 150
 #define DEFEND_MIN_ANGLE 210
+#define KICKER_STRENGTH 180 // if ball strength greater than this, kick
 
 // General FSM defines
 #define MODE_ATTACK 0
