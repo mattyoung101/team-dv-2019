@@ -226,18 +226,18 @@ uint8_t nano_read(uint8_t addr, size_t size, uint8_t *data) {
     uint8_t headingBytes[] = {0xB, HIGH_BYTE_16(scaledHeading), LOW_BYTE_16(scaledHeading)};
     
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
-    ESP_ERROR_CHECK(i2c_master_start(cmd));
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE));
-    ESP_ERROR_CHECK(i2c_master_write(cmd, headingBytes, 3, I2C_ACK_MODE));
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (addr << 1), I2C_ACK_MODE);
+    i2c_master_write(cmd, headingBytes, 3, I2C_ACK_MODE);
     // Send repeated start
-    ESP_ERROR_CHECK(i2c_master_start(cmd));
+    i2c_master_start(cmd);
     // now send device address (indicating read) & read data
-    ESP_ERROR_CHECK(i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE));
+    i2c_master_write_byte(cmd, (addr << 1) | I2C_MASTER_READ, I2C_ACK_MODE);
     if (size > 1) {
-        ESP_ERROR_CHECK(i2c_master_read(cmd, data, size - 1, 0x0));
+        i2c_master_read(cmd, data, size - 1, 0x0);
     }
-    ESP_ERROR_CHECK(i2c_master_read_byte(cmd, data + size - 1, 0x1));
-    ESP_ERROR_CHECK(i2c_master_stop(cmd));
+    i2c_master_read_byte(cmd, data + size - 1, 0x1);
+    i2c_master_stop(cmd);
     esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, portMAX_DELAY);
     i2c_cmd_link_delete(cmd);
 
