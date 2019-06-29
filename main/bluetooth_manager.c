@@ -63,6 +63,17 @@ void comms_bt_receive_task(void *pvParameter){
                     isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
             
+            // if both robots have 0 ball strength, revert to default mode
+            if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
+                ESP_LOGI(TAG, "Conflict resolution: both robots have 0 ball strength, reverting to default state");
+
+                if (ROBOT_MODE == MODE_ATTACK){
+                    fsm_change_state(stateMachine, &stateAttackPursue);
+                } else {
+                    fsm_change_state(stateMachine, &stateDefenceDefend);
+                }
+            }
+
             if (robotState.inBallStrength <= 0.1f){
                 ESP_LOGI(TAG, "Conflict resolution: I cannot see ball, becoming defender");
                 fsm_change_state(stateMachine, &stateDefenceDefend);
@@ -113,7 +124,6 @@ void comms_bt_receive_task(void *pvParameter){
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
-            // TODO it spam prints here when it shouldn't, sometimes
             ESP_LOGW(TAG, "Other robot is NO LONGER willing to switch");
             wasSwitchOk = false;
             alreadyPrinted = false;
