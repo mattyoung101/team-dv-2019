@@ -51,7 +51,7 @@ void defines_init(uint8_t robotId){
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 160;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 130;
+        BALL_CLOSE_STRENGTH = 150;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 40;
         ORBIT_CONST = 0.6;
