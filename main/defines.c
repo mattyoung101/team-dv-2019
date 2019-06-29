@@ -46,12 +46,12 @@ void defines_init(uint8_t robotId){
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = -10;
+        TSOP_CORRECTION = -15;
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 150;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 130;
+        BALL_CLOSE_STRENGTH = 150;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 40;
         ORBIT_CONST = 0.6;

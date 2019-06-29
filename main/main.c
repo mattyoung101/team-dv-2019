@@ -146,7 +146,7 @@ static void master_task(void *pvParameter){
         // line over runs after the FSM to override it
         update_line(&robotState);
 
-        // print_ball_data(&robotState);
+        print_ball_data(&robotState);
         // print_goal_data(&robotState);
         // vTaskDelay(pdMS_TO_TICKS(250));
         print_motion_data(&robotState);
@@ -253,21 +253,21 @@ void motor_test_task(void *pvParameter){
     ESP_LOGI(TAG, "Motor test init OK");
 
     while (true){
-        // ESP_LOGI(TAG, "Going forward");
-        // motor_calc(0, 0, 75.0f);
-        // motor_move(false);
-        // vTaskDelay(pdMS_TO_TICKS(2500));
+        ESP_LOGI(TAG, "Going forward");
+        motor_calc(0, 0, 75.0f);
+        motor_move(false);
+        vTaskDelay(pdMS_TO_TICKS(2500));
         
-        // ESP_LOGI(TAG, "Going backwards");
-        // motor_calc(180, 0, 75.0f);
-        // motor_move(false);
-        // vTaskDelay(pdMS_TO_TICKS(2500));
+        ESP_LOGI(TAG, "Going backwards");
+        motor_calc(180, 0, 75.0f);
+        motor_move(false);
+        vTaskDelay(pdMS_TO_TICKS(2500));
 
-        ESP_LOGI(TAG, "Kicking");
-        ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 1));
-        vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
-        ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 0));
-        vTaskDelay(pdMS_TO_TICKS(SHOOT_TIMEOUT));
+        // ESP_LOGI(TAG, "Kicking");
+        // ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 1));
+        // vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
+        // ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 0));
+        // vTaskDelay(pdMS_TO_TICKS(SHOOT_TIMEOUT));
     }
 }
 
