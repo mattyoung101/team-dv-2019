@@ -61,7 +61,7 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 2.5
+#define FORWARD_KP 3
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -73,13 +73,13 @@
 
 #define INTERCEPT_KP 5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0001
+#define INTERCEPT_KD 0.001
 #define INTERCEPT_MAX 95
 #define INTERCEPT_MIN 20
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.05
+#define GOALIE_KD 0.1
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
