@@ -79,10 +79,10 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
     vTaskDelay(pdMS_TO_TICKS(15));
 
-    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 2048, (void*) param->open.handle, 
+    xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 4, &receiveTaskHandle);
     
-    xTaskCreate(comms_bt_send_task, "BTSendTask", 2048, (void*) param->open.handle, 
+    xTaskCreate(comms_bt_send_task, "BTSendTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 5, &sendTaskHandle);
 }
 

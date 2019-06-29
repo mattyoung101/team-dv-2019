@@ -159,11 +159,10 @@ static void master_task(void *pvParameter){
         // print_goal_data(&robotState);
         // vTaskDelay(pdMS_TO_TICKS(250));
         // print_motion_data(&robotState);
+        // print_position_data(&robotState);
         
         // robotState.outSpeed = 0;
         // imu_correction(&robotState);
-
-        // robotState.outSpeed = 0;
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);

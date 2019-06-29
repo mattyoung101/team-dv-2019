@@ -47,23 +47,30 @@ void comms_bt_receive_task(void *pvParameter){
         bool isAttack = false;
         bool isInShootState = false;
 
+        // read in a new packet from the packet queue, otherwise block this thread till one's available
         if (xQueueReceive(packetQueue, &recvMsg, portMAX_DELAY)){
             isAttack = strstr(recvMsg.fsmState, "Attack");
             isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
-
-            // ESP_LOGD(TAG, "Received BT packet: state: %s, goal length: %f, switch ok: %s, isAttack: %s", 
-            // recvMsg.fsmState, recvMsg.goalLength, recvMsg.switchOk ? "yes" : "no", isAttack ? "yes" : "no");
         }
 
-        // conflict resolution: whichever robot is closest to the goal loses the conflict and becomes defender
+        // conflict resolution: whichever robot is closest to the ball becomes the attacker + some extra edge cases
         // if in shoot state, ignore conflict as both robots can be shooting without conflict
         if (((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) && !isInShootState) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
             
-            if (robotState.inBallStrength <= 0.1f){
+            // if both robots have 0 ball strength, revert to default mode
+            if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
+                ESP_LOGI(TAG, "Conflict resolution: both robots can't see ball, using default state");
+
+                if (ROBOT_MODE == MODE_ATTACK){
+                    fsm_change_state(stateMachine, &stateAttackPursue);
+                } else {
+                    fsm_change_state(stateMachine, &stateDefenceDefend);
+                }
+            } else if (robotState.inBallStrength <= 0.1f){
                 ESP_LOGI(TAG, "Conflict resolution: I cannot see ball, becoming defender");
                 fsm_change_state(stateMachine, &stateDefenceDefend);
             } else if (recvMsg.ballStrength <= 0.1f){
@@ -89,7 +96,7 @@ void comms_bt_receive_task(void *pvParameter){
             }
             wasSwitchOk = true;
 
-            // if we're OK to switch and we're not in the cooldown period and we're the switch listener, switch
+            // if we're OK to switch and we're not in the cooldown period and we're the switch listener, switch.
             // only one robot (robot 0) will be able to broadcast switch statements to save them both from
             // switching at the same time
             if (robotState.outSwitchOk && !cooldownOn && robotState.inRobotId == 0){
@@ -108,12 +115,12 @@ void comms_bt_receive_task(void *pvParameter){
                 xTimerStart(cooldownTimer.timer, portMAX_DELAY);
                 alreadyPrinted = false;
             } else {
+                // TODO remove this log spam
                 ESP_LOGD(TAG, "Unable to switch: am I willing to switch? %s, cooldown timer on? %s, robotId: %d",
                 robotState.outSwitchOk ? "yes" : "no", cooldownOn ? "yes" : "no", robotState.inRobotId);
             }
         } else if (wasSwitchOk){
             // if the other robot is not willing to switch, but was previously willing to switch
-            // TODO it spam prints here when it shouldn't, sometimes
             ESP_LOGW(TAG, "Other robot is NO LONGER willing to switch");
             wasSwitchOk = false;
             alreadyPrinted = false;
@@ -151,8 +158,6 @@ void comms_bt_send_task(void *pvParameter){
         sendMsg.ballStrength = robotState.inBallStrength;
         RS_SEM_UNLOCK;
 
-        // ESP_LOGD(TAG, "Current state: %s, switch ok: %s", sendMsg.fsmState, sendMsg.switchOk ? "yes" : "no");
-
         pb_ostream_t stream = pb_ostream_from_buffer(buf, PROTOBUF_SIZE);
         if (pb_encode(&stream, BTProvide_fields, &sendMsg)){
             esp_spp_write(handle, stream.bytes_written, buf);
@@ -161,6 +166,6 @@ void comms_bt_send_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(15));
+        vTaskDelay(pdMS_TO_TICKS(15)); // let other tasks think for a while I guess, BT isn't that important
     }
 }
