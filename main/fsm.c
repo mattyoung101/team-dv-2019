@@ -16,7 +16,7 @@ state_machine_t* fsm_new(fsm_state_t *startState){
 
     state_machine_t* fsm = calloc(1, sizeof(state_machine_t));
     fsm->currentState = &stateGeneralNothing;
-    fsm->semaphore = xSemaphoreCreateBinary();
+    fsm->semaphore = xSemaphoreCreateMutex();
     xSemaphoreGive(fsm->semaphore);
     // change into the start state, to make sure startState->enter is called
     fsm_change_state(fsm, startState); 

@@ -10,9 +10,7 @@ int16_t robotY = 0;
 static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
 
 static void cam_receive_task(void *pvParameter){
-    static const char *TAG = "CamReceiveTask";
-    goalDataSem = xSemaphoreCreateMutex();
-    xSemaphoreGive(goalDataSem);
+    static const char *TAG = "CamReceiveTask";;
     
     uint8_t *buffer = calloc(CAM_BUF_SIZE, sizeof(uint8_t));
     ESP_LOGI(TAG, "Cam receive task init OK");
@@ -67,8 +65,10 @@ void cam_init(void){
     ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, CAM_UART_TX, CAM_UART_RX, -1, -1));
     ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
 
-    xTaskCreate(cam_receive_task, "CamReceiveTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
+    goalDataSem = xSemaphoreCreateMutex();
+    xSemaphoreGive(goalDataSem);
 
+    xTaskCreate(cam_receive_task, "CamReceiveTask", 4096, NULL, configMAX_PRIORITIES - 2, NULL);
     ESP_LOGI(TAG, "Camera init OK");
 }
 
