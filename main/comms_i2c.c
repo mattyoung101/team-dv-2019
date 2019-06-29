@@ -13,10 +13,13 @@ SemaphoreHandle_t nanoDataSem = NULL;
 
 static const char *TAG = "CommsI2C";
 
+// TODO packet timeout if we haven't received a packet on the master in x ms
+
 static void comms_i2c_receive_task(void *pvParameters){
     static const char *TAG = "I2CReceiveTask";
     uint8_t buf[PROTOBUF_SIZE] = {0};
     uint8_t msg[PROTOBUF_SIZE] = {0};
+    uint16_t goodPackets = 0;
     pbSem = xSemaphoreCreateMutex();
     xSemaphoreGive(pbSem);
 
@@ -75,8 +78,10 @@ static void comms_i2c_receive_task(void *pvParameters){
                     // or why the valid is being set to zero
                     if (lastSensorUpdate.heading <= 0.01f && 
                         (lastSensorUpdate.tsopStrength <= 0.01f || lastSensorUpdate.tsopAngle <= 0.01f)){
-                        // ESP_LOGW(TAG, "Rejecting invalid message, restoring last message");
+                        ESP_LOGW(TAG, "Rejecting invalid message, restoring last message");
                         lastSensorUpdate = oldUpdate;
+                    } else {
+                        goodPackets++;
                     }
                 }
                 
@@ -85,7 +90,8 @@ static void comms_i2c_receive_task(void *pvParameters){
                 ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
             }
         } else {
-            // ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X", buf[0]);
+            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, previous good packets: %d", buf[0], goodPackets);
+            goodPackets = 0;
 
             // reset I2C and try to correct the issue by waiting
             i2c_reset_rx_fifo(I2C_NUM_0);
@@ -192,7 +198,12 @@ int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
-    I2C_ERR_CHECK(err);
+    if (err != ESP_OK){
+        ESP_LOGE(TAG, "I2C error in comms_i2c_write_protobuf");
+        i2c_reset_tx_fifo(I2C_NUM_0);
+        i2c_reset_rx_fifo(I2C_NUM_0);
+        return err;
+    }
 
     i2c_cmd_link_delete(cmd);
     return ESP_OK;

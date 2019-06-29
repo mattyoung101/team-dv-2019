@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_BLUE
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -61,7 +61,7 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3.5
+#define FORWARD_KP 3
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -73,13 +73,13 @@
 
 #define INTERCEPT_KP 5
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.02
-#define INTERCEPT_MAX 80
+#define INTERCEPT_KD 0.001
+#define INTERCEPT_MAX 95
 #define INTERCEPT_MIN 20
 
-#define GOALIE_KP 1
+#define GOALIE_KP 1.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.03
+#define GOALIE_KD 0.1
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //
@@ -244,7 +244,7 @@ extern uint8_t BALL_CLOSE_STRENGTH;
 extern uint8_t ORBIT_SPEED_SLOW;
 extern uint8_t ORBIT_SPEED_FAST;
 
-extern uint8_t ORBIT_CONST;
+extern float ORBIT_CONST;
 
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
@@ -262,6 +262,8 @@ extern uint8_t ORBIT_CONST;
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
+#define SURGEON_ANGLE_MIN 10 // angles to surge between
+#define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;
@@ -281,8 +283,8 @@ extern uint8_t ROBOT_MODE;
 
 // Kicker
 #define KICKER_PIN 33
-#define KICKER_TIMEOUT 25 // ms
-#define SHOOT_TIMEOUT 1000 // ms
+#define KICKER_DELAY 10 // ms to wait between solenoid activation and deactivation
+#define SHOOT_TIMEOUT 1000 // ms until we are allowed to kick again
 
 // RGB LEDs
 #define LED_PIN 13
