@@ -110,7 +110,9 @@ void orbit(robot_state_t *robotState);
 /** Old shitty orbit code **/
 void shittyOrbit(robot_state_t *rs);
 /** Positions to arbitrary point on the field **/
-void position(robot_state_t*robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed);
+void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed);
+/** Quickly moves to a point really quickly **/
+void positionFast(robot_state_t *robotState, float distance, float offset, float goalAngle, int16_t goalLength, bool reversed);
 /** Does line avoid calculations**/
 void update_line(robot_state_t *robotState);
 /** Converts a 2D polar vector to cartesian **/

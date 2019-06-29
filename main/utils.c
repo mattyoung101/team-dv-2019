@@ -168,9 +168,9 @@ void orbit(robot_state_t *robotState){
         // robotState->outSpeed = ORBIT_SPEED_SLOW + (float)(ORBIT_SPEED_FAST - ORBIT_SPEED_SLOW) * (1.0 - (float)fabsf(angleAddition) / 90.0);
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
     } else {
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.1 * powf(E, 0.1 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.5 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 3.2 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.2 * strengthFactor * powf(E, 3 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -208,6 +208,27 @@ void position(robot_state_t *robotState, float distance, float offset, int16_t g
 
     float distanceMovement = -pid_update(&forwardPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
     float sidewaysMovement = -pid_update(&sidePID, horizontalDistance, offset, 0.0f);
+
+    if(reversed) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
+
+    robotState->outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - robotState->inHeading, 360.0f); // Use atan2 to find angle
+    robotState->outSpeed = get_magnitude(sidewaysMovement, distanceMovement); // Use pythag to find the overall speed
+
+    robotState->outSpeed = robotState->outSpeed <= IDLE_MIN_SPEED ? 0 : robotState->outSpeed; // To stop the robot from spazzing, if the robot is close to it's destination (so is moving very little), it will just stop.
+
+    // printf("goalAngle_: %f, verticalDistance: %f, horizontalDistance: %f\n", goalAngle_, verticalDistance, horizontalDistance);
+    // printf("goalAngle_: %f, verticalDistance: %f, distanceMovement: %f, horizontalDistance: %f, sidewaysMovement: %f\n", goalAngle_, verticalDistance, distanceMovement, horizontalDistance, sidewaysMovement);
+}
+
+void positionFast(robot_state_t *robotState, float distance, float offset, float goalAngle, int16_t goalLength, bool reversed) {
+    float goalAngle_ = goalAngle < 0.0f ? goalAngle + 360.0f : goalAngle; // Convert to 0 - 360 range
+    float goalAngle__ = fmodf(goalAngle_ + robotState->inHeading, 360.0f); // Add the heading to counteract the rotation
+
+    float verticalDistance = fabsf(goalLength * cosf(DEG_RAD * goalAngle__)); // Break the goal vector into cartesian components (not actually vectors but it kinda is)
+    float horizontalDistance = goalLength * sinf(DEG_RAD * goalAngle__);
+
+    float distanceMovement = -pid_update(&lineavoidPID, verticalDistance, distance, 0.0f); // Determine the speed for each component
+    float sidewaysMovement = -pid_update(&lineavoidPID, horizontalDistance, offset, 0.0f);
 
     if(reversed) distanceMovement *= -1; // All dimensions are inverted cos the goal is behind for the defender
 
@@ -267,18 +288,18 @@ void update_line(robot_state_t *robotState) {
     if (robotState->inOnLine || robotState->inLineOver){
         if (robotState->inGoalVisible){
             if (robotState->inGoalLength <= 35.0f){
-                position(robotState, 30.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+                positionFast(robotState, 35.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
                 // printf("Case 1\n");
             } else {
-                position(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+                positionFast(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
                 // printf("Case 2\n");
             }
         } else if (robotState->inOtherGoalVisible){
             if (robotState->inGoalLength <= 35.0f){
-                position(robotState, 30.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                positionFast(robotState, 35.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
                 // printf("Case 3\n");
             } else {
-                position(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
                 // printf("Case 4\n");
             }
         } else {

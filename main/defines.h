@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-#define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 1500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_BLUE
+// #define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_YELLOW
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -49,9 +49,9 @@
 #define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
-#define LINEAVOID_KP 0.5
+#define LINEAVOID_KP 5
 #define LINEAVOID_KI 0
-#define LINEAVOID_KD 0.05
+#define LINEAVOID_KD 0
 #define LINEAVOID_MAX 100
 
 // --- Idle Correction --- //
@@ -243,22 +243,26 @@ extern uint8_t BALL_FAR_STRENGTH;
 extern uint8_t BALL_CLOSE_STRENGTH;
 extern uint8_t ORBIT_SPEED_SLOW;
 extern uint8_t ORBIT_SPEED_FAST;
+#define ORBIT_SlOW_ANGLE_MIN 45
+#define ORBIT_SLOW_ANGLE_MAX 360 - ORBIT_SlOW_ANGLE_MIN
+#define ORBIT_SLOW_STRENGTH 150
+#define ORBIT_SLOW_SPEED_THING 20
 
 extern float ORBIT_CONST;
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 140 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
 #define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MIN_ANGLE 7 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
-#define IN_FRONT_ANGLE_BUFFER 40
+#define IN_FRONT_ANGLE_BUFFER 50
 #define IN_FRONT_STRENGTH_BUFFER 40
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.0001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot

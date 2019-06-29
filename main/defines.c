@@ -43,7 +43,7 @@ void defines_init(uint8_t robotId){
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
-        ROBOT_MODE = MODE_ATTACK;
+        ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = -10;
@@ -67,17 +67,17 @@ void defines_init(uint8_t robotId){
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = true;
         MOTOR_BR_REVERSED = false;
-        ROBOT_MODE = MODE_DEFEND;
+        ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = -25;
+        TSOP_CORRECTION = -10;
         DEFEND_DISTANCE = 40;
         SURGE_DISTANCE = 40;
         SURGE_STRENGTH = 165;
         BALL_FAR_STRENGTH = 100;
-        BALL_CLOSE_STRENGTH = 140;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 40;
+        BALL_CLOSE_STRENGTH = 145;
+        ORBIT_SPEED_SLOW = 25;
+        ORBIT_SPEED_FAST = 45;
         ORBIT_CONST = 0.2;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
