@@ -66,7 +66,7 @@ void tsop_calc(void){
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X = ((float) readings[i].X / (float) tsopCounter);
         #if TSOP_SCALING
-            readings[i].X *= TSOP_TUNING[i];
+            readings[i].X += TSOP_TUNING[i];
         #endif
     }
     #ifdef TSOP_DEBUG
