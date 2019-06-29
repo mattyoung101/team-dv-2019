@@ -259,7 +259,7 @@ static void slave_task(void *pvParameter){
         }
 
         // activate/deactivate debug LED if we're on the line
-        // gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
+        gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
         esp_task_wdt_reset();
 
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
