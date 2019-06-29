@@ -108,6 +108,7 @@ void move_to_xy(robot_state_t *robotState, int16_t x, int16_t y);
 /** Orbits around the ball **/
 void orbit(robot_state_t *robotState);
 /** Old shitty orbit code **/
+void shittyOrbit(robot_state_t *rs);
 /** Positions to arbitrary point on the field **/
 void position(robot_state_t*robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed);
 /** Does line avoid calculations**/

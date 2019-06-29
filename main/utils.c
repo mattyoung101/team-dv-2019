@@ -195,7 +195,8 @@ void shittyOrbit(robot_state_t *rs){ // Shitty orbit cos exponential is too diff
         angleAddition = 0; // Just go to the ball i don't care anymore
     }
     rs->outDirection = tempAngle + sign(tempAngle) * angleAddition;
-    rs->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
+    rs->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed based on angle
+    // rs->outSpeed = constrain(lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, rs->inBallStrength), ORBIT_SPEED_SLOW, ORBIT_SPEED_FAST); // Linear interpolation for speed based on ball strength
 }
 
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed) {

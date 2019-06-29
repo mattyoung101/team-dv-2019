@@ -54,7 +54,7 @@ void defines_init(uint8_t robotId){
         BALL_CLOSE_STRENGTH = 130;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 40;
-        ORBIT_CONST = 0.2;
+        ORBIT_CONST = 0.6;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
