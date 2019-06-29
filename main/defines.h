@@ -77,9 +77,9 @@
 #define INTERCEPT_MAX 95
 #define INTERCEPT_MIN 20
 
-#define GOALIE_KP 1
+#define GOALIE_KP 1.5
 #define GOALIE_KI 0
-#define GOALIE_KD 0.03
+#define GOALIE_KD 0.05
 #define GOALIE_MAX 100
 
 // --- Coordinate PID --- //

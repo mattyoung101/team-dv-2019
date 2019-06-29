@@ -198,7 +198,12 @@ int comms_i2c_write_protobuf(uint8_t *buf, size_t msgSize, uint8_t msgId){
 
     ESP_ERROR_CHECK(i2c_master_stop(cmd));
     esp_err_t err = i2c_master_cmd_begin(I2C_NUM_0, cmd, pdMS_TO_TICKS(I2C_TIMEOUT));
-    I2C_ERR_CHECK(err);
+    if (err != ESP_OK){
+        ESP_LOGE(TAG, "I2C error in comms_i2c_write_protobuf");
+        i2c_reset_tx_fifo(I2C_NUM_0);
+        i2c_reset_rx_fifo(I2C_NUM_0);
+        return err;
+    }
 
     i2c_cmd_link_delete(cmd);
     return ESP_OK;

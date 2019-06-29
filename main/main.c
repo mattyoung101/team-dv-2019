@@ -176,6 +176,7 @@ static void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
     uint8_t robotId = 69;
+    uint16_t currentTimerPeriod = 500;
 
     // Initialise software
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);
@@ -229,14 +230,28 @@ static void slave_task(void *pvParameter){
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){
-            comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID);
+            if (comms_i2c_write_protobuf(pbBuf, stream.bytes_written, MSG_SENSORUPDATE_ID) != ESP_OK){
+                // try to detect that weird crash bug
+                ESP_LOGE(TAG, "I2C error detected!");
+                if (currentTimerPeriod != 100){
+                    ESP_LOGD(TAG, "Changing timer period i2c err\n");
+                    xTimerChangePeriod(blinky, pdMS_TO_TICKS(100), portMAX_DELAY);
+                    currentTimerPeriod = 100;
+                }
+            } else {
+                if (currentTimerPeriod != 500){
+                    ESP_LOGD(TAG, "Changing timer period no err\n");
+                    xTimerChangePeriod(blinky, pdMS_TO_TICKS(500), portMAX_DELAY);
+                    currentTimerPeriod = 500;
+                }
+            }
             vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
 
         // activate/deactivate debug LED if we're on the line
-        gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
+        // gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
         esp_task_wdt_reset();
 
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
