@@ -44,6 +44,7 @@ state_machine_t *stateMachine = NULL;
 
 static void shutdown_handler(){
     ets_printf("Shutdown handler executing\n");
+    motor_calc(0, 0, 0.0f);
     motor_move(true);
 }
 
@@ -154,7 +155,7 @@ static void master_task(void *pvParameter){
         // line over runs after the FSM to override it
         update_line(&robotState);
 
-        print_ball_data(&robotState);
+        // print_ball_data(&robotState);
         // print_goal_data(&robotState);
         // vTaskDelay(pdMS_TO_TICKS(250));
         // print_motion_data(&robotState);
@@ -185,6 +186,9 @@ static void slave_task(void *pvParameter){
     static uint8_t pbBuf[PROTOBUF_SIZE] = {0};
     uint8_t robotId = 69;
     uint16_t currentTimerPeriod = 500;
+
+    ESP_LOGI(TAG, "Reset reason: %d", esp_reset_reason());
+    ESP_ERROR_CHECK(esp_register_shutdown_handler(shutdown_handler));
 
     // Initialise software
     nvs_get_u8_graceful("RobotSettings", "RobotID", &robotId);

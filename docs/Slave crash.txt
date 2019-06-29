@@ -1,0 +1,94 @@
+===============================================================
+==================== ESP32 CORE DUMP START ====================
+
+================== CURRENT THREAD REGISTERS ===================
+pc             0x4008f658       0x4008f658 <xQueueGenericSendFromISR+112>
+lbeg           0x4000c2e0       1073791712
+lend           0x4000c2f6       1073791734
+lcount         0xffffffff       4294967295
+sar            0x4      4
+ps             0x60820  395296
+threadptr      <unavailable>
+br             <unavailable>
+scompare1      <unavailable>
+acclo          <unavailable>
+acchi          <unavailable>
+m0             <unavailable>
+m1             <unavailable>
+m2             <unavailable>
+m3             <unavailable>
+expstate       <unavailable>
+f64r_lo        <unavailable>
+f64r_hi        <unavailable>
+f64s           <unavailable>
+fcr            <unavailable>
+fsr            <unavailable>
+a0             0x400f2fb7       1074737079
+a1             0x3ffbaf60       1073459040
+a2             0x3ffba384       1073456004
+a3             0x3ffbafbc       1073459132
+a4             0xbaad5678       -1163045256
+a5             0x0      0
+a6             0x1      1
+a7             0xa      10
+a8             0x8008f658       -2146896296
+a9             0x3ffbaf40       1073459008
+a10            0x0      0
+a11            0x3ffcd4d0       1073534160
+a12            0x3ffcd4d0       1073534160
+a13            0x0      0
+a14            0x25     37
+a15            0x3      3
+
+==================== CURRENT THREAD STACK =====================
+#0  0x4008f658 in xQueueGenericSendFromISR (xQueue=0x3ffba384, pvItemToQueue=0x3ffbafbc, pxHigherPriorityTaskWoken=0xbaad5678, xCopyPosition=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1194
+#1  0x400f2fb7 in i2c_master_read_byte (cmd_handle=<optimized out>, data=0x3ffbafb0 \"\", ack=1074737079) at C:/Users/25070/esp/esp-idf/components/driver/i2c.c:1079
+#2  0x400f2b00 in i2c_param_config (i2c_num=(unknown: 1073628488), i2c_conf=0x3ffbaffd) at C:/Users/25070/esp/esp-idf/components/driver/i2c.c:661
+#3  0x400d55f8 in shittyOrbit (rs=0x12) at ../main/utils.c:197
+#4  0x400d59d6 in update_line (robotState=0x3ffccd88 <loggedMessages+100>) at ../main/utils.c:277
+#5  0x4008eaf4 in esp_core_dump_write_binary (frame=<optimized out>, write_cfg=0x0) at C:/Users/25070/esp/esp-idf/components/espcoredump/src/core_dump_common.c:105
+
+======================== THREADS INFO =========================
+  Id   Target Id         Frame
+  8    process 7         0x4008f658 in xQueueGenericSendFromISR (xQueue=0x3ffaff9c, pvItemToQueue=0x0, pxHigherPriorityTaskWoken=0x3ffaffec, xCopyPosition=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1194
+  7    process 6         0x4008f658 in xQueueGenericSendFromISR (xQueue=0x3ffb7b9c, pvItemToQueue=0x0, pxHigherPriorityTaskWoken=0x3ffb7bec, xCopyPosition=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1194
+  6    process 5         0x4008f658 in xQueueGenericSendFromISR (xQueue=0x3ffb7d8c, pvItemToQueue=0x0, pxHigherPriorityTaskWoken=0x3ffb7ddc, xCopyPosition=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1194
+  5    process 4         0x400913c0 in prvCheckForValidListAndQueue () at C:/Users/25070/esp/esp-idf/components/freertos/timers.c:922
+  4    process 3         0x401525f6 in size_of_encoded_value (encoding=0 '\\000') at /builds/idf/crosstool-NG/.build/src/gcc-5.2.0/libgcc/unwind-pe.h:77
+  3    process 2         0x4000bff0 in ?? ()
+  2    process 1         0x4008ddf8 in panicPutChar (c=24 '\\030') at C:/Users/25070/esp/esp-idf/components/esp32/panic.c:69
+* 1    <main task>       0x4008f658 in xQueueGenericSendFromISR (xQueue=0x3ffba384, pvItemToQueue=0x3ffbafbc, pxHigherPriorityTaskWoken=0xbaad5678, xCopyPosition=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1194
+
+======================= ALL MEMORY REGIONS ========================
+Name   Address   Size   Attrs
+.rtc.text 0x400c0000 0x0 RW
+.rtc.dummy 0x3ff80000 0x0 RW
+.rtc.force_fast 0x3ff80000 0x0 RW
+.rtc_noinit 0x50000000 0x0 RW
+.rtc.force_slow 0x50000000 0x0 RW
+.iram0.vectors 0x40080000 0x400 R XA
+.iram0.text 0x40080400 0x13aec RWXA
+.dram0.data 0x3ffbdb60 0x3304 RW A
+.noinit 0x3ffc0e64 0x0 RW
+.flash.rodata 0x3f400020 0x29908 RW A
+.flash.text 0x400d0018 0x8448c R XA
+.coredump.tasks.data 0x3ffba3f0 0x178 RW
+.coredump.tasks.data 0x3ffbaea0 0x230 RW
+.coredump.tasks.data 0x3ffd0bc4 0x178 RW
+.coredump.tasks.data 0x3ffd0910 0x2a0 RW
+.coredump.tasks.data 0x3ffbc07c 0x178 RW
+.coredump.tasks.data 0x3ffbbe60 0x208 RW
+.coredump.tasks.data 0x3ffbc814 0x178 RW
+.coredump.tasks.data 0x3ffbc660 0x1a0 RW
+.coredump.tasks.data 0x3ffbd2b4 0x178 RW
+.coredump.tasks.data 0x3ffbd100 0x1a0 RW
+.coredump.tasks.data 0x3ffb7df4 0x178 RW
+.coredump.tasks.data 0x3ffba0b0 0x1a0 RW
+.coredump.tasks.data 0x3ffb7c04 0x178 RW
+.coredump.tasks.data 0x3ffb9ca0 0x1a0 RW
+.coredump.tasks.data 0x3ffb77d0 0x178 RW
+.coredump.tasks.data 0x3ffb7610 0x1ac RW
+
+===================== ESP32 CORE DUMP END =====================
+===============================================================
+Done!

@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-#define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -275,7 +275,7 @@ extern uint8_t SURGE_STRENGTH;
 #define KICKER_STRENGTH 180 // if ball strength greater than this, kick
 #define SURGEON_ANGLE_MIN 10 // angles to surge between
 #define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
-#define SURGE_CAN_KICK_TIMEOUT 800 // ms to be in surge for before we can kick
+#define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick
 
 // General FSM defines
 #define MODE_ATTACK 0

@@ -1,0 +1,93 @@
+===============================================================
+==================== ESP32 CORE DUMP START ====================
+
+================== CURRENT THREAD REGISTERS ===================
+pc             0x4008f8a4       0x4008f8a4 <xQueueGenericReceive+300>
+lbeg           0x0      0
+lend           0x1      1
+lcount         0xffffffff       4294967295
+sar            0x4      4
+ps             0x60820  395296
+threadptr      <unavailable>
+br             <unavailable>
+scompare1      <unavailable>
+acclo          <unavailable>
+acchi          <unavailable>
+m0             <unavailable>
+m1             <unavailable>
+m2             <unavailable>
+m3             <unavailable>
+expstate       <unavailable>
+f64r_lo        <unavailable>
+f64r_hi        <unavailable>
+f64s           <unavailable>
+fcr            <unavailable>
+fsr            <unavailable>
+a0             0x400f320b       1074737675
+a1             0x3ffbaf60       1073459040
+a2             0x3ffba384       1073456004
+a3             0x3ffbafbc       1073459132
+a4             0xbaad5678       -1163045256
+a5             0x0      0
+a6             0x1      1
+a7             0xa      10
+a8             0x8008f8a4       -2146895708
+a9             0x3ffbaf40       1073459008
+a10            0x0      0
+a11            0x3ffcd4ec       1073534188
+a12            0x3ffcd4ec       1073534188
+a13            0x0      0
+a14            0x25     37
+a15            0x3      3
+
+==================== CURRENT THREAD STACK =====================
+#0  0x4008f8a4 in xQueueGenericReceive (xQueue=0x3ffba384, pvBuffer=0x3ffbafbc, xTicksToWait=2, xJustPeeking=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1592
+#1  0x400f320b in i2c_slave_read_buffer (i2c_num=(unknown: 1073456004), data=0x3ffbafb0 \"\\001\", max_size=1074737675, ticks_to_wait=1073459040) at C:/Users/25070/esp/esp-idf/components/driver/i2c.c:1389
+#2  0x400f2f6a in i2c_master_read (cmd_handle=<optimized out>, data=0x3ffbb02b \"\", data_len=2, ack=I2C_MASTER_ACK) at C:/Users/25070/esp/esp-idf/components/driver/i2c.c:1096
+#3  0x400d57f2 in nvs_get_u8_graceful (namespace=0x24 <error: Cannot access memory at address 0x24>, key=0xb <error: Cannot access memory at address 0xb>, value=<optimized out>) at ../main/utils.c:238
+#4  0x400d5b76 in nano_comms_task (pvParameters=<optimized out>) at ../main/comms_i2c.c:136
+#5  0x4008ed40 in vPortTaskWrapper (pxCode=0x400d5aec <nano_comms_task+156>, pvParameters=0x0) at C:/Users/25070/esp/esp-idf/components/freertos/port.c:143
+
+======================== THREADS INFO =========================
+  Id   Target Id         Frame
+  8    process 7         0x4008f8a4 in xQueueGenericReceive (xQueue=0x3ffaff9c, pvBuffer=0x0, xTicksToWait=4294967295, xJustPeeking=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1592
+  7    process 6         0x4008f8a4 in xQueueGenericReceive (xQueue=0x3ffb7ba0, pvBuffer=0x0, xTicksToWait=4294967295, xJustPeeking=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1592
+  6    process 5         0x4008f8a4 in xQueueGenericReceive (xQueue=0x3ffb7d90, pvBuffer=0x0, xTicksToWait=4294967295, xJustPeeking=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1592
+  5    process 4         0x4009160c in prvProcessTimerOrBlockTask (xNextExpireTime=<optimized out>, xListWasEmpty=<optimized out>) at C:/Users/25070/esp/esp-idf/components/freertos/timers.c:589
+  4    process 3         0x40153196 in lerp (fromValue=0, toValue=5.5105922e-040, progress=-8.23195585e-040) at ../main/utils.c:153
+  3    process 2         0x4000bff0 in ?? ()
+  2    process 1         0x4008e044 in invoke_abort () at C:/Users/25070/esp/esp-idf/components/esp32/panic.c:156
+* 1    <main task>       0x4008f8a4 in xQueueGenericReceive (xQueue=0x3ffba384, pvBuffer=0x3ffbafbc, xTicksToWait=2, xJustPeeking=0) at C:/Users/25070/esp/esp-idf/components/freertos/queue.c:1592
+
+======================= ALL MEMORY REGIONS ========================
+Name   Address   Size   Attrs
+.rtc.text 0x400c0000 0x0 RW
+.rtc.dummy 0x3ff80000 0x0 RW
+.rtc.force_fast 0x3ff80000 0x0 RW
+.rtc_noinit 0x50000000 0x0 RW
+.rtc.force_slow 0x50000000 0x0 RW
+.iram0.vectors 0x40080000 0x400 R XA
+.iram0.text 0x40080400 0x13aec RWXA
+.dram0.data 0x3ffbdb60 0x3304 RW A
+.noinit 0x3ffc0e64 0x0 RW
+.flash.rodata 0x3f400020 0x29888 RW A
+.flash.text 0x400d0018 0x843c4 R XA
+.coredump.tasks.data 0x3ffba40c 0x178 RW
+.coredump.tasks.data 0x3ffbaea0 0x230 RW
+.coredump.tasks.data 0x3ffd0bdc 0x178 RW
+.coredump.tasks.data 0x3ffd0920 0x2a8 RW
+.coredump.tasks.data 0x3ffbc07c 0x178 RW
+.coredump.tasks.data 0x3ffbbe60 0x208 RW
+.coredump.tasks.data 0x3ffbc814 0x178 RW
+.coredump.tasks.data 0x3ffbc660 0x1a0 RW
+.coredump.tasks.data 0x3ffbd2b4 0x178 RW
+.coredump.tasks.data 0x3ffbd100 0x1a0 RW
+.coredump.tasks.data 0x3ffb7df8 0x178 RW
+.coredump.tasks.data 0x3ffba0b0 0x1a0 RW
+.coredump.tasks.data 0x3ffb7c08 0x178 RW
+.coredump.tasks.data 0x3ffb9ca0 0x1a0 RW
+.coredump.tasks.data 0x3ffb77d4 0x178 RW
+.coredump.tasks.data 0x3ffb7620 0x1a0 RW
+
+===================== ESP32 CORE DUMP END =====================
+===============================================================

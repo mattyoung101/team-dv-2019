@@ -183,22 +183,6 @@ void orbit(robot_state_t *robotState){
     // strengthFactor, distanceMultiplier, angleAddition);
 }
 
-void shittyOrbit(robot_state_t *rs){ // Shitty orbit cos exponential is too difficult to tune for god sake
-    float tempAngle = rs->inBallAngle > 180 ? rs->inBallAngle - 360 : rs->inBallAngle;
-    float angleAddition = 0.0;
-
-    if(rs->inBallStrength > BALL_CLOSE_STRENGTH) { // If we are really close to the ball
-        angleAddition = 90; // Move perpendicular to the ball :D
-    } else if(rs->inBallStrength > BALL_FAR_STRENGTH) { // If the ball is medium distance away
-        angleAddition = constrain(fabsf(rs->inBallAngle) * ORBIT_CONST, 0, 90); // Multiply angle by a constant so we kinda to to it
-    } else { // We are very far away from the ball
-        angleAddition = 0; // Just go to the ball i don't care anymore
-    }
-    rs->outDirection = tempAngle + sign(tempAngle) * angleAddition;
-    rs->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed based on angle
-    // rs->outSpeed = constrain(lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, rs->inBallStrength), ORBIT_SPEED_SLOW, ORBIT_SPEED_FAST); // Linear interpolation for speed based on ball strength
-}
-
 void position(robot_state_t *robotState, float distance, float offset, int16_t goalAngle, int16_t goalLength, bool reversed) {
     float goalAngle_ = goalAngle < 0.0f ? goalAngle + 360.0f : goalAngle; // Convert to 0 - 360 range
     float goalAngle__ = fmodf(goalAngle_ + robotState->inHeading, 360.0f); // Add the heading to counteract the rotation
@@ -255,7 +239,7 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 
     if (openErr == ESP_ERR_NVS_NOT_FOUND){
         ESP_LOGE(TAG, "Key \"%s\" not found in namespace %s! Please set it in NVS, see top of defines.h for help. "
-        "Cannot continue.", key, namespace);
+                "Cannot continue.", key, namespace);
         abort(); // not very graceful lmao
     } else if (openErr != ESP_OK) {
         ESP_LOGE(TAG, "Unexpected error reading key: %s. Cannot continue.", esp_err_to_name(openErr));
