@@ -43,13 +43,13 @@ void defines_init(uint8_t robotId){
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
-        ROBOT_MODE = MODE_ATTACK;
+        ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = -10;
         DEFEND_DISTANCE = 25;
-        SURGE_DISTANCE = 32;
-        SURGE_STRENGTH = 165;
+        SURGE_DISTANCE = 35;
+        SURGE_STRENGTH = 160;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 130;
         ORBIT_SPEED_SLOW = 30;
@@ -67,7 +67,7 @@ void defines_init(uint8_t robotId){
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = true;
         MOTOR_BR_REVERSED = false;
-        ROBOT_MODE = MODE_DEFEND;
+        ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = -25;

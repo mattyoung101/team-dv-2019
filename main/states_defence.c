@@ -7,8 +7,8 @@ static pid_config_t interceptPID = {INTERCEPT_KP, INTERCEPT_KI, INTERCEPT_KD, IN
 
 fsm_state_t stateDefenceReverse = {&state_nothing_enter, &state_nothing_exit, &state_defence_reverse_update, "DefenceReverse"};
 fsm_state_t stateDefenceIdle = {&state_nothing_enter, &state_nothing_exit, &state_defence_idle_update, "DefenceIdle"};
-fsm_state_t stateDefenceDefend = {&state_defence_defend_enter, &state_nothing_exit, &state_defence_defend_update, "DefenceDefend"};
-fsm_state_t stateDefenceSurge = {&state_nothing_enter, &state_nothing_exit, &state_defence_surge_update, "DefenceSurge"};
+fsm_state_t stateDefenceDefend = {&state_nothing_enter, &state_nothing_exit, &state_defence_defend_update, "DefenceDefend"};
+fsm_state_t stateDefenceSurge = {&state_nothing_enter, &state_defence_surge_exit, &state_defence_surge_update, "DefenceSurge"};
 
 float accelProgress = 0.0f;
 
@@ -68,11 +68,16 @@ void state_defence_idle_update(state_machine_t *fsm){
     position(&robotState, DEFEND_DISTANCE, 0.0f, rs.inGoalAngle, rs.inGoalLength, true);
 }
 
-// Defend
-void state_defence_defend_enter(state_machine_t *fsm){
-    // no longer used
- }
+static dv_timer_t surgeKickTimer = {NULL, false};
 
+static void can_kick_callback(TimerHandle_t timer){
+    ESP_LOGI("CanKick", "In surge for long enough, kicking now");
+    dv_timer_stop(&surgeKickTimer);
+    state_machine_t *fsm = (state_machine_t*) pvTimerGetTimerID(timer);
+    FSM_CHANGE_STATE_GENERAL(Shoot);
+}
+
+// Defend
  void state_defence_defend_update(state_machine_t *fsm){
     static const char *TAG = "DefendDefend";
 
@@ -116,23 +121,28 @@ void state_defence_defend_enter(state_machine_t *fsm){
 void state_defence_surge_update(state_machine_t *fsm){
     static const char *TAG = "DefendSurgeState";
     imu_correction(&robotState);
+    dv_timer_check_create(&surgeKickTimer, "SurgeCanKick", SURGE_CAN_KICK_TIMEOUT, (void*) fsm, can_kick_callback);
 
     accelProgress = 0;
-
     RS_SEM_LOCK
     rs.outSwitchOk = true;
     rs.outIsAttack = false;
     RS_SEM_UNLOCK
 
+    if (!rs.inBTConnection){
+        dv_timer_start(&surgeKickTimer);
+    } else {
+        dv_timer_stop(&surgeKickTimer);
+    }
+
+    // Check criteria:
+    // too far from goal, ball not in capture zone, should we kick?
     if (rs.inGoalLength >= SURGE_DISTANCE || !rs.inGoalVisible){
         LOG_ONCE(TAG, "Too far from goal, switching to defend, goal dist: %d", rs.inGoalLength);
         FSM_CHANGE_STATE_DEFENCE(Defend);
     } else if (!is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 65, IN_FRONT_MAX_ANGLE - 65) || rs.inBallStrength < SURGE_STRENGTH - 30){
         LOG_ONCE(TAG, "Ball is not in capture zone, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
-    } else if (!rs.inBTConnection && canShoot && robotState.inBallStrength >= KICKER_STRENGTH){
-        LOG_ONCE(TAG, "Shoot conditions are good, shooting, ball strength: %f", robotState.inBallStrength);
-        FSM_CHANGE_STATE_GENERAL(Shoot);
     }
 
     // EPIC YEET MODE
@@ -144,4 +154,8 @@ void state_defence_surge_update(state_machine_t *fsm){
 
     // Update progress for linear interpolation
     accelProgress += 0.0001;
+}
+
+void state_defence_surge_exit(state_machine_t *fsm){
+    dv_timer_stop(&surgeKickTimer);
 }

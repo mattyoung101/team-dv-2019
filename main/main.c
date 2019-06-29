@@ -42,11 +42,19 @@
 static uint8_t mode = 69; // start out with invalid mode
 state_machine_t *stateMachine = NULL;
 
+static void shutdown_handler(){
+    ets_printf("Shutdown handler executing\n");
+    motor_move(true);
+}
+
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
 // like moving, finite state machines, Bluetooth, etc
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
+
+    ESP_LOGI(TAG, "Reset reason: %d", esp_reset_reason());
+    ESP_ERROR_CHECK(esp_register_shutdown_handler(shutdown_handler));
 
     // Initialise comms and hardware
     motor_init();

@@ -262,8 +262,6 @@ extern float ORBIT_CONST;
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
-#define SURGEON_ANGLE_MIN 10 // angles to surge between
-#define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
 
 // Defence FSM defines
 extern uint8_t DEFEND_DISTANCE;
@@ -275,6 +273,9 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MAX_ANGLE 150
 #define DEFEND_MIN_ANGLE 210
 #define KICKER_STRENGTH 180 // if ball strength greater than this, kick
+#define SURGEON_ANGLE_MIN 10 // angles to surge between
+#define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
+#define SURGE_CAN_KICK_TIMEOUT 800 // ms to be in surge for before we can kick
 
 // General FSM defines
 #define MODE_ATTACK 0

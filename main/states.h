@@ -121,6 +121,7 @@ extern fsm_state_t stateDefenceDefend;
 
 // Surge state: push ball away from goal
 void state_defence_surge_update(state_machine_t *fsm);
+void state_defence_surge_exit(state_machine_t *fsm);
 extern fsm_state_t stateDefenceSurge;
 
 /////////// GENERAL FSM /////////
