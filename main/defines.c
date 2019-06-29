@@ -27,7 +27,7 @@ uint8_t BALL_CLOSE_STRENGTH;
 uint8_t ORBIT_SPEED_SLOW;
 uint8_t ORBIT_SPEED_FAST;
 
-uint8_t ORBIT_CONST;
+float ORBIT_CONST;
 
 // Code which sets per-robot values, i.e. values that cannot be set at compile time using #defines
 
@@ -47,9 +47,9 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
         TSOP_CORRECTION = -10;
-        DEFEND_DISTANCE = 30;
-        SURGE_DISTANCE = 35;
-        SURGE_STRENGTH = 150;
+        DEFEND_DISTANCE = 25;
+        SURGE_DISTANCE = 32;
+        SURGE_STRENGTH = 165;
         BALL_FAR_STRENGTH = 100;
         BALL_CLOSE_STRENGTH = 130;
         ORBIT_SPEED_SLOW = 30;

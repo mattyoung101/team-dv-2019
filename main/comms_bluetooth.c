@@ -230,7 +230,8 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                     
                         if (strlen(remote_device_name) == peer_bdname_len
                             && strncmp(peer_bdname, remote_device_name, peer_bdname_len) == 0) {
-                                ESP_LOGI(TAGS, "Found other robot. Attempting to establish SPP connection...");
+                                ESP_LOGI(TAGS, "Found other robot (name: %s). Attempting to establish SPP connection...",
+                                        peer_bdname);
                                 memcpy(peer_bd_addr, param->disc_res.bda, ESP_BD_ADDR_LEN);
                                 esp_spp_start_discovery(peer_bd_addr);
                                 esp_bt_gap_cancel_discovery();

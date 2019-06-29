@@ -55,7 +55,7 @@ void state_general_shoot_enter(state_machine_t *fsm){
     
     ESP_LOGW(TAG, "Activating kicker");
     gpio_set_level(KICKER_PIN, 1);
-    vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
+    vTaskDelay(pdMS_TO_TICKS(KICKER_DELAY));
     gpio_set_level(KICKER_PIN, 0);
 }
 

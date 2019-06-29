@@ -74,14 +74,14 @@ void state_defence_defend_enter(state_machine_t *fsm){
  }
 
  void state_defence_defend_update(state_machine_t *fsm){
-    static const char *TAG = "DefendDefendState";
+    static const char *TAG = "DefendDefend";
 
     accelProgress = 0;
     rs.outIsAttack = false;
 
     // if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)) goal_correction(&robotState);
     // else imu_correction(&robotState); // Face the back of the robot to the goal
-    // imu_correction(&robotState);
+    goal_correction(&robotState);
 
     // Check criteria: goal visible and ball visible, should surge?
     if (!rs.inGoalVisible){
@@ -90,10 +90,10 @@ void state_defence_defend_enter(state_machine_t *fsm){
     } else if (rs.inBallStrength <= 0.01f){
         LOG_ONCE(TAG, "Ball too far away, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
-    } else if (is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE + 45, IN_FRONT_MAX_ANGLE - 45) 
+    } else if (is_angle_between(rs.inBallAngle, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 
                 && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
-        LOG_ONCE(TAG, "Ball in capture zone and strength ok, switching to surge, angle: %f, strength: %f",
-                robotState.inBallAngle, robotState.inBallStrength);
+        LOG_ONCE(TAG, "Switching to surge, angle: %f, strength: %f, goal length: %d",
+                robotState.inBallAngle, robotState.inBallStrength, rs.inGoalLength);
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 

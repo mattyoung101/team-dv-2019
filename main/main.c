@@ -149,7 +149,7 @@ static void master_task(void *pvParameter){
         // print_ball_data(&robotState);
         // print_goal_data(&robotState);
         // vTaskDelay(pdMS_TO_TICKS(250));
-        print_motion_data(&robotState);
+        // print_motion_data(&robotState);
         
         // robotState.outSpeed = 0;
         // imu_correction(&robotState);
@@ -265,7 +265,7 @@ void motor_test_task(void *pvParameter){
 
         ESP_LOGI(TAG, "Kicking");
         ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 1));
-        vTaskDelay(pdMS_TO_TICKS(KICKER_TIMEOUT));
+        vTaskDelay(pdMS_TO_TICKS(KICKER_DELAY));
         ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 0));
         vTaskDelay(pdMS_TO_TICKS(SHOOT_TIMEOUT));
     }
