@@ -36,8 +36,8 @@ void defines_init(uint8_t robotId){
 
     if (robotId == 0){
         float values[] = {
-            0.05, 0.10, 0.15, 0.15, 0.16, 0.16, 0.15, 0.15, 0.20, 0.20, 0.20, 0.20,
-            0.17, 0.20, 0.25, 0.25, 0.25, 0.13, 0.12, 0.10, 0.05, 0.10, -0.10, 0.00
+            0.15, 0.20, 0.25, 0.25, 0.26, 0.26, 0.25, 0.25, 0.30, 0.30, 0.30, 0.30,
+            0.27, 0.30, 0.35, 0.35, 0.35, 0.23, 0.22, 0.20, 0.15, 0.20, 0.00, 0.10
         };
         MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = true;
@@ -78,10 +78,10 @@ void defines_init(uint8_t robotId){
         DEFEND_DISTANCE = 40;
         SURGE_DISTANCE = 40;
         SURGE_STRENGTH = 165;
-        BALL_FAR_STRENGTH = 80;
-        BALL_CLOSE_STRENGTH = 110;
+        BALL_FAR_STRENGTH = 60;
+        BALL_CLOSE_STRENGTH = 115;
         ORBIT_SPEED_SLOW = 25;
-        ORBIT_SPEED_FAST = 25;
+        ORBIT_SPEED_FAST = 30;
         ORBIT_CONST = 0.2;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));

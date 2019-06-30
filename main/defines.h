@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_BLUE
+// #define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_YELLOW
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -253,10 +253,10 @@ extern float ORBIT_CONST;
 // Attacker FSM defines
 #define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
 #define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 7 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MIN_ANGLE 10 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
-#define IN_FRONT_ANGLE_BUFFER 15
-#define IN_FRONT_STRENGTH_BUFFER 20
+#define IN_FRONT_ANGLE_BUFFER 20
+#define IN_FRONT_STRENGTH_BUFFER 30
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
