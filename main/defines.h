@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_BLUE
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23

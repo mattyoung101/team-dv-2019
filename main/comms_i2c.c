@@ -162,7 +162,7 @@ void comms_i2c_init_master(i2c_port_t port){
     // Nano keeps timing out, so fuck it, let's yeet the timeout value. default value is 1600, max is 0xFFFFF
     ESP_ERROR_CHECK(i2c_set_timeout(I2C_NUM_0, 0xFFFF));
 
-    xTaskCreate(nano_comms_task, "NanoCommsTask", 2048, NULL, configMAX_PRIORITIES - 1, NULL);
+    xTaskCreate(nano_comms_task, "NanoCommsTask", 4096, NULL, configMAX_PRIORITIES - 1, NULL);
     ESP_LOGI("CommsI2C_M", "I2C init OK as master (RL slave) on bus %d", port);
 }
 

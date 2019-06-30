@@ -24,6 +24,24 @@ state_machine_t* fsm_new(fsm_state_t *startState){
 }
 
 void fsm_update(state_machine_t *fsm){
+    // detect if state history is too big and may cause a crash
+    if (da_count(fsm->stateHistory) >= 256){
+        // TODO need some way of notifying us if this happens
+        // TODO measure the count of 256 to make sure it's not too big or too small
+        ESP_LOGE(TAG, "State history too big, clearing it to avoid crash");
+        
+        // grab two elements of the array, excluding the first StateNothing, so we don't break things on reset
+        fsm_state_t *firstElement = da_get(fsm->stateHistory, 1);
+        fsm_state_t *secondElement = da_get(fsm->stateHistory, 2);
+        
+        // now delete the array
+        da_free(fsm->stateHistory);
+
+        // and add back the two elements
+        da_add(fsm->stateHistory, firstElement);
+        da_add(fsm->stateHistory, secondElement);
+    }
+
     fsm->currentState->update(fsm);
 }
 
@@ -52,7 +70,7 @@ void fsm_change_state(state_machine_t *fsm, fsm_state_t *newState){
 void fsm_revert_state(state_machine_t *fsm){
     // first check if it's safe to pop
     if (da_count(fsm->stateHistory) < 1){
-        ESP_LOGW(TAG, "Unable to revert: state history too small, size = %d", da_count(fsm->stateHistory));
+        ESP_LOGE(TAG, "Unable to revert: state history too small, size = %d", da_count(fsm->stateHistory));
         return;
     }
 
