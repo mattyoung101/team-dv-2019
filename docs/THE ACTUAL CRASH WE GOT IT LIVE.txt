@@ -1,0 +1,71 @@
+W (22436) I2CReceiveTask: Invalid buffer, first byte is: 0xC0, previous good packets: 64
+D (25453) DefendDefend: Switching to surge, angle: 350.182281, strength: 147.057571, goal length: 39
+I (25453) FSM: Switching states from DefenceDefend to DefenceSurge
+I (25467) CreateTimer: Creating timer: SurgeCanKick
+I (25915) CanKick: In surge for long enough, kicking now
+I (25915) FSM: Switching states from DefenceSurge to GeneralShoot
+I (25915) CreateTimer: Creating timer: ShootTimer
+I (25915) FSM: Reverting from***ERROR* state GeneralShoot to DefenceSurge
+** A stack overflow in task Tmr Svc has been detected.
+abort() was called at PC 0x40096175 on core 0
+0x40096175: vApplicationStackOverflowHook at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+
+ELF file SHA256: 3627bfd15512ffaf1d41d1e92a62e5388388d80c26374afc3da4312d7676b999
+
+Backtrace: 0x40095e0b:0x3ffbca70 0x40096150:0x3ffbcaa0 0x40096175:0x3ffbcad0 0x400921e5:0x3ffbcb00 0x4008fee8:0x3ffbcb30 0x4008fe9a:0x400836f6
+0x40095e0b: invoke_abort at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x40096150: abort at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x40096175: vApplicationStackOverflowHook at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x400921e5: vTaskSwitchContext at /Users/ethanlo/esp/esp-idf/components/freertos/tasks.c:5094
+
+0x4008fee8: _frxt_dispatch at /Users/ethanlo/esp/esp-idf/components/freertos/portasm.S:406
+
+0x4008fe9a: _frxt_int_exit at /Users/ethanlo/esp/esp-idf/components/freertos/portasm.S:206
+
+0x400836f6: _xt_lowint1 at /Users/ethanlo/esp/esp-idf/components/freertos/xtensa_vectors.S:1147
+
+
+I (11028) esp_core_dump_flash: Save core dump to flash...
+
+ELF file SHA256: 3627bfd15512ffaf1d41d1e92a62e5388388d80c26374afc3da4312d7676b999
+
+Backtrace: 0x40090cd3:0x3ffbc4f0 0x40092a64:0x3ffbc530 0x4009595d:0x3ffbc560 0x4009508d:0x3ffbc590 0x400952f2:0x3ffbc8d0 0x400958d5:0x3ffbc900 0x40096075:0x3ffbc950 0x400963a9:0x3ffbc980 0x400834d8:0x3ffbc9b0 0x40095e08:0x3ffbca70 0x40096150:0x3ffbcaa0 0x40096175:0x3ffbcad0 0x400921e5:0x3ffbcb00 0x4008fee8:0x3ffbcb30 0x4008fe9a:0x400836f6
+0x40090cd3: prvTaskGetSnapshotsFromList at /Users/ethanlo/esp/esp-idf/components/freertos/tasks.c:5094
+
+0x40092a64: uxTaskGetSnapshotAll at /Users/ethanlo/esp/esp-idf/components/freertos/tasks.c:5152 (discriminator 1)
+
+0x4009595d: esp_core_dump_get_tasks_snapshot at /Users/ethanlo/esp/esp-idf/components/espcoredump/src/core_dump_port.c:37
+
+0x4009508d: esp_core_dump_write_binary at /Users/ethanlo/esp/esp-idf/components/espcoredump/src/core_dump_common.c:38
+
+0x400952f2: esp_core_dump_write at /Users/ethanlo/esp/esp-idf/components/espcoredump/src/core_dump_common.c:148
+
+0x400958d5: esp_core_dump_to_flash at /Users/ethanlo/esp/esp-idf/components/espcoredump/src/core_dump_flash.c:228
+
+0x40096075: commonErrorHandler at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x400963a9: xt_unhandled_exception at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x400834d8: _xt_user_exc at /Users/ethanlo/esp/esp-idf/components/freertos/xtensa_vectors.S:757
+
+0x40095e08: invoke_abort at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x40096150: abort at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x40096175: vApplicationStackOverflowHook at /Users/ethanlo/esp/esp-idf/components/esp32/panic.c:716
+
+0x400921e5: vTaskSwitchContext at /Users/ethanlo/esp/esp-idf/components/freertos/tasks.c:5094
+
+0x4008fee8: _frxt_dispatch at /Users/ethanlo/esp/esp-idf/components/freertos/portasm.S:406
+
+0x4008fe9a: _frxt_int_exit at /Users/ethanlo/esp/esp-idf/components/freertos/portasm.S:206
+
+0x400836f6: _xt_lowint1 at /Users/ethanlo/esp/esp-idf/components/freertos/xtensa_vectors.S:1147
+
+
+Re-entered core dump! Exception happened during core dump!
+Rebooting...

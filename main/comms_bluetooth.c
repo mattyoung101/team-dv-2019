@@ -162,11 +162,11 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data, param->data_ind.handle);
             break;
         case ESP_SPP_CONG_EVT:
-            if (param->cong.cong){
+            if (param->cong.cong && sendTaskHandle){
                 ESP_LOGI(TAGM, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
-            } else {
-                ESP_LOGI(TAGM, "Resuming send task as congestion hsa cleared");
+            } else if (sendTaskHandle) {
+                ESP_LOGI(TAGM, "Resuming send task as congestion has cleared");
                 vTaskResume(sendTaskHandle);
             }
             break;
@@ -295,11 +295,11 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             bt_pb_decode_and_push(param->data_ind.len, param->data_ind.data, param->data_ind.handle);
             break;
         case ESP_SPP_CONG_EVT:
-            if (param->cong.cong){
+            if (param->cong.cong && sendTaskHandle){
                 ESP_LOGI(TAGS, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
-            } else {
-                ESP_LOGI(TAGS, "Resuming send task as congestion hsa cleared");
+            } else if (sendTaskHandle) {
+                ESP_LOGI(TAGS, "Resuming send task as congestion has cleared");
                 vTaskResume(sendTaskHandle);
             }
             break;

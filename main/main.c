@@ -41,11 +41,24 @@
 
 static uint8_t mode = 69; // start out with invalid mode
 state_machine_t *stateMachine = NULL;
+static const char *RST_TAG = "ResetReason";
 
+// suppposed to break the robot on error, doesn't work tho
 static void shutdown_handler(){
     ets_printf("Shutdown handler executing\n");
     motor_calc(0, 0, 0.0f);
     motor_move(true);
+}
+
+static void print_reset_reason(){
+    esp_reset_reason_t resetReason = esp_reset_reason();
+    if (resetReason == ESP_RST_PANIC){
+        ESP_LOGW(RST_TAG, "Reset due to panic!");
+    } else if (resetReason == ESP_RST_INT_WDT || resetReason == ESP_RST_TASK_WDT || resetReason == ESP_RST_WDT){
+        ESP_LOGW(RST_TAG, "Reset due to watchdog timer!");
+    } else {
+        ESP_LOGD(RST_TAG, "Other reset reason: %d", resetReason);
+    }
 }
 
 // Task which runs on the master. Receives sensor data from slave and handles complex routines
@@ -54,7 +67,7 @@ static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
 
-    ESP_LOGI(TAG, "Reset reason: %d", esp_reset_reason());
+    print_reset_reason();
     ESP_ERROR_CHECK(esp_register_shutdown_handler(shutdown_handler));
 
     // Initialise comms and hardware
@@ -186,7 +199,7 @@ static void slave_task(void *pvParameter){
     uint8_t robotId = 69;
     uint16_t currentTimerPeriod = 500;
 
-    ESP_LOGI(TAG, "Reset reason: %d", esp_reset_reason());
+    print_reset_reason();
     ESP_ERROR_CHECK(esp_register_shutdown_handler(shutdown_handler));
 
     // Initialise software
@@ -245,18 +258,17 @@ static void slave_task(void *pvParameter){
                 // try to detect that weird crash bug
                 ESP_LOGE(TAG, "I2C error detected!");
                 if (currentTimerPeriod != 100){
-                    ESP_LOGD(TAG, "Changing timer period i2c err\n");
                     xTimerChangePeriod(blinky, pdMS_TO_TICKS(100), portMAX_DELAY);
                     currentTimerPeriod = 100;
                 }
             } else {
                 if (currentTimerPeriod != 500){
-                    ESP_LOGD(TAG, "Changing timer period no err\n");
                     xTimerChangePeriod(blinky, pdMS_TO_TICKS(500), portMAX_DELAY);
                     currentTimerPeriod = 500;
                 }
             }
-            vTaskDelay(pdMS_TO_TICKS(4)); // wait so that the slave realises we're not sending any more data
+            
+            ets_delay_us(4000); // wait so that the slave realises we're not sending any more data
         } else {
             ESP_LOGE(TAG, "Failed to encode SensorUpdate message: %s", PB_GET_ERROR(&stream));
         }
