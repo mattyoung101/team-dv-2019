@@ -90,7 +90,7 @@ static void comms_i2c_receive_task(void *pvParameters){
                 ESP_LOGE(TAG, "Failed to unlock Protobuf semaphore!");
             }
         } else {
-            ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, previous good packets: %d", buf[0], goodPackets);
+            // ESP_LOGW(TAG, "Invalid buffer, first byte is: 0x%X, previous good packets: %d", buf[0], goodPackets);
             goodPackets = 0;
 
             // reset I2C and try to correct the issue by waiting

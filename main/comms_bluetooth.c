@@ -77,7 +77,7 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     RS_SEM_UNLOCK
 
     // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
-    vTaskDelay(pdMS_TO_TICKS(15));
+    vTaskDelay(pdMS_TO_TICKS(50));
 
     xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 4, &receiveTaskHandle);
