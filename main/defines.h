@@ -52,7 +52,7 @@
 #define LINEAVOID_KP 5
 #define LINEAVOID_KI 0
 #define LINEAVOID_KD 0
-#define LINEAVOID_MAX 100
+#define LINEAVOID_MAX 80
 
 // --- Idle Correction --- //
 #define IDLE_KP 0.3
@@ -251,18 +251,18 @@ extern uint8_t ORBIT_SPEED_FAST;
 extern float ORBIT_CONST;
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 170 // if less than this, switch out of dribble
+#define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
 #define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 5 // angle range in which the ball is considered to be in front of the robot
+#define IN_FRONT_MIN_ANGLE 7 // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
-#define IN_FRONT_ANGLE_BUFFER 50
-#define IN_FRONT_STRENGTH_BUFFER 40
+#define IN_FRONT_ANGLE_BUFFER 15
+#define IN_FRONT_STRENGTH_BUFFER 20
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.005 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
