@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_BLUE
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -71,10 +71,10 @@
 #define SIDE_KD 0
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 5
+#define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.001
-#define INTERCEPT_MAX 95
+#define INTERCEPT_KD 0.0001
+#define INTERCEPT_MAX 60
 #define INTERCEPT_MIN 20
 
 #define GOALIE_KP 1.5
@@ -277,7 +277,7 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MAX_ANGLE 150
 #define DEFEND_MIN_ANGLE 210
 #define KICKER_STRENGTH 180 // if ball strength greater than this, kick
-#define SURGEON_ANGLE_MIN 10 // angles to surge between
+#define SURGEON_ANGLE_MIN 6 // angles to surge between
 #define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
 #define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick
 
