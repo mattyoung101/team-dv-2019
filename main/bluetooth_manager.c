@@ -54,9 +54,15 @@ void comms_bt_receive_task(void *pvParameter){
             xTimerReset(packetTimer.timer, portMAX_DELAY);
         }
 
+        // required due to cross-core access (multi-threading crap)
+        bool amIAttack = false;
+        RS_SEM_LOCK
+        amIAttack = robotState.outIsAttack;
+        RS_SEM_UNLOCK
+
         // conflict resolution: whichever robot is closest to the ball becomes the attacker + some extra edge cases
         // if in shoot state, ignore conflict as both robots can be shooting without conflict
-        if (((isAttack && robotState.outIsAttack) || (!isAttack && !robotState.outIsAttack)) && !isInShootState) {
+        if (((isAttack && amIAttack) || (!isAttack && !amIAttack)) && !isInShootState) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
