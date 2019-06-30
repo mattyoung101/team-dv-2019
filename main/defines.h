@@ -73,9 +73,9 @@
 
 #define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0001
-#define INTERCEPT_MAX 60
-#define INTERCEPT_MIN 20
+#define INTERCEPT_KD 0.000001
+#define INTERCEPT_MAX 70
+#define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -251,9 +251,9 @@ extern uint8_t ORBIT_SPEED_FAST;
 extern float ORBIT_CONST;
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
-#define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 10 // angle range in which the ball is considered to be in front of the robot
+extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribble
+extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
+extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
 #define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
 #define IN_FRONT_ANGLE_BUFFER 20
 #define IN_FRONT_STRENGTH_BUFFER 30
@@ -276,7 +276,7 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MIN_STRENGTH 70
 #define DEFEND_MAX_ANGLE 150
 #define DEFEND_MIN_ANGLE 210
-#define KICKER_STRENGTH 180 // if ball strength greater than this, kick
+#define KICKER_STRENGTH 110 // if ball strength greater than this, kick
 #define SURGEON_ANGLE_MIN 6 // angles to surge between
 #define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
 #define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick
