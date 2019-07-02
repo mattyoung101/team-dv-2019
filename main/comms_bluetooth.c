@@ -77,7 +77,7 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     RS_SEM_UNLOCK
 
     // delay so that Bluetooth, which runs on core 0, will pick up on the fact that we changed states
-    vTaskDelay(pdMS_TO_TICKS(50));
+    vTaskDelay(pdMS_TO_TICKS(500));
 
     xTaskCreate(comms_bt_receive_task, "BTReceiveTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 4, &receiveTaskHandle);
@@ -163,10 +163,10 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
             break;
         case ESP_SPP_CONG_EVT:
             if (param->cong.cong && sendTaskHandle){
-                ESP_LOGI(TAGM, "Suspending send task due to congestion");
+                ESP_LOGW(TAGM, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
             } else if (sendTaskHandle) {
-                ESP_LOGI(TAGM, "Resuming send task as congestion has cleared");
+                ESP_LOGW(TAGM, "Resuming send task as congestion has cleared");
                 vTaskResume(sendTaskHandle);
             }
             break;
@@ -296,10 +296,10 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
             break;
         case ESP_SPP_CONG_EVT:
             if (param->cong.cong && sendTaskHandle){
-                ESP_LOGI(TAGS, "Suspending send task due to congestion");
+                ESP_LOGW(TAGS, "Suspending send task due to congestion");
                 vTaskSuspend(sendTaskHandle);
             } else if (sendTaskHandle) {
-                ESP_LOGI(TAGS, "Resuming send task as congestion has cleared");
+                ESP_LOGW(TAGS, "Resuming send task as congestion has cleared");
                 vTaskResume(sendTaskHandle);
             }
             break;

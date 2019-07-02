@@ -52,6 +52,8 @@ void comms_bt_receive_task(void *pvParameter){
             isAttack = strstr(recvMsg.fsmState, "Attack");
             isInShootState = strcmp(recvMsg.fsmState, "GeneralShoot") == 0;
             xTimerReset(packetTimer.timer, portMAX_DELAY);
+
+            // ESP_LOGD(TAG, "Ball angle: %f, Ball strength: %f", recvMsg.ballAngle, recvMsg.ballStrength);
         }
 
         // required due to cross-core access (multi-threading crap)
@@ -172,6 +174,6 @@ void comms_bt_send_task(void *pvParameter){
         }
 
         esp_task_wdt_reset();
-        vTaskDelay(pdMS_TO_TICKS(15)); // let other tasks think for a while I guess, BT isn't that important
+        vTaskDelay(pdMS_TO_TICKS(50)); // let other tasks think for a while I guess, BT isn't that important
     }
 }
