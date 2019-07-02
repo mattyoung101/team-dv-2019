@@ -126,6 +126,9 @@ static void esp_bt_gap_cb_master(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_para
             ESP_LOGD(TAGM, "ESP_BT_GAP_CFM_REQ_EVT, value: %d", param->cfm_req.num_val);
             esp_bt_gap_ssp_confirm_reply(param->cfm_req.bda, true);
             break;
+        case ESP_BT_GAP_DISC_STATE_CHANGED_EVT:
+            ESP_LOGD(TAGM, "Discovery status changed, now: %d", param->disc_st_chg.state);
+            break;
         default:
             break;
     }
