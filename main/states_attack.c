@@ -121,9 +121,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    // if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
-    // else imu_correction(&robotState);
-    goal_correction(&robotState);
+    if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
+    else imu_correction(&robotState);
+    // goal_correction(&robotState);
     timer_check();
 
     if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
@@ -160,7 +160,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     goal_correction(&robotState);
     timer_check();
 
-    printfln("Strength: %f", rs.inBallStrength);
+    // printfln("Strength: %f", rs.inBallStrength);
 
     // Check criteria:
     // Ball not visible, ball not in front, ball too far away, not facing goal, should we kick?

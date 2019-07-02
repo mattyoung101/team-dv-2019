@@ -102,18 +102,34 @@ static void can_kick_callback(TimerHandle_t timer){
         FSM_CHANGE_STATE_DEFENCE(Surge);
     }
 
-    if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
-        // Ball is behind, orbit so we don't score an own goal
-        orbit(&robotState);
-    } else {
-        float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
-        float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
-        
-        float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
-        if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
+    float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
+    float goalAngle = robotState.inGoalAngle < 0.0f ? robotState.inGoalAngle + 360.0f : robotState.inGoalAngle; // Convert to 0 -> 360 range
+    float goalAngle_ = fmodf(goalAngle + robotState.inHeading, 360.0f);
+    float b = robotState.inGoalAngle > 180 ? robotState.inGoalAngle - 360 : robotState.inGoalAngle;
 
-        rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
-        rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+    float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
+    float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+    
+    float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
+    if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
+        // printf("At edge of goal\n");
+        position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
+    } else {
+        if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
+            // Ball is behind, orbit so we don't score an own goal
+            // ESP_LOGD(TAG, "orbiting");
+            orbit(&robotState);
+        } else {
+            // ESP_LOGD(TAG, "defending");
+            float tempAngle = robotState.inBallAngle > 180 ? robotState.inBallAngle - 360 : robotState.inBallAngle; // Convert to -180 -> 180 range
+            float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
+            
+            float sidewaysMovement = -pid_update(&interceptPID, tempAngle, 0.0f, 0.0f); // Position robot between ball and centre of goal (dunno if this works)
+            if(fabsf(sidewaysMovement) < INTERCEPT_MIN) sidewaysMovement = 0;
+
+            rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
+            rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+        }
     }
 }
 

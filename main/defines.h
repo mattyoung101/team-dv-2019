@@ -17,7 +17,7 @@
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
 #define PACKET_QUEUE_LENGTH 1
-#define BT_PACKET_TIMEOUT 800 // ms, if we haven't received a packet in this long, other robot is off for damage
+#define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
 #define BLUETOOTH_ENABLED
 #define ENEMY_GOAL GOAL_BLUE
@@ -61,7 +61,7 @@
 #define IDLE_MAX_CORRECTION 100
 
 // --- Goalie PIDs --- //
-#define FORWARD_KP 3
+#define FORWARD_KP 3.5
 #define FORWARD_KI 0
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
@@ -71,11 +71,11 @@
 #define SIDE_KD 0
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 5
+#define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.001
-#define INTERCEPT_MAX 95
-#define INTERCEPT_MIN 20
+#define INTERCEPT_KD 0.0003
+#define INTERCEPT_MAX 80
+#define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5
 #define GOALIE_KI 0
@@ -251,10 +251,10 @@ extern uint8_t ORBIT_SPEED_FAST;
 extern float ORBIT_CONST;
 
 // Attacker FSM defines
-#define DRIBBLE_BALL_TOO_FAR 110 // if less than this, switch out of dribble
-#define ORBIT_DIST 0 // switch from orbit to pursue if value is more than this
-#define IN_FRONT_MIN_ANGLE 10 // angle range in which the ball is considered to be in front of the robot
-#define IN_FRONT_MAX_ANGLE 360 - IN_FRONT_MIN_ANGLE
+extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribble
+extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
+extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
+extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 20
 #define IN_FRONT_STRENGTH_BUFFER 30
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
@@ -276,8 +276,8 @@ extern uint8_t SURGE_STRENGTH;
 #define DEFEND_MIN_STRENGTH 70
 #define DEFEND_MAX_ANGLE 150
 #define DEFEND_MIN_ANGLE 210
-#define KICKER_STRENGTH 180 // if ball strength greater than this, kick
-#define SURGEON_ANGLE_MIN 10 // angles to surge between
+#define KICKER_STRENGTH 100 // if ball strength greater than this, kick
+#define SURGEON_ANGLE_MIN 6 // angles to surge between
 #define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN
 #define SURGE_CAN_KICK_TIMEOUT 500 // ms to be in surge for before we can kick
 
