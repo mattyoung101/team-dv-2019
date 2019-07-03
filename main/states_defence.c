@@ -28,23 +28,23 @@ void state_defence_reverse_update(state_machine_t *fsm){
         FSM_CHANGE_STATE_DEFENCE(Idle);
     }
 
-    if (rs.inBallStrength > 0.0f){ 
-        // Check if ball is behind
-        if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){
-            LOG_ONCE(TAG, "Ball is behind, orbiting");
+    // if (rs.inBallStrength > 0.0f){ 
+    //     // Check if ball is behind
+    //     if (!is_angle_between(rs.inBallAngle, 90.0f, 270.0f)){
+    //         LOG_ONCE(TAG, "Ball is behind, orbiting");
             orbit(&robotState);
-        } else {
-            // TODO is ball in front? should we request switch?
-            float distanceMovement = REVERSE_SPEED;
-            float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
+    //     } else {
+    //         // TODO is ball in front? should we request switch?
+    //         float distanceMovement = REVERSE_SPEED;
+    //         float sidewaysMovement = pid_update(&sidePID, fmodf(rs.inBallAngle + 180.0f, 360.0f) - 180, 0.0f, 0.0f);
 
-            rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
-            rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
-        }
-    } else {
-        rs.outDirection = 180;
-        rs.outSpeed = REVERSE_SPEED;
-    }
+    //         rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)) - rs.inHeading, 360.0f);
+    //         rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
+    //     }
+    // } else {
+    //     rs.outDirection = 180;
+    //     rs.outSpeed = REVERSE_SPEED;
+    // }
 }
 
 // Idle
@@ -57,9 +57,9 @@ void state_defence_idle_update(state_machine_t *fsm){
     imu_correction(&robotState);
 
     if (!rs.inGoalVisible){
-        // LOG_ONCE(TAG, "Goal not visible, switching to reverse");
-        LOG_ONCE(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
-        // FSM_CHANGE_STATE_DEFENCE(Reverse);
+        LOG_ONCE(TAG, "Goal not visible, switching to reverse");
+        // LOG_ONCE(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
+        FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength >= DEFEND_MIN_STRENGTH){
         LOG_ONCE(TAG, "Ball is close enough, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
@@ -90,8 +90,8 @@ static void can_kick_callback(TimerHandle_t timer){
 
     // Check criteria: goal visible and ball visible, should surge?
     if (!rs.inGoalVisible){
-        LOG_ONCE(TAG, "Goal not visible, NOT switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
-        // FSM_CHANGE_STATE_DEFENCE(Reverse);
+        LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
+        FSM_CHANGE_STATE_DEFENCE(Reverse);
     } else if (rs.inBallStrength <= 0.01f){
         LOG_ONCE(TAG, "Ball too far away, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);

@@ -100,7 +100,7 @@ static void master_task(void *pvParameter){
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
-    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
+    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 500));
     ESP_LOGI(TAG, "Running!");
 
     esp_task_wdt_add(NULL);
@@ -219,6 +219,7 @@ static void slave_task(void *pvParameter){
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
 
     ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
+    // puts("Time,Heading");
     esp_task_wdt_add(NULL);
     
     while (true) {
@@ -230,6 +231,7 @@ static void slave_task(void *pvParameter){
 
         // update IMU
         simu_calc();
+        // printfln("%ld,%f", (long) esp_timer_get_time(), heading);
 
         // setup protobuf byte stream, variables will be disposed of after loop ends
         memset(pbBuf, 0, PROTOBUF_SIZE);

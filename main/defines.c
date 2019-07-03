@@ -43,14 +43,18 @@ void defines_init(uint8_t robotId){
             0.15, 0.20, 0.25, 0.25, 0.26, 0.26, 0.25, 0.25, 0.30, 0.30, 0.30, 0.30,
             0.27, 0.30, 0.35, 0.35, 0.35, 0.23, 0.22, 0.20, 0.15, 0.20, 0.00, 0.10
         };
+        // float values[] = {
+        //     0.0, 0.15, 0.15, 0.05, 0.05, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+        //     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
+        // }; // Spare PCB values
         MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = false;
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
-        ROBOT_MODE = MODE_DEFEND;
+        ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
-        TSOP_CORRECTION = 0;
+        TSOP_CORRECTION = 0; // -15 on spare PCB
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 100;
@@ -79,7 +83,7 @@ void defines_init(uint8_t robotId){
         MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = true;
         MOTOR_BR_REVERSED = false;
-        ROBOT_MODE = MODE_ATTACK;
+        ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 46;
         TSOP_CORRECTION = -15;

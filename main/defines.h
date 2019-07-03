@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -33,6 +33,18 @@
 #define I2C_BEGIN_DEFAULT 0xB // default packet, has sensor data
 #define I2C_BEGIN_DEBUG 0xC // debug packet, has raw data for sending to webserver
 #define NANO_PACKET_SIZE 11 // size of packet coming from Nano LS slave, including start byte
+
+// Goals
+#define GOAL_YELLOW 0
+#define GOAL_BLUE 1
+#define GOAL_OFF 2
+#define HALFWAY_DISTANCE 45
+#define COORD_THRESHOLD 0
+#define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
+#define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
+#define GOAL_TOO_CLOSE 30
+#define GOAL_WIDTH 40
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -126,18 +138,6 @@ extern int16_t CAM_OFFSET_Y;
 #define CAM_UART_TX 17
 #define CAM_UART_RX 16
 
-// Goals
-#define GOAL_YELLOW 0
-#define GOAL_BLUE 1
-#define GOAL_OFF 2
-#define HALFWAY_DISTANCE 45
-#define COORD_THRESHOLD 0
-#define GOAL_TRACK_DIST 10000 // If the goal distance is less than this, track the goal
-#define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
-#define GOAL_TOO_CLOSE 30
-#define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_YELLOW
-
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
 #define MOTOR_FL_IN1 27
@@ -170,7 +170,7 @@ extern bool MOTOR_BR_REVERSED;
 
 // Light sensor
 #define LS_CALIBRATION_COUNT 10
-#define LS_MUX0_BUFFER 200
+#define LS_MUX0_BUFFER 100
 #define LS_MUX1_BUFFER 5
 #define LS_NUM 48
 #define LS_NUM_PER_MUX 24 // number of light sensors on each multiplexer
@@ -222,8 +222,8 @@ extern int16_t TSOP_CORRECTION; // at 0 degrees TSOPs actually print a different
 extern float TSOP_TUNING[TSOP_NUM];
 
 // IMU
-#define IMU_CALIBRATION_COUNT 180
-#define IMU_CALIBRATION_TIME 20
+#define IMU_CALIBRATION_COUNT 50
+#define IMU_CALIBRATION_TIME 10
 #define IMU_THRESHOLD 1000
 #define I2C_MULTIPLIER 100.0f
 
