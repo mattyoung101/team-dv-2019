@@ -6,7 +6,7 @@
 // #define NVS_WRITE_SLAVE
 
 // If this is defined, the value of the robot number will be written to NVS
-// #define NVS_WRITE_ROBOTNUM 0 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
+// #define NVS_WRITE_ROBOTNUM 1 // 0 or 1, 0 = bluetooth acceptor (master), 1 = bluetooth initiator (slave)
 
 // FreeRTOS
 #define SEMAPHORE_UNLOCK_TIMEOUT 25 // ms
@@ -19,8 +19,8 @@
 #define PACKET_QUEUE_LENGTH 1
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_BLUE
+// #define BLUETOOTH_ENABLED
+#define ENEMY_GOAL GOAL_YELLOW
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -73,8 +73,8 @@
 
 #define INTERCEPT_KP 4
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0003
-#define INTERCEPT_MAX 80
+#define INTERCEPT_KD 0.0002
+#define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5
@@ -255,14 +255,14 @@ extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribbl
 extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
 extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
 extern uint16_t  IN_FRONT_MAX_ANGLE;
-#define IN_FRONT_ANGLE_BUFFER 20
+#define IN_FRONT_ANGLE_BUFFER 30
 #define IN_FRONT_STRENGTH_BUFFER 30
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
 #define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.005 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot
@@ -274,8 +274,8 @@ extern uint8_t SURGE_STRENGTH;
 #define SURGE_SPEED 100
 #define REVERSE_SPEED 60
 #define DEFEND_MIN_STRENGTH 70
-#define DEFEND_MAX_ANGLE 150
-#define DEFEND_MIN_ANGLE 210
+#define DEFEND_MAX_ANGLE 120
+#define DEFEND_MIN_ANGLE 250
 #define KICKER_STRENGTH 100 // if ball strength greater than this, kick
 #define SURGEON_ANGLE_MIN 6 // angles to surge between
 #define SURGEON_ANGLE_MAX 360 - SURGEON_ANGLE_MIN

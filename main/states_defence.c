@@ -110,11 +110,11 @@ static void can_kick_callback(TimerHandle_t timer){
     float verticalDistance = fabsf(robotState.inGoalLength * cosf(DEG_RAD * goalAngle_)); // TODO use LRFs for this
     float distanceMovement = pid_update(&forwardPID, rs.inGoalLength, DEFEND_DISTANCE, 0.0f); // Stay a fixed distance from the goal
     
-    float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
-    if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
-        // printf("At edge of goal\n");
-        position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
-    } else {
+    // float sidewaysDistance = robotState.inGoalLength * sinf(DEG_RAD * goalAngle_);
+    // if(fabsf(sidewaysDistance) > (GOAL_WIDTH / 2) && sign(tempAngle) != sign(b)){
+    //     // printf("At edge of goal\n");
+    //     position(&robotState, DEFEND_DISTANCE - 5, sign(sidewaysDistance) * (GOAL_WIDTH / 2), rs.inGoalAngle, rs.inGoalLength, true);
+    // } else {
         if (is_angle_between(rs.inBallAngle, DEFEND_MIN_ANGLE, DEFEND_MAX_ANGLE)){
             // Ball is behind, orbit so we don't score an own goal
             // ESP_LOGD(TAG, "orbiting");
@@ -130,7 +130,7 @@ static void can_kick_callback(TimerHandle_t timer){
             rs.outDirection = fmodf(RAD_DEG * (atan2f(sidewaysMovement, distanceMovement)), 360.0f);
             rs.outSpeed = get_magnitude(sidewaysMovement, distanceMovement);
         }
-    }
+    // }
 }
 
 // Surge
