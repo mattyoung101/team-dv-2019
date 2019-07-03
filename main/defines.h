@@ -17,10 +17,13 @@
 #define ROBOT1_NAME "DeusVult_Robot1"
 #define SPP_NAME "DeusVult_SPP"
 #define PACKET_QUEUE_LENGTH 1
+#define BT_CONF_RES_STATIC 0 // uses pre-defined roles to resolve conflicts
+#define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
-#define ENEMY_GOAL GOAL_YELLOW
+#define BLUETOOTH_ENABLED
+// #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
+#define BT_CONF_RES_MODE BT_CONF_RES_STATIC
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -133,6 +136,7 @@ extern int16_t CAM_OFFSET_Y;
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Motors and Encoders
 #define MOTOR_FL_PWM 15
