@@ -62,38 +62,51 @@ void comms_bt_receive_task(void *pvParameter){
         amIAttack = robotState.outIsAttack;
         RS_SEM_UNLOCK
 
-        // conflict resolution: whichever robot is closest to the ball becomes the attacker + some extra edge cases
-        // if in shoot state, ignore conflict as both robots can be shooting without conflict
+        // detect conflicts and resolve with whichever algorithm was selected
         if (((isAttack && amIAttack) || (!isAttack && !amIAttack)) && !isInShootState) {
             ESP_LOGW(TAG, "Conflict detected: I'm %s, other is %s", robotState.outIsAttack ? "ATTACK" : "DEFENCE", 
                     isAttack ? "ATTACK" : "DEFENCE");
             ESP_LOGD(TAG, "my ball distance: %f, other ball distance: %f", robotState.inBallStrength, recvMsg.ballStrength);
             
-            // if both robots have 0 ball strength, revert to default mode
-            if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
-                ESP_LOGI(TAG, "Conflict resolution: both robots can't see ball, using default state");
+            #if BT_CONF_RES_MODE == BT_CONF_RES_DYNAMIC
+                ESP_LOGI(TAG, "Dynamic conflict resolution algorithm running");
 
+                // conflict resolution: whichever robot is closest to the ball becomes the attacker + some extra edge cases
+                // if in shoot state, ignore conflict as both robots can be shooting without conflict
+                if (robotState.inBallStrength <= 0.1f && recvMsg.ballStrength <= 0.1f){
+                    ESP_LOGI(TAG, "Conflict resolution: both robots can't see ball, using default state");
+
+                    if (ROBOT_MODE == MODE_ATTACK){
+                        fsm_change_state(stateMachine, &stateAttackPursue);
+                    } else {
+                        fsm_change_state(stateMachine, &stateDefenceDefend);
+                    }
+                } else if (robotState.inBallStrength <= 0.1f){
+                    ESP_LOGI(TAG, "Conflict resolution: I cannot see ball, becoming defender");
+                    fsm_change_state(stateMachine, &stateDefenceDefend);
+                } else if (recvMsg.ballStrength <= 0.1f){
+                    ESP_LOGI(TAG, "Conflict resolution: other robot cannot see ball, becoming attacker");
+                    fsm_change_state(stateMachine, &stateAttackPursue);
+                } else {
+                    // both robots can see the ball
+                    if (recvMsg.ballStrength < robotState.inBallStrength){
+                        ESP_LOGI(TAG, "Conflict resolution: other robot is closest to ball, switch to defence");
+                        fsm_change_state(stateMachine, &stateDefenceDefend);
+                    } else {
+                        ESP_LOGI(TAG, "Conflict resolution: I'm closest to ball, switch to attack");
+                        fsm_change_state(stateMachine, &stateAttackPursue);
+                    }
+                }
+            #elif BT_CONF_RES_MODE == BT_CONF_RES_STATIC
+                ESP_LOGI(TAG, "Static conflict resolution algorithm running...");
+
+                // change into which ever mode was set in NVS
                 if (ROBOT_MODE == MODE_ATTACK){
                     fsm_change_state(stateMachine, &stateAttackPursue);
                 } else {
                     fsm_change_state(stateMachine, &stateDefenceDefend);
                 }
-            } else if (robotState.inBallStrength <= 0.1f){
-                ESP_LOGI(TAG, "Conflict resolution: I cannot see ball, becoming defender");
-                fsm_change_state(stateMachine, &stateDefenceDefend);
-            } else if (recvMsg.ballStrength <= 0.1f){
-                ESP_LOGI(TAG, "Conflict resolution: other robot cannot see ball, becoming attacker");
-                fsm_change_state(stateMachine, &stateAttackPursue);
-            } else {
-                // both robots can see the ball
-                if (recvMsg.ballStrength < robotState.inBallStrength){
-                    ESP_LOGI(TAG, "Conflict resolution: other robot is closest to ball, switch to defence");
-                    fsm_change_state(stateMachine, &stateDefenceDefend);
-                } else {
-                    ESP_LOGI(TAG, "Conflict resolution: I'm closest to ball, switch to attack");
-                    fsm_change_state(stateMachine, &stateAttackPursue);
-                }
-            }
+            #endif
         }
 
         // decide if we should switch or not
@@ -160,7 +173,11 @@ void comms_bt_send_task(void *pvParameter){
 
         sendMsg.robotX = robotState.inX;
         sendMsg.robotY = robotState.inY;
-        sendMsg.switchOk = robotState.outSwitchOk;
+        #ifdef BT_SWITCHING_ENABLED
+            sendMsg.switchOk = robotState.outSwitchOk;
+        #else
+            sendMsg.switchOk = false;
+        #endif
         sendMsg.goalLength = robotState.inGoalLength;
         sendMsg.ballAngle = robotState.inBallAngle;
         sendMsg.ballStrength = robotState.inBallStrength;
