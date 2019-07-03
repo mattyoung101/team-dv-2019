@@ -294,7 +294,7 @@ void motor_test_task(void *pvParameter){
         ESP_LOGI(TAG, "Going forward");
         motor_calc(0, 0, 75.0f);
         motor_move(false);
-        vTaskDelay(pdMS_TO_TICKS(2500));
+        vTaskDelay(pdMS_TO_TICKS(1000));
         
         ESP_LOGI(TAG, "Going backwards");
         motor_calc(180, 0, 75.0f);

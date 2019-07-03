@@ -6,8 +6,8 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(67, 97, -33, 33, 14, 76),  # yellow
-             (40, 50, -18, 17, -60, -11)] # blue
+thresholds = [(47, 89, -11, 43, 28, 95)]  # yellow
+             #(40, 50, -18, 17, -60, -11)] # blue
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -36,8 +36,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((38, 0, 112, 112)) # Robot 0
-sensor.set_windowing((28, 6, 113, 112)) # Robot 1
+sensor.set_windowing((30, 6, 112, 112)) # Robot 0
+#sensor.set_windowing((28, 6, 112, 112)) # Robot 1
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -54,7 +54,7 @@ rgb_gain_db=((-6.02073, -5.119987, 1.318806)))
 #sensor.set_auto_whitebal(False,
 #rgb_gain_db=((-6.02073, -6.02073, 1.376936)))
 
-sensor.set_brightness(3)
+sensor.set_brightness(2)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
