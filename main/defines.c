@@ -79,9 +79,9 @@ void defines_init(uint8_t robotId){
             0.05, 0.10, 0.15, 0.15, 0.15, 0.14, 0.15, 0.15, 0.20, 0.20, 0.20, 0.20,
             0.17, 0.20, 0.25, 0.25, 0.25, 0.13, 0.12, 0.10, 0.05, 0.10, 0.10, 0.00
         };
-        MOTOR_FL_REVERSED = false;
+        MOTOR_FL_REVERSED = true;
         MOTOR_FR_REVERSED = true;
-        MOTOR_BL_REVERSED = true;
+        MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = false;
         ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
