@@ -1,4 +1,5 @@
 #include "mplexer.h"
+#include "utils.h"
 
 void mplexer_4bit_init(mplexer_4bit_t *config){
     gpio_set_direction(config->s0, GPIO_MODE_OUTPUT);
@@ -44,7 +45,7 @@ void mplexer_5bit_init(mplexer_5bit_t *config){
     gpio_set_direction(config->wr, GPIO_MODE_OUTPUT);
 }
 
-void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
+inline void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
     // convert pin to binary number
     uint32_t binary[5];
     int index = 0;
@@ -69,7 +70,7 @@ void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
     // gpio_set_level(plexer->wr, 1); // should be required, but works without it... sooooo yeah may as well not?
 }
 
-uint32_t mplexer_5bit_read(mplexer_5bit_t *plexer, uint8_t pin){
+inline uint32_t mplexer_5bit_read(mplexer_5bit_t *plexer, uint8_t pin){
     mplexer_5bit_select(plexer, pin);
     return gpio_get_level(plexer->out);
 }

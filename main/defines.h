@@ -21,7 +21,7 @@
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
+// #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
 
@@ -44,7 +44,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -86,9 +86,9 @@
 #define SIDE_KD 0
 #define SIDE_MAX 100
 
-#define INTERCEPT_KP 4
+#define INTERCEPT_KP 2
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0.0002
+#define INTERCEPT_KD 0
 #define INTERCEPT_MAX 100
 #define INTERCEPT_MIN 0
 
@@ -202,7 +202,7 @@ extern bool MOTOR_BR_REVERSED;
 // TSOPs
 #define TSOP_NUM 24 // total number of TSOPs
 #define TSOP_BEST 5 // pick the TSOP_BEST number of TSOPs to calculate with
-#define TSOP_TARGET_READS 255 // number of reads to do per slave task loop
+#define TSOP_TARGET_READS 100 // number of reads to do per slave task loop
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP
@@ -259,14 +259,14 @@ extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribbl
 extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
 extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
 extern uint16_t  IN_FRONT_MAX_ANGLE;
-#define IN_FRONT_ANGLE_BUFFER 30
+#define IN_FRONT_ANGLE_BUFFER 40
 #define IN_FRONT_STRENGTH_BUFFER 30
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define DRIBBLE_SPEED 50 // speed at which robot dribbles the ball, out of 100
+#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot

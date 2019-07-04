@@ -35,7 +35,7 @@ void tsop_init(void){
     strengthAvg = movavg_create(TSOP_MOVAVG_SIZE);
 }
 
-void tsop_update(void *args){
+inline void tsop_update(void *args){
     for (int i = 0; i < TSOP_NUM; i++){
         readings[i].X += mplexer_5bit_read(&tsopMux, irTable[i]) ^ 1;
     }
