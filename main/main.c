@@ -192,6 +192,12 @@ static void blinky_callback(TimerHandle_t callback){
     ledOn = !ledOn;
 }
 
+static void imu_task(void *pvParameter){
+    while (true){
+        simu_calc();
+    }
+}
+
 // Task which runs on the slave. Reads and calculates sensor data, then sends to master.
 static void slave_task(void *pvParameter){
     static const char *TAG = "SlaveTask";
@@ -217,6 +223,7 @@ static void slave_task(void *pvParameter){
     simu_init();
     simu_calibrate();
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
+    xTaskCreatePinnedToCore(imu_task, "IMUTask", 4096, NULL, configMAX_PRIORITIES, NULL, PRO_CPU_NUM);
 
     ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
     // puts("Time,Heading");
@@ -230,7 +237,7 @@ static void slave_task(void *pvParameter){
         tsop_calc();
 
         // update IMU
-        simu_calc();
+        // simu_calc();
         // printfln("%ld,%f", (long) esp_timer_get_time(), heading);
 
         // setup protobuf byte stream, variables will be disposed of after loop ends
@@ -280,7 +287,7 @@ static void slave_task(void *pvParameter){
         esp_task_wdt_reset();
 
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
-        // ESP_LOGD(TAG, "%f", heading);
+        ESP_LOGD(TAG, "%f", heading);
         // vTaskDelay(pdMS_TO_TICKS(100));
     }
 }

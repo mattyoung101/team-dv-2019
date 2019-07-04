@@ -5,7 +5,7 @@ float heading = 0.0f;
 static int64_t previousTimeGyro = 0;
 
 // hack to fix shit
-static void esp_hack(uint8_t addr, uint8_t reg, uint8_t count, uint8_t data){
+static inline void esp_hack(uint8_t addr, uint8_t reg, uint8_t count, uint8_t data){
     esp_i2c_write(addr, reg, count, &data);
 }
 
@@ -31,7 +31,7 @@ void simu_init(void){
 //     return a;
 // }
 
-static float convertRawGyro(int raw) {
+static inline float convertRawGyro(int raw) {
     // Since we are using 1000 degrees/seconds range
     // -1000 maps to a raw value of -32768
     // +1000 maps to a raw value of 32767
@@ -70,7 +70,7 @@ void simu_calibrate(void){
     ESP_LOGI("SIMU", "Calibration complete");
 }
 
-void simu_calc(){
+void inline simu_calc(){
     float reading = (float) simu_read_gyro().z;
 
 	int64_t currentTime = esp_timer_get_time();
