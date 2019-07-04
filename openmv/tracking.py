@@ -54,9 +54,9 @@ rgb_gain_db=((-6.02073, -5.119987, 1.318806)))
 #sensor.set_auto_whitebal(False,
 #rgb_gain_db=((-6.02073, -6.02073, 1.376936)))
 
-sensor.set_brightness(1)
-sensor.set_contrast(0)
-sensor.set_saturation(2)
+sensor.set_brightness(2)
+sensor.set_contrast(3)
+sensor.set_saturation(3)
 
 sensor.skip_frames(time=500)
 

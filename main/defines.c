@@ -60,13 +60,13 @@ void defines_init(uint8_t robotId){
         SURGE_STRENGTH = 100;
         BALL_FAR_STRENGTH = 10;
         BALL_CLOSE_STRENGTH = 90;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 50;
+        ORBIT_SPEED_SLOW = 20;
+        ORBIT_SPEED_FAST = 20;
         ORBIT_CONST = 0.6;
         DRIBBLE_BALL_TOO_FAR = 100;
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 10;
-        IN_FRONT_MAX_ANGLE = 350;
+        IN_FRONT_MIN_ANGLE = 5;
+        IN_FRONT_MAX_ANGLE = 355;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
