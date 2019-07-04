@@ -88,7 +88,7 @@ void defines_init(uint8_t robotId){
         CAM_OFFSET_Y = 46;
         TSOP_CORRECTION = -15;
         DEFEND_DISTANCE = 22;
-        SURGE_DISTANCE = 40;
+        SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 125;
         BALL_FAR_STRENGTH = 60;
         BALL_CLOSE_STRENGTH = 120;

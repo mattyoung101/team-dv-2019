@@ -230,6 +230,7 @@ static void slave_task(void *pvParameter){
     esp_task_wdt_add(NULL);
     
     while (true) {
+        PERF_TIMER_START;
         // update TSOPs
         for (int i = 0; i < TSOP_TARGET_READS; i++){
             tsop_update(NULL);
@@ -287,8 +288,9 @@ static void slave_task(void *pvParameter){
         esp_task_wdt_reset();
 
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
-        ESP_LOGD(TAG, "%f", heading);
+        // ESP_LOGD(TAG, "%f", heading);
         // vTaskDelay(pdMS_TO_TICKS(100));
+        PERF_TIMER_STOP;
     }
 }
 

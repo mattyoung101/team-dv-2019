@@ -33,7 +33,7 @@ static void bt_gap_restart_disc(void){
     if (btErrors > 4){
         // unclear how well this will work considering esp_restart() doesn't actually reset Bluetooth
         ESP_LOGE(TAG, "Too many Bluetooth errors, resetting to fix!");
-        panic();
+        abort();
     }
 
     esp_bt_gap_cancel_discovery();
