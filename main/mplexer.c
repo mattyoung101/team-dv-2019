@@ -43,6 +43,26 @@ void mplexer_5bit_init(mplexer_5bit_t *config){
     gpio_set_direction(config->out, GPIO_MODE_INPUT);
     gpio_set_direction(config->en, GPIO_MODE_OUTPUT);
     gpio_set_direction(config->wr, GPIO_MODE_OUTPUT);
+
+    gpio_set_level(config->en, 0);
+    gpio_set_level(config->wr, 0);
+}
+
+// fast functions
+static inline void set_pin_gmux0(gpio_num_t pin, bool value){
+    if (value){
+        GPIO.out_w1ts = (1 << pin);
+    } else {
+        GPIO.out_w1tc = (1 << pin);
+    }
+}
+
+static inline void set_pin_gmux1(gpio_num_t pin, bool value){
+    if (value){
+        GPIO.out1_w1ts.data = (1 << (pin - 32));
+    } else {
+        GPIO.out1_w1tc.data = (1 << (pin - 32));
+    }
 }
 
 inline void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
@@ -57,17 +77,18 @@ inline void mplexer_5bit_select(mplexer_5bit_t *plexer, uint8_t pin){
             binary[index++] = 0;
         }
     }
-
-    ESP_LOGV("Mux_5bit", "Pin %d, Binary %d%d%d%d%d", pin, binary[0], binary[1], binary[2], binary[3], binary[4]);
     
-    gpio_set_level(plexer->en, 0);
-    gpio_set_level(plexer->wr, 0);
-    gpio_set_level(plexer->s0, binary[4]);
-    gpio_set_level(plexer->s1, binary[3]);
-    gpio_set_level(plexer->s2, binary[2]);
-    gpio_set_level(plexer->s3, binary[1]);
-    gpio_set_level(plexer->s4, binary[0]);
-    // gpio_set_level(plexer->wr, 1); // should be required, but works without it... sooooo yeah may as well not?
+    // gpio_set_level(plexer->s0, binary[4]);
+    // gpio_set_level(plexer->s1, binary[3]);
+    // gpio_set_level(plexer->s2, binary[2]);
+    // gpio_set_level(plexer->s3, binary[1]);
+    // gpio_set_level(plexer->s4, binary[0]);
+
+    set_pin_gmux0(TSOP_MUX_S0, binary[4]);
+    set_pin_gmux0(TSOP_MUX_S1, binary[3]);
+    set_pin_gmux0(TSOP_MUX_S2, binary[2]);
+    set_pin_gmux0(TSOP_MUX_S3, binary[1]);
+    set_pin_gmux0(TSOP_MUX_S4, binary[0]);
 }
 
 inline uint32_t mplexer_5bit_read(mplexer_5bit_t *plexer, uint8_t pin){

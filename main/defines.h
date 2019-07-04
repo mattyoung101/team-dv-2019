@@ -202,7 +202,7 @@ extern bool MOTOR_BR_REVERSED;
 // TSOPs
 #define TSOP_NUM 24 // total number of TSOPs
 #define TSOP_BEST 5 // pick the TSOP_BEST number of TSOPs to calculate with
-#define TSOP_TARGET_READS 100 // number of reads to do per slave task loop
+#define TSOP_TARGET_READS 255 // number of reads to do per slave task loop
 #define TSOP_NO_BALL_ANGLE 0xBAD
 #define TSOP_MOVAVG_SIZE 4
 // #define TSOP_DEBUG // if enabled, prints verbose logging info for the TSOP

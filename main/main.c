@@ -287,10 +287,9 @@ static void slave_task(void *pvParameter){
         gpio_set_level(DEBUG_LED_1, msg.onLine || msg.lineOver);
         esp_task_wdt_reset();
 
-        // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
+        // printf("angle: %f, strength: %f\n", tsopAngle, tsopAvgStrength);
         // ESP_LOGD(TAG, "%f", heading);
         // vTaskDelay(pdMS_TO_TICKS(100));
-        PERF_TIMER_STOP;
     }
 }
 

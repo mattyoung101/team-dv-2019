@@ -1,0 +1,16 @@
+gpio_set_direction(TSOP_MUX_S0, GPIO_MODE_OUTPUT); 
+
+while (true){
+    int64_t begin = esp_timer_get_time();
+    
+    for (int j = 0; j < 512; j++){
+        if (j % 2 == 0){
+            GPIO.out_w1ts = (1 << TSOP_MUX_S0);
+        } else {
+            GPIO.out_w1tc = (1 << TSOP_MUX_S0);
+        }
+    }
+
+    float end = (float) (esp_timer_get_time() - begin) / 512.0f;
+    printf("Time: %f us\n", end);
+}
