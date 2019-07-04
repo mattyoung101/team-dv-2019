@@ -13,6 +13,7 @@ static uint8_t switch_buffer[] = {'S', 'W', 'I', 'T', 'C', 'H'};
 static bool isMaster = false;
 static uint8_t totalErrors = 0;
 static bool firstConnection = true;
+static uint8_t btErrors = 0;
 
 /** Initialises Bluetooth stack **/
 static void bt_init(void){
@@ -29,6 +30,12 @@ static void bt_init(void){
 
 /** restart GAP discovery **/
 static void bt_gap_restart_disc(void){
+    if (btErrors > 4){
+        // unclear how well this will work considering esp_restart() doesn't actually reset Bluetooth
+        ESP_LOGE(TAG, "Too many Bluetooth errors, resetting to fix!");
+        panic();
+    }
+
     esp_bt_gap_cancel_discovery();
     esp_bt_gap_start_discovery(ESP_BT_INQ_MODE_GENERAL_INQUIRY, 30, 0);
     ESP_LOGI(TAG, "Restarting GAP discovery...");
@@ -84,6 +91,9 @@ static void bt_start_tasks(esp_spp_cb_param_t *param){
     
     xTaskCreate(comms_bt_send_task, "BTSendTask", 4096, (void*) param->open.handle, 
             configMAX_PRIORITIES - 5, &sendTaskHandle);
+
+    // if we're here we can assume that the connection was successful
+    btErrors = 0;
 }
 
 void comms_bt_stop_tasks(void){
@@ -152,7 +162,7 @@ static void esp_spp_cb_master(esp_spp_cb_event_t event, esp_spp_cb_param_t *para
         case ESP_SPP_CLOSE_EVT:
             ESP_LOGW(TAGM, "Slave has disconnected (SPP connection closed), deleting tasks");
             ESP_LOGI(TAGM, "Status: %d, Port status: %d, Async: %d", param->close.status, param->close.port_status,
-            param->close.async);
+                    param->close.async);
             comms_bt_stop_tasks();
             break;
         case ESP_SPP_START_EVT:
@@ -248,6 +258,7 @@ static void esp_bt_gap_cb_slave(esp_bt_gap_cb_event_t event, esp_bt_gap_cb_param
                 esp_log_buffer_hex(TAGS, param->auth_cmpl.bda, ESP_BD_ADDR_LEN);
             } else {
                 ESP_LOGE(TAGS, "Authentication failed, status: %d", param->auth_cmpl.stat);
+                btErrors++;
             }
             break;
         }
@@ -276,6 +287,7 @@ static void esp_spp_cb_slave(esp_spp_cb_event_t event, esp_spp_cb_param_t *param
                 esp_spp_connect(ESP_SPP_SEC_AUTHENTICATE, ESP_SPP_ROLE_MASTER, param->disc_comp.scn[0], peer_bd_addr);
             } else {
                 ESP_LOGE(TAGS, "Can't connect to SPP due to error code: %d", param->disc_comp.status);
+                btErrors++;
                 bt_gap_restart_disc();
             }
             break;
