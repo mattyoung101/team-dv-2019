@@ -6,8 +6,8 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(47, 89, -11, 43, 28, 95)]  # yellow
-             #(25, 35, -17, 14, -36, -11)] # blue
+thresholds = [(47, 89, -11, 43, 28, 95),  # yellow
+             (33, 45, -13, 26, -53, -19)] # blue
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -16,8 +16,6 @@ BLUE = 2
 
 pyb.LED(1).on()
 
-# ETHAN!!!!!!
-# MAKE SURE TO TURN OFF DEBUG BEFORE SENDING THE ROBOT INTO COMP! VERY IMPORTANT!
 debug = True
 light = False
 out = []
@@ -36,8 +34,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-sensor.set_windowing((33, 8, 112, 112)) # Robot 0
-#sensor.set_windowing((36, 0, 112, 112)) # Robot 1
+#sensor.set_windowing((33, 8, 112, 112)) # Robot 0
+sensor.set_windowing((45, 6, 112, 112)) # Robot 1
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -51,16 +49,13 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 sensor.set_auto_whitebal(False,
 rgb_gain_db=((-6.02073, -5.119987, 1.318806)))
 
-#sensor.set_auto_whitebal(False,
-#rgb_gain_db=((-6.02073, -6.02073, 1.376936)))
-
-sensor.set_brightness(2)
+sensor.set_brightness(3)
 sensor.set_contrast(3)
 sensor.set_saturation(3)
 
 sensor.skip_frames(time=500)
 
-# Pretty LED stuff :3
+# Blink LEDs
 pyb.LED(1).off()
 for i in range(3):
     pyb.LED(2).on()
@@ -99,6 +94,7 @@ while(True):
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
+    img = img.mean(1)
     blobs = img.find_blobs(thresholds, x_stride=2, y_stride=2, pixels_threshold=5,
             area_threshold=5, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
