@@ -165,6 +165,9 @@ static void master_task(void *pvParameter){
         // update the actual FSM
         fsm_update(stateMachine);
 
+        // robotState.outSpeed = 0;
+        // imu_correction(&robotState);
+
         // line over runs after the FSM to override it
         update_line(&robotState);
 
@@ -173,9 +176,6 @@ static void master_task(void *pvParameter){
         // vTaskDelay(pdMS_TO_TICKS(250));
         // print_motion_data(&robotState);
         // print_position_data(&robotState);
-        
-        // robotState.outSpeed = 0;
-        // imu_correction(&robotState);
 
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
