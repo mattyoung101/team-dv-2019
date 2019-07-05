@@ -48,9 +48,9 @@ void defines_init(uint8_t robotId){
         //     0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0
         // }; // Spare PCB values
         MOTOR_FL_REVERSED = false;
-        MOTOR_FR_REVERSED = false;
+        MOTOR_FR_REVERSED = true;
         MOTOR_BL_REVERSED = false;
-        MOTOR_BR_REVERSED = true;
+        MOTOR_BR_REVERSED = false;
         ROBOT_MODE = MODE_ATTACK;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 56;
@@ -59,13 +59,13 @@ void defines_init(uint8_t robotId){
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 100;
         BALL_FAR_STRENGTH = 10;
-        BALL_CLOSE_STRENGTH = 120;
+        BALL_CLOSE_STRENGTH = 100;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 30;
         ORBIT_CONST = 0.6;
         DRIBBLE_BALL_TOO_FAR = 90;
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 5;
+        IN_FRONT_MIN_ANGLE = 7;
         IN_FRONT_MAX_ANGLE = 360;
         
         // fuckin C bullshit workaround to set values
@@ -79,19 +79,19 @@ void defines_init(uint8_t robotId){
             0.05, 0.10, 0.15, 0.15, 0.15, 0.14, 0.15, 0.15, 0.20, 0.20, 0.20, 0.20,
             0.17, 0.20, 0.25, 0.25, 0.25, 0.13, 0.12, 0.10, 0.05, 0.10, 0.10, 0.00
         };
-        MOTOR_FL_REVERSED = true;
-        MOTOR_FR_REVERSED = true;
+        MOTOR_FL_REVERSED = false;
+        MOTOR_FR_REVERSED = false;
         MOTOR_BL_REVERSED = false;
-        MOTOR_BR_REVERSED = false;
+        MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_DEFEND;
         CAM_OFFSET_X = 56;
         CAM_OFFSET_Y = 46;
-        TSOP_CORRECTION = -15;
-        DEFEND_DISTANCE = 25;
-        SURGE_DISTANCE = 35;
-        SURGE_STRENGTH = 125;
+        TSOP_CORRECTION = -10;
+        DEFEND_DISTANCE = 24; // 24
+        SURGE_DISTANCE = 35; // 35
+        SURGE_STRENGTH = 140;
         BALL_FAR_STRENGTH = 60;
-        BALL_CLOSE_STRENGTH = 120;
+        BALL_CLOSE_STRENGTH = 115;
         ORBIT_SPEED_SLOW = 30;
         ORBIT_SPEED_FAST = 50;
         ORBIT_CONST = 0.2;

@@ -69,13 +69,13 @@ void state_attack_idle_update(state_machine_t *fsm){
         FSM_MOTOR_BRAKE;
     }
 
-    position(&robotState, IDLE_DISTANCE, IDLE_OFFSET, rs.inOtherGoalAngle, rs.inOtherGoalLength, true);
+    // position(&robotState, IDLE_DISTANCE, IDLE_OFFSET, rs.inOtherGoalAngle, rs.inOtherGoalLength, true);
 
     // float verticalDistance = fabsf(robotState.inGoalLength /** cosf(DEG_RAD * goalAngle_)*/);
     // float distanceMovement = -pid_update(&forwardPID, verticalDistance, HALFWAY_DISTANCE, 0.0f); // Stay a fixed distance from the goal
     
     // rs.outDirection = fmodf(RAD_DEG * (atan2f(0.0f, distanceMovement)), 360.0f);
-    // rs.outSpeed = get_magnitude(0.0f, distanceMovement);
+    rs.outSpeed = 0.0f;
 }
 
 // Pursue

@@ -21,7 +21,7 @@
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-// #define BLUETOOTH_ENABLED
+#define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
 
@@ -64,7 +64,7 @@
 #define HEADING_KD 0.05
 #define HEADING_MAX_CORRECTION 100
 
-#define LINEAVOID_KP 5
+#define LINEAVOID_KP 100
 #define LINEAVOID_KI 0
 #define LINEAVOID_KD 0
 #define LINEAVOID_MAX 80
@@ -222,7 +222,7 @@ extern int16_t TSOP_CORRECTION; // at 0 degrees TSOPs actually print a different
 extern float TSOP_TUNING[TSOP_NUM];
 
 // IMU
-#define IMU_CALIBRATION_COUNT 50
+#define IMU_CALIBRATION_COUNT 80
 #define IMU_CALIBRATION_TIME 10
 #define IMU_THRESHOLD 1000
 #define I2C_MULTIPLIER 100.0f
@@ -265,7 +265,7 @@ extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 80 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 50 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330

@@ -6,7 +6,7 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(76, 97, -12, 14, 23, 96)]  # yellow
+thresholds = [(69, 92, -19, 31, 19, 99)]  # yellow
              #(40, 50, -18, 17, -60, -11)] # blue
 
 # this comes from the output of blob.code()

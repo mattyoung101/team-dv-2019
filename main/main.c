@@ -177,6 +177,8 @@ static void master_task(void *pvParameter){
         // print_motion_data(&robotState);
         // print_position_data(&robotState);
 
+        // printf("%f\n", robotState.inLineAngle);
+
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
         motor_move(robotState.outShouldBrake);

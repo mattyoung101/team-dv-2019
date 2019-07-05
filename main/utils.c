@@ -161,9 +161,9 @@ void orbit(robot_state_t *robotState){
     if(robotState->inRobotId == 0){
         float tempStrength = is_angle_between(robotState->inBallAngle, 114.0f, 253.0f) ? robotState->inBallStrength * 1.45f : robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
-        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.3 * powf(E, 0.5 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
+        float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.2 * powf(E, 0.3 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
         float strengthFactor = constrain(((float)tempStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
-        float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
+        float distanceMultiplier = constrain(0.05 * strengthFactor * powf(E, 4.5 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
         robotState->outDirection = floatMod(robotState->inBallAngle + angleAddition, 360);
@@ -278,16 +278,16 @@ void update_line(robot_state_t *robotState) {
     if (robotState->inOnLine || robotState->inLineOver){
         // imu_correction(robotState);
         if (robotState->inGoalVisible){
-            // if (robotState->inGoalLength <= 35.0f){
-                positionFast(robotState, 30.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+            if (robotState->inGoalLength <= robotState->inOtherGoalLength){
+                positionFast(robotState, 35.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
                 // printf("Case 1\n");
-            // } else {
-            //     positionFast(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
-            //     // printf("Case 2\n");
-            // }
+            } else {
+                positionFast(robotState, 30.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                // printf("Case 2\n");
+            }
         } else if (robotState->inOtherGoalVisible){
             // if (robotState->inGoalLength <= 35.0f){
-                positionFast(robotState, 30.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                positionFast(robotState, 35.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
                 // printf("Case 3\n");
             // } else {
             //     positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
