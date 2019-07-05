@@ -43,7 +43,7 @@ static uint8_t mode = 69; // start out with invalid mode
 state_machine_t *stateMachine = NULL;
 static const char *RST_TAG = "ResetReason";
 
-// suppposed to break the robot on error, doesn't work tho
+// supposed to break the robot on error, doesn't work tho
 static void shutdown_handler(){
     ets_printf("Shutdown handler executing\n");
     motor_calc(0, 0, 0.0f);
@@ -193,8 +193,17 @@ static void blinky_callback(TimerHandle_t callback){
 }
 
 static void imu_task(void *pvParameter){
+    int16_t i = 0;
+    
+    float begin = (float) esp_timer_get_time();
     while (true){
         simu_calc();
+
+        if (i++ > 1024){
+            printfln("Time: %f us", ((float) esp_timer_get_time() - begin) / 1024.0f);
+            begin = esp_timer_get_time();
+            i = 0;
+        }
     }
 }
 
@@ -230,16 +239,11 @@ static void slave_task(void *pvParameter){
     esp_task_wdt_add(NULL);
     
     while (true) {
-        PERF_TIMER_START;
         // update TSOPs
         for (int i = 0; i < TSOP_TARGET_READS; i++){
             tsop_update(NULL);
         }
         tsop_calc();
-
-        // update IMU
-        // simu_calc();
-        // printfln("%ld,%f", (long) esp_timer_get_time(), heading);
 
         // setup protobuf byte stream, variables will be disposed of after loop ends
         memset(pbBuf, 0, PROTOBUF_SIZE);
@@ -290,7 +294,6 @@ static void slave_task(void *pvParameter){
         // printf("angle: %f, strength: %f\n", tsopAngle, tsopStrength);
         // ESP_LOGD(TAG, "%f", heading);
         // vTaskDelay(pdMS_TO_TICKS(100));
-        PERF_TIMER_STOP;
     }
 }
 

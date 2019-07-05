@@ -34,8 +34,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((33, 8, 112, 112)) # Robot 0
-sensor.set_windowing((38, 0, 112, 112)) # Robot 1
+sensor.set_windowing((33, 8, 112, 112)) # Robot 0
+#sensor.set_windowing((38, 0, 112, 112)) # Robot 1
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -96,7 +96,7 @@ while(True):
     img = sensor.snapshot()
     img = img.mean(1)
     blobs = img.find_blobs(thresholds, x_stride=3, y_stride=3, pixels_threshold=10,
-            area_threshold=10, merge=True, margin=3)
+            area_threshold=10, merge=True, margin=5)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
 

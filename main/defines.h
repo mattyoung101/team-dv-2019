@@ -44,7 +44,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_BLUE
+#define ENEMY_GOAL GOAL_YELLOW
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
