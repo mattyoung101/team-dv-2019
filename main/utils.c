@@ -279,7 +279,7 @@ void update_line(robot_state_t *robotState) {
         // imu_correction(robotState);
         if (robotState->inGoalVisible){
             // if (robotState->inGoalLength <= 35.0f){
-                positionFast(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+                positionFast(robotState, 30.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
                 // printf("Case 1\n");
             // } else {
             //     positionFast(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
@@ -287,7 +287,7 @@ void update_line(robot_state_t *robotState) {
             // }
         } else if (robotState->inOtherGoalVisible){
             // if (robotState->inGoalLength <= 35.0f){
-                positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                positionFast(robotState, 30.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
                 // printf("Case 3\n");
             // } else {
             //     positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);

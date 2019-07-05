@@ -6,8 +6,8 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(47, 89, -11, 43, 28, 95),  # yellow
-             (33, 45, -13, 26, -53, -19)] # blue
+thresholds = [(50, 77, -4, 27, 17, 76),  # yellow
+             (38, 50, -9, 26, -79, -27)] # blue
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -34,7 +34,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((33, 8, 112, 112)) # Robot 0
+#sensor.set_windowing((37, 8, 112, 112)) # Robot 0
 sensor.set_windowing((38, 0, 112, 112)) # Robot 1
 
 # === GAIN ===
@@ -94,9 +94,9 @@ while(True):
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    img = img.mean(1)
+    #img = img.mean(1)
     blobs = img.find_blobs(thresholds, x_stride=3, y_stride=3, pixels_threshold=10,
-            area_threshold=10, merge=True, margin=3)
+            area_threshold=10, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
 
