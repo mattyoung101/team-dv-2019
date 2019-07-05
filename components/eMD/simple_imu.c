@@ -17,6 +17,11 @@ void simu_init(void){
     esp_hack(MPU9250_ADDRESS, 0x37, 1, 0x02);
     esp_hack(MPU9250_ADDRESS, 0x0A, 1, 0x16);
 
+    // make it go fast, 900 MHz
+    uint16_t rate = 950;
+    unsigned char data = 1000 / rate - 1;
+    esp_i2c_write(MPU9250_ADDRESS, 0x19, 1, &data);
+
     previousTimeGyro = esp_timer_get_time();
 
     ESP_LOGI("SIMU", "MPU9250 init OK");
