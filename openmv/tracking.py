@@ -6,7 +6,10 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(38, 81, 18, 74, 18, 65)]
+thresholds = [(0, 0, 0, 0, 0, 0), # yellow
+              (0, 0, 0, 0, 0, 0), # blue
+              (52, 81, 18, 74, 18, 66)] # orange
+
 
 # Deus Orange (38, 81, 18, 74, 18, 65)
 # Apex Orange (46, 84, 24, 94, -2, 84)
@@ -29,6 +32,7 @@ thresholds = [(38, 81, 18, 74, 18, 65)]
 # you're meant to compare them using binary (see docs) but... yeah nah
 YELLOW = 1
 BLUE = 2
+ORANGE = 3
 
 pyb.LED(1).on()
 
@@ -116,6 +120,10 @@ while(True):
             area_threshold=15, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
+    biggestOrange = scanBlobs(blobs, ORANGE)
+
+    for blob_ in blobs:
+        print(blob_.code())
 
     # Debug drawing
     if biggestYellow != None and debug:
@@ -130,6 +138,13 @@ while(True):
         img.draw_string(biggestBlue.cx(), biggestBlue.cy(), str(biggestBlue.code()),
                         color=(255, 0, 0))
 
+    if biggestOrange != None and debug:
+        img.draw_rectangle(biggestOrange.rect())
+        img.draw_cross(biggestOrange.cx(), biggestOrange.cy())
+        img.draw_string(biggestOrange.cx(), biggestOrange.cy(), str(biggestOrange.code()),
+                        color=(255, 0, 0))
+
+
     # Serial out preparation
     out.clear()
     out += [0xB]
@@ -143,6 +158,11 @@ while(True):
         out += [False, 0, 0]
     else:
         out += [True, int(biggestYellow.cx()), int(biggestYellow.cy())]
+
+    if biggestOrange == None:
+        out += [False, 0, 0]
+    else:
+        out += [True, int(biggestOrange.cx()), int(biggestOrange.cy())]
 
     out += [0xE]
 

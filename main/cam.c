@@ -5,6 +5,7 @@
 SemaphoreHandle_t goalDataSem = NULL;
 cam_goal goalBlue = {0};
 cam_goal goalYellow = {0};
+cam_goal orangeBall = {0};
 int16_t robotX = 0;
 int16_t robotY = 0;
 static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
@@ -34,6 +35,10 @@ static void cam_receive_task(void *pvParameter){
                 goalYellow.exists = buffer[4];
                 goalYellow.x = buffer[5] - CAM_OFFSET_X;
                 goalYellow.y = buffer[6] - CAM_OFFSET_Y;
+
+                orangeBall.exists = buffer[7];
+                orangeBall.x = buffer[8] - CAM_OFFSET_X;
+                orangeBall.y = buffer[9] - CAM_OFFSET_Y;
 
                 cam_calc();
                 xSemaphoreGive(goalDataSem);

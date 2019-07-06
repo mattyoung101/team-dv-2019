@@ -13,7 +13,7 @@
 #include "freertos/timers.h"
 #include "esp_task_wdt.h"
 
-#define CAM_BUF_SIZE 8
+#define CAM_BUF_SIZE 10
 
 typedef struct {
     /** if false: the values of x, y, angle and length are undefined **/
@@ -31,6 +31,7 @@ extern SemaphoreHandle_t goalDataSem;
 
 extern cam_goal goalBlue;
 extern cam_goal goalYellow;
+extern cam_goal orangeBall;
 extern int16_t robotX;
 extern int16_t robotY;
 
