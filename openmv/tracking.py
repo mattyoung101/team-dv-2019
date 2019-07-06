@@ -7,7 +7,7 @@ import ucollections
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
 thresholds = [(76, 100, -48, 30, 8, 94), # yellow
-             (69, 34, -22, 73, -82, -26)] # blue
+             (44, 66, -7, 38, -80, -34)] # blue
 
 # Normal
 # Blue (31, 50, -13, 24, -70, -21)
@@ -48,8 +48,8 @@ sensor.set_auto_exposure(False, exposure_us=15000)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((36, 5, 112, 112)) # Robot 0
-sensor.set_windowing((38, 8, 112, 112)) # Robot 1
+sensor.set_windowing((36, 5, 112, 112)) # Robot 0
+#sensor.set_windowing((38, 8, 112, 112)) # Robot 1
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
