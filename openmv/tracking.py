@@ -6,8 +6,10 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(76, 100, -48, 30, 8, 94), # yellow
-             (69, 34, -22, 73, -82, -26)] # blue
+thresholds = [(38, 81, 18, 74, 18, 65)]
+
+# Deus Orange (38, 81, 18, 74, 18, 65)
+# Apex Orange (46, 84, 24, 94, -2, 84)
 
 # Normal
 # Blue (31, 50, -13, 24, -70, -21)
@@ -40,16 +42,16 @@ uart.init(115200, bits=8, parity=None, stop=1, timeout_char=1000)
 # sensor setup
 sensor.reset()
 sensor.set_pixformat(sensor.RGB565)
-sensor.set_framesize(sensor.QQVGA) #Resolution, QVGA = 42FPS,QQVGA = 85FPS
+sensor.set_framesize(sensor.QVGA) #Resolution, QVGA = 42FPS,QQVGA = 85FPS
 
 sensor.skip_frames(time=500)
 
-sensor.set_auto_exposure(False, exposure_us=15000)
+sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((36, 5, 112, 112)) # Robot 0
-sensor.set_windowing((38, 8, 112, 112)) # Robot 1
+#sensor.set_windowing((36, 0, 112, 112)) # Robot 0
+sensor.set_windowing((70, 0, 235, 235)) # Robot 1
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -61,12 +63,12 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-6.02073, -5.119987, 1.318806)))
+rgb_gain_db=((-6.02073, -6.02073, -0.3467029)))
 
 # Standard
-sensor.set_brightness(3)
-sensor.set_contrast(3)
-sensor.set_saturation(3)
+sensor.set_brightness(0)
+sensor.set_contrast(0)
+sensor.set_saturation(0)
 
 sensor.skip_frames(time=500)
 

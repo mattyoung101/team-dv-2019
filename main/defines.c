@@ -84,8 +84,8 @@ void defines_init(uint8_t robotId){
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_DEFEND;
-        CAM_OFFSET_X = 56;
-        CAM_OFFSET_Y = 43;
+        CAM_OFFSET_X = 116;
+        CAM_OFFSET_Y = 116;
         TSOP_CORRECTION = -10;
         DEFEND_DISTANCE = 24; // 24
         SURGE_DISTANCE = 35; // 35

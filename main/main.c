@@ -120,33 +120,33 @@ static void master_task(void *pvParameter){
                 robotState.outSwitchOk = false;
 
                 // update FSM values
-                robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
-                robotState.inBallStrength = lastSensorUpdate.tsopStrength;
+                robotState.inBallAngle = goalYellow.angle;
+                robotState.inBallStrength = goalYellow.length;
                 // TODO make goal stuff floats as well
-                if (robotState.outIsAttack){
-                    robotState.inGoalVisible = AWAY_GOAL.exists;
-                    robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
-                    robotState.inGoalDistance = AWAY_GOAL.distance;
+                // if (robotState.outIsAttack){
+                //     robotState.inGoalVisible = AWAY_GOAL.exists;
+                //     robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                //     robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
+                //     robotState.inGoalDistance = AWAY_GOAL.distance;
 
-                    robotState.inOtherGoalVisible = HOME_GOAL.exists;
-                    robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
-                    robotState.inOtherGoalDistance = HOME_GOAL.distance;
-                } else {
-                    robotState.inOtherGoalVisible = AWAY_GOAL.exists;
-                    robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
-                    robotState.inOtherGoalDistance = AWAY_GOAL.distance;
+                //     robotState.inOtherGoalVisible = HOME_GOAL.exists;
+                //     robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                //     robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
+                //     robotState.inOtherGoalDistance = HOME_GOAL.distance;
+                // } else {
+                //     robotState.inOtherGoalVisible = AWAY_GOAL.exists;
+                //     robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                //     robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
+                //     robotState.inOtherGoalDistance = AWAY_GOAL.distance;
 
-                    robotState.inGoalVisible = HOME_GOAL.exists;
-                    robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
-                    robotState.inGoalLength = (int16_t) HOME_GOAL.length;
-                    robotState.inGoalDistance = HOME_GOAL.distance;
-                }
+                //     robotState.inGoalVisible = HOME_GOAL.exists;
+                //     robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                //     robotState.inGoalLength = (int16_t) HOME_GOAL.length;
+                //     robotState.inGoalDistance = HOME_GOAL.distance;
+                // }
                 robotState.inHeading = lastSensorUpdate.heading;
-                robotState.inX = robotX;
-                robotState.inY = robotY;
+                // robotState.inX = robotX;
+                // robotState.inY = robotY;
                 robotState.inBatteryVoltage = lastSensorUpdate.voltage;
                 robotState.inLineAngle = lastSensorUpdate.lineAngle;
                 robotState.inLineSize = lastSensorUpdate.lineSize;
@@ -171,7 +171,7 @@ static void master_task(void *pvParameter){
         // line over runs after the FSM to override it
         update_line(&robotState);
 
-        // print_ball_data(&robotState);
+        print_ball_data(&robotState);
         // print_goal_data(&robotState);
         // vTaskDelay(pdMS_TO_TICKS(250));
         // print_motion_data(&robotState);
