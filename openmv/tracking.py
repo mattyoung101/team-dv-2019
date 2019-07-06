@@ -6,7 +6,7 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(75, 100, -39, -4, 22, 92), # yellow
+thresholds = [(76, 100, -48, 30, 8, 94), # yellow
              (69, 34, -22, 73, -82, -26)] # blue
 
 # Normal
