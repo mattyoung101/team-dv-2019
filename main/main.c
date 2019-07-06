@@ -66,6 +66,7 @@ static void print_reset_reason(){
 static void master_task(void *pvParameter){
     static const char *TAG = "MasterTask";
     uint8_t robotId = 69;
+    bool autoRefMotorsLocked = false;
 
     print_reset_reason();
     ESP_ERROR_CHECK(esp_register_shutdown_handler(shutdown_handler));
@@ -179,9 +180,24 @@ static void master_task(void *pvParameter){
 
         // printf("%f\n", robotState.inLineAngle);
 
+        // update autoref
+        // "s" = stop, "S" = start, "d" = move to left or right
+        uint8_t autoRefCmd = lastSensorUpdate.autoRefCmd;
+        if (autoRefCmd == 's'){
+            ESP_LOGI(TAG, "Autoref command: STOP");
+            autoRefMotorsLocked = true;
+        } else if (autoRefCmd == 'S'){
+            ESP_LOGI(TAG, "Autoref command: START");
+            autoRefMotorsLocked = false;
+        } else if (autoRefCmd == 'd'){
+            ESP_LOGI(TAG, "Autoref command: MOVE");
+            // move to left side of field
+            position(&robotState, DEFEND_DISTANCE, 20, robotState.inGoalAngle, robotState.inGoalLength, true);
+        }
+
         // run motors
         motor_calc(robotState.outDirection, robotState.outOrientation, robotState.outSpeed);
-        motor_move(robotState.outShouldBrake);
+        motor_move(autoRefMotorsLocked ? true : robotState.outShouldBrake);
 
         esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(10)); // Random delay at of loop to allow motors to spin
@@ -235,6 +251,16 @@ static void slave_task(void *pvParameter){
     simu_calibrate();
     gpio_set_direction(DEBUG_LED_1, GPIO_MODE_OUTPUT);
     xTaskCreatePinnedToCore(imu_task, "IMUTask", 4096, NULL, configMAX_PRIORITIES, NULL, PRO_CPU_NUM);
+    uart_config_t uart_config = {
+        .baud_rate = 9600,
+        .data_bits = UART_DATA_8_BITS,
+        .parity = UART_PARITY_DISABLE,
+        .stop_bits = UART_STOP_BITS_1,
+        .flow_ctrl = UART_HW_FLOWCTRL_DISABLE
+    };
+    ESP_ERROR_CHECK(uart_param_config(UART_NUM_2, &uart_config));
+    ESP_ERROR_CHECK(uart_set_pin(UART_NUM_2, 69, 69, -1, -1)); // TODO pins
+    ESP_ERROR_CHECK(uart_driver_install(UART_NUM_2, 256, 256, 8, NULL, 0));
 
     ESP_LOGI(TAG, "=============== Slave hardware init OK ===============");
     // puts("Time,Heading");
@@ -267,6 +293,11 @@ static void slave_task(void *pvParameter){
         msg.heading = heading;
         msg.tsopAngle = tsopAngle;
         msg.tsopStrength = tsopAvgStrength;
+
+        // check for autoref command
+        uint8_t autoRefCmd = 'o'; // o for nothing
+        uart_read_bytes(UART_NUM_2, &autoRefCmd, 1, pdMS_TO_TICKS(5));
+        msg.autoRefCmd = autoRefCmd;
 
         // encode and send it
         if (pb_encode(&stream, SensorUpdate_fields, &msg)){

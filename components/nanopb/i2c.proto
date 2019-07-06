@@ -19,4 +19,5 @@ message SensorUpdate {
     // Other sensors
     int32 temperature = 9; // screw accuracy
     float voltage = 10; // ok I guess we need it here
+    int32 autoRefCmd = 11;
 }
