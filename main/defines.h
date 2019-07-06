@@ -21,7 +21,7 @@
 #define BT_CONF_RES_DYNAMIC 1 // uses ball data to resolve conflicts
 #define BT_PACKET_TIMEOUT 1500 // ms, if we haven't received a packet in this long, other robot is off for damage
 #define BT_SWITCH_COOLDOWN 2500 // ms, wait this many ms after a switch before anotehr switch is allowed
-#define BLUETOOTH_ENABLED
+// #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
 
@@ -44,7 +44,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -67,7 +67,7 @@
 #define LINEAVOID_KP 100
 #define LINEAVOID_KI 0
 #define LINEAVOID_KD 0
-#define LINEAVOID_MAX 80
+#define LINEAVOID_MAX 60
 
 // --- Idle Correction --- //
 #define IDLE_KP 0.3
@@ -89,7 +89,7 @@
 #define INTERCEPT_KP 2
 #define INTERCEPT_KI 0
 #define INTERCEPT_KD 0
-#define INTERCEPT_MAX 100
+#define INTERCEPT_MAX 80
 #define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5

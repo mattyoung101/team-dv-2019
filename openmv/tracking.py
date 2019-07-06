@@ -6,11 +6,15 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(60, 94, -3, 43, 38, 97), # yellow
-             (31, 50, -13, 24, -70, -21)] # blue
+thresholds = [(75, 100, -39, -4, 22, 92), # yellow
+             (69, 34, -22, 73, -82, -26)] # blue
 
 # Normal
 # Blue (31, 50, -13, 24, -70, -21)
+# Yellow (50, 89, -9, 34, 26, 74)
+
+# Field 6
+# Blue (30, 43, -13, 14, -46, -10)
 
 # Field 10
 # Blue (27, 45, -8, 17, -61, -12)
@@ -40,12 +44,12 @@ sensor.set_framesize(sensor.QQVGA) #Resolution, QVGA = 42FPS,QQVGA = 85FPS
 
 sensor.skip_frames(time=500)
 
-sensor.set_auto_exposure(False)
+sensor.set_auto_exposure(False, exposure_us=15000)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-sensor.set_windowing((36, 5, 112, 112)) # Robot 0
-#sensor.set_windowing((38, 0, 112, 112)) # Robot 1
+#sensor.set_windowing((36, 5, 112, 112)) # Robot 0
+sensor.set_windowing((38, 8, 112, 112)) # Robot 1
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
