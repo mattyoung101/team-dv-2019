@@ -92,13 +92,13 @@ void defines_init(uint8_t robotId){
         SURGE_STRENGTH = 140;
         BALL_FAR_STRENGTH = 60;
         BALL_CLOSE_STRENGTH = 30;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 50;
+        ORBIT_SPEED_SLOW = 35;
+        ORBIT_SPEED_FAST = 60;
         ORBIT_CONST = 0.2;
         DRIBBLE_BALL_TOO_FAR = 0;
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 20;
-        IN_FRONT_MAX_ANGLE = 340;
+        IN_FRONT_MIN_ANGLE = 10;
+        IN_FRONT_MAX_ANGLE = 350;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }
