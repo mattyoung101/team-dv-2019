@@ -6,7 +6,7 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(56, 82, 38, 67, -8, 67)] # Deus Orange
+thresholds = [(28, 75, 42, 82, 35, 92)] # Deus Orange
 
 # Deus Orange (38, 81, 18, 74, 18, 65)
 # Apex Orange (46, 84, 24, 94, -2, 84)
@@ -46,7 +46,7 @@ sensor.set_framesize(sensor.QVGA) #Resolution, QVGA = 42FPS,QQVGA = 85FPS
 
 sensor.skip_frames(time=500)
 
-sensor.set_auto_exposure(False)
+sensor.set_auto_exposure(False, exposure_us=15000)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
