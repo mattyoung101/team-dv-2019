@@ -169,7 +169,7 @@ static void master_task(void *pvParameter){
         // imu_correction(&robotState);
 
         // line over runs after the FSM to override it
-        update_line(&robotState);
+        // update_line(&robotState);
 
         // print_ball_data(&robotState);
         // print_goal_data(&robotState);
