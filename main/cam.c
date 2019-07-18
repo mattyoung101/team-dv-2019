@@ -5,6 +5,7 @@
 SemaphoreHandle_t goalDataSem = NULL;
 cam_goal goalBlue = {0};
 cam_goal goalYellow = {0};
+cam_goal orangeBall = {0};
 int16_t robotX = 0;
 int16_t robotY = 0;
 static const float k = 92.5f; // distance of goal to centre in cm, measured on the field
@@ -34,6 +35,10 @@ static void cam_receive_task(void *pvParameter){
                 goalYellow.exists = buffer[4];
                 goalYellow.x = buffer[5] - CAM_OFFSET_X;
                 goalYellow.y = buffer[6] - CAM_OFFSET_Y;
+
+                orangeBall.exists = buffer[7];
+                orangeBall.x = buffer[8] - CAM_OFFSET_X;
+                orangeBall.y = buffer[9] - CAM_OFFSET_Y;
 
                 cam_calc();
                 xSemaphoreGive(goalDataSem);
@@ -94,8 +99,12 @@ void cam_calc(void){
     goalYellow.angle = floatMod(450.0f - roundf(RAD_DEG * atan2f(goalYellow.y, goalYellow.x)), 360.0f);
     goalYellow.length = sqrtf(sq(goalYellow.x) + sq(goalYellow.y));
 
+    orangeBall.angle = floatMod(450.0f - roundf(RAD_DEG * atan2f(orangeBall.y, orangeBall.x)), 360.0f);
+    orangeBall.length = sqrtf(sq(orangeBall.x) + sq(orangeBall.y));
+
     goalYellow.distance = cam_pixel_to_cm(goalYellow.length);
     goalBlue.distance = cam_pixel_to_cm(goalBlue.length);
+    orangeBall.distance = cam_pixel_to_cm(orangeBall.length);
 
     // ESP_LOGD(TAG, "[yellow] Pixel distance: %f\tActual distance: %f", goalYellow.length, goalYellow.distance);
     // ESP_LOGD(TAG, "[blue] Pixel distance: %f\tActual distance: %f", goalBlue.length, goalBlue.distance);
