@@ -6,9 +6,12 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(100, 100, 100, 100, 100, 100), # yellow
-             (40, 45, -15, 6, -43, -5), # blue
-             (54, 77, 28, 80, 1, 127)] # orange
+thresholds = [(50, 89, -9, 34, 26, 74), # Yellow
+             (31, 50, -13, 24, -70, -21) # Blue
+             (56, 82, 38, 67, -8, 67)] # Orange
+
+# Deus Orange (38, 81, 18, 74, 18, 65)
+# Apex Orange (46, 84, 24, 94, -2, 84)
 
 # Normal
 # Blue (31, 50, -13, 24, -70, -21)
@@ -28,7 +31,6 @@ thresholds = [(100, 100, 100, 100, 100, 100), # yellow
 # you're meant to compare them using binary (see docs) but... yeah nah
 YELLOW = 1
 BLUE = 2
-ORANGE = 3
 
 pyb.LED(1).on()
 
@@ -107,37 +109,27 @@ def scanBlobs(blobs, colour):
     return biggestBlob
 
 # Main loop
-while True:
+while(True):
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    blobs = img.find_blobs(thresholds, x_stride=10, y_stride=10, pixels_threshold=15,
+    #img = img.mean(1)
+    blobs = img.find_blobs(thresholds, x_stride=3, y_stride=3, pixels_threshold=15,
             area_threshold=15, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)
 
-    print(thresholds[-1])
-    orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=3, y_stride=3, pixels_threshold=15,
-                    area_threshold=15, merge=True, margin=2)
-    biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
-
     # Debug drawing
     if biggestYellow != None and debug:
-        img.draw_rectangle(biggestYellow.rect(), color=(255, 255, 0))
+        img.draw_rectangle(biggestYellow.rect())
         img.draw_cross(biggestYellow.cx(), biggestYellow.cy())
-        img.draw_string(biggestYellow.cx(), biggestYellow.cy(), "Goal_Y",
+        img.draw_string(biggestYellow.cx(), biggestYellow.cy(), str(biggestYellow.code()),
                         color=(255, 0, 0))
 
     if biggestBlue != None and debug:
-        img.draw_rectangle(biggestBlue.rect(), color=(0, 0, 255))
+        img.draw_rectangle(biggestBlue.rect())
         img.draw_cross(biggestBlue.cx(), biggestBlue.cy())
-        img.draw_string(biggestBlue.cx(), biggestBlue.cy(), "Goal_B",
-                        color=(255, 0, 0))
-
-    if biggestOrange != None and debug:
-        img.draw_rectangle(biggestOrange.rect(), color=(254, 95, 27))
-        img.draw_cross(biggestOrange.cx(), biggestOrange.cy())
-        img.draw_string(biggestOrange.cx(), biggestOrange.cy(), "Ball",
+        img.draw_string(biggestBlue.cx(), biggestBlue.cy(), str(biggestBlue.code()),
                         color=(255, 0, 0))
 
     # Serial out preparation
@@ -153,11 +145,6 @@ while True:
         out += [False, 0, 0]
     else:
         out += [True, int(biggestYellow.cx()), int(biggestYellow.cy())]
-
-    if biggestOrange == None:
-        out += [False, 0, 0]
-    else:
-        out += [True, int(biggestOrange.cx()), int(biggestOrange.cy())]
 
     out += [0xE]
 

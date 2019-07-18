@@ -171,10 +171,10 @@ void orbit(robot_state_t *robotState){
         robotState->outSpeed = lerp((float)ORBIT_SPEED_SLOW, (float)ORBIT_SPEED_FAST, (1.0 - (float)fabsf(angleAddition) / 90.0)); // Linear interpolation for speed
         // printf("tempStrength: %f\n", tempStrength);
     } else {
-        float tempStrength = lerp(fabsf((tempAngle) - 90.0f), 1.5, 1) * robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
+        // float tempStrength = lerp(fabsf((tempAngle) - 90.0f), 1.5, 1) * robotState->inBallStrength; // Stupid multiplier thing to incrase the strength on the sides cos it's too low
         
         float ballAngleDifference = ((sign(tempAngle)) * fminf(90, 0.5 * powf(E, 0.8 * (float)smallestAngleBetween(tempAngle, 0)))); // Exponential function for how much extra is added to the ball angle
-        float strengthFactor = constrain(((float)tempStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
+        float strengthFactor = constrain(((float)robotState->inBallStrength - (float)BALL_FAR_STRENGTH) / ((float)BALL_CLOSE_STRENGTH - BALL_FAR_STRENGTH), 0, 1); // Scale strength between 0 and 1
         float distanceMultiplier = constrain(0.1 * strengthFactor * powf(E, 4 * strengthFactor), 0, 1); // Use that to make another exponential function based on strength
         float angleAddition = ballAngleDifference * distanceMultiplier; // Multiply them together (distance multiplier will affect the angle difference)
 
@@ -297,7 +297,7 @@ void update_line(robot_state_t *robotState) {
             robotState->outSpeed = constrain(robotState->outSpeed, 20.0f, 100.0f);
             robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
             // printf("Case 5\n");
-        }
+        // }
     }
 }
 

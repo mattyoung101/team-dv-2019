@@ -84,21 +84,21 @@ void defines_init(uint8_t robotId){
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_DEFEND;
-        CAM_OFFSET_X = 56;
-        CAM_OFFSET_Y = 43;
+        CAM_OFFSET_X = 116;
+        CAM_OFFSET_Y = 100;
         TSOP_CORRECTION = -10;
         DEFEND_DISTANCE = 24; // 24
         SURGE_DISTANCE = 35; // 35
         SURGE_STRENGTH = 140;
         BALL_FAR_STRENGTH = 60;
-        BALL_CLOSE_STRENGTH = 115;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 50;
+        BALL_CLOSE_STRENGTH = 30;
+        ORBIT_SPEED_SLOW = 35;
+        ORBIT_SPEED_FAST = 60;
         ORBIT_CONST = 0.2;
-        DRIBBLE_BALL_TOO_FAR = 105;
+        DRIBBLE_BALL_TOO_FAR = 0;
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 5;
-        IN_FRONT_MAX_ANGLE = 355;
+        IN_FRONT_MIN_ANGLE = 10;
+        IN_FRONT_MAX_ANGLE = 350;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

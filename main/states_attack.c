@@ -61,7 +61,7 @@ void state_attack_idle_update(state_machine_t *fsm){
     // rs.outSpeed = 0.0f;
 
     // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
-    if (rs.inBallStrength > 0.0f) {
+    if (!goalYellow.exists) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
     } else if (!rs.inOtherGoalVisible) {
@@ -96,7 +96,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
 
     // Check criteria:
     // Ball not visible (brake) and ball too close (switch to orbit)
-    if (rs.inBallStrength <= 0.0f){
+    if (!goalYellow.exists){
         LOG_ONCE(TAG, "Ball is not visible, braking");
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
@@ -123,7 +123,7 @@ void state_attack_orbit_update(state_machine_t *fsm){
     RS_SEM_UNLOCK
     // if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
     // else imu_correction(&robotState);
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     timer_check();
 
     if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){
@@ -157,7 +157,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = false; // we're trying to shoot so piss off
     RS_SEM_UNLOCK
-    goal_correction(&robotState);
+    imu_correction(&robotState);
     timer_check();
 
     // printfln("Strength: %f", rs.inBallStrength);
@@ -167,7 +167,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     if (rs.inBallStrength >= 180.0f && canShoot){
         LOG_ONCE(TAG, "Ball close enough and shoot permitted, shooting, strength: %f", rs.inBallStrength);
         FSM_CHANGE_STATE_GENERAL(Shoot);
-    } else if (robotState.inBallStrength <= 0.0f){
+    } else if (!goalYellow.exists){
         LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallStrength);
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
