@@ -111,7 +111,7 @@ while True:
     begin = utime.time()
     clock.tick()
     img = sensor.snapshot()
-    blobs = img.find_blobs(thresholds, x_stride=3, y_stride=3, pixels_threshold=15,
+    blobs = img.find_blobs(thresholds, x_stride=10, y_stride=10, pixels_threshold=15,
             area_threshold=15, merge=True, margin=2)
     biggestYellow = scanBlobs(blobs, YELLOW)
     biggestBlue = scanBlobs(blobs, BLUE)

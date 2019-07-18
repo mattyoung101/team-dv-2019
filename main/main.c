@@ -120,8 +120,8 @@ static void master_task(void *pvParameter){
                 robotState.outSwitchOk = false;
 
                 // update FSM values
-                robotState.inBallAngle = floatMod(lastSensorUpdate.tsopAngle + TSOP_CORRECTION, 360.0f);
-                robotState.inBallStrength = lastSensorUpdate.tsopStrength;
+                robotState.inBallAngle = orangeBall.angle;
+                robotState.inBallStrength = orangeBall.length;
                 // TODO make goal stuff floats as well
                 if (robotState.outIsAttack){
                     robotState.inGoalVisible = AWAY_GOAL.exists;
@@ -241,11 +241,11 @@ static void slave_task(void *pvParameter){
     esp_task_wdt_add(NULL);
     
     while (true) {
-        // update TSOPs
-        for (int i = 0; i < TSOP_TARGET_READS; i++){
-            tsop_update(NULL);
-        }
-        tsop_calc();
+        // // update TSOPs
+        // for (int i = 0; i < TSOP_TARGET_READS; i++){
+        //     tsop_update(NULL);
+        // }
+        // tsop_calc();
 
         // setup protobuf byte stream, variables will be disposed of after loop ends
         memset(pbBuf, 0, PROTOBUF_SIZE);
