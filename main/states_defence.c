@@ -54,14 +54,14 @@ void state_defence_idle_update(state_machine_t *fsm){
     accelProgress = 0;
 
     rs.outIsAttack = false;
-    imu_correction(&robotState);
+    goal_correction(&robotState);
 
     if (!rs.inGoalVisible){
         LOG_ONCE(TAG, "Goal not visible, switching to reverse");
         // LOG_ONCE(TAG, "Cancelling state change to reverse"); // TODO change when we get LRFs
         FSM_CHANGE_STATE_DEFENCE(Reverse);
-    } else if (rs.inBallStrength >= DEFEND_MIN_STRENGTH){
-        LOG_ONCE(TAG, "Ball is close enough, switching to defend");
+    } else if (orangeBall.exists){
+        LOG_ONCE(TAG, "Ball visible, switching to defend");
         FSM_CHANGE_STATE_DEFENCE(Defend);
     }
 
@@ -92,11 +92,11 @@ static void can_kick_callback(TimerHandle_t timer){
     if (!rs.inGoalVisible){
         LOG_ONCE(TAG, "Goal not visible, switching to reverse"); // NOTE: should reverse using LRFs but we dono't have those yet
         FSM_CHANGE_STATE_DEFENCE(Reverse);
-    } else if (rs.inBallStrength <= 0.01f){
-        LOG_ONCE(TAG, "Ball too far away, switching to Idle");
+    } else if (!orangeBall.exists){
+        LOG_ONCE(TAG, "Ball not visible, switching to Idle");
         FSM_CHANGE_STATE_DEFENCE(Idle);
     } else if (is_angle_between(rs.inBallAngle, SURGEON_ANGLE_MIN, SURGEON_ANGLE_MAX) 
-                && rs.inBallStrength >= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
+                && rs.inBallStrength <= SURGE_STRENGTH && rs.inGoalLength < SURGE_DISTANCE){
         LOG_ONCE(TAG, "Switching to surge, angle: %f, strength: %f, goal length: %d",
                 robotState.inBallAngle, robotState.inBallStrength, rs.inGoalLength);
         FSM_CHANGE_STATE_DEFENCE(Surge);
