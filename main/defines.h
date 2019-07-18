@@ -258,15 +258,15 @@ extern float ORBIT_CONST;
 extern uint16_t DRIBBLE_BALL_TOO_FAR; // if less than this, switch out of dribble
 extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more than this
 extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
-extern uint16_t  IN_FRONT_MAX_ANGLE;
-#define IN_FRONT_ANGLE_BUFFER 40
-#define IN_FRONT_STRENGTH_BUFFER 30
+extern uint16_t IN_FRONT_MAX_ANGLE;
+#define IN_FRONT_ANGLE_BUFFER 20
+#define IN_FRONT_STRENGTH_BUFFER 0
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 50 // speed at which robot dribbles the ball, out of 100
-#define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
+#define DRIBBLE_SPEED 100 // speed at which robot dribbles the ball, out of 100
+#define ACCEL_PROG 0.001 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
 #define GOAL_SHOOT_DIST 40 // if we are within this distance, shoot

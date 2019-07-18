@@ -52,21 +52,21 @@ void defines_init(uint8_t robotId){
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = false;
         ROBOT_MODE = MODE_ATTACK;
-        CAM_OFFSET_X = 56;
-        CAM_OFFSET_Y = 56;
+        CAM_OFFSET_X = 120;
+        CAM_OFFSET_Y = 115;
         TSOP_CORRECTION = 0; // -15 on spare PCB
         DEFEND_DISTANCE = 30;
         SURGE_DISTANCE = 35;
         SURGE_STRENGTH = 100;
         BALL_FAR_STRENGTH = 10;
         BALL_CLOSE_STRENGTH = 100;
-        ORBIT_SPEED_SLOW = 20;
-        ORBIT_SPEED_FAST = 25;
+        ORBIT_SPEED_SLOW = 30;
+        ORBIT_SPEED_FAST = 30;
         ORBIT_CONST = 0.6;
         DRIBBLE_BALL_TOO_FAR = 90;
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 7;
-        IN_FRONT_MAX_ANGLE = 360;
+        IN_FRONT_MIN_ANGLE = 10;
+        IN_FRONT_MAX_ANGLE = 350;
         
         // fuckin C bullshit workaround to set values
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
@@ -84,21 +84,21 @@ void defines_init(uint8_t robotId){
         MOTOR_BL_REVERSED = false;
         MOTOR_BR_REVERSED = true;
         ROBOT_MODE = MODE_DEFEND;
-        CAM_OFFSET_X = 116;
-        CAM_OFFSET_Y = 116;
+        CAM_OFFSET_X = 120;
+        CAM_OFFSET_Y = 105;
         TSOP_CORRECTION = -10;
         DEFEND_DISTANCE = 24; // 24
         SURGE_DISTANCE = 35; // 35
         SURGE_STRENGTH = 140;
-        BALL_FAR_STRENGTH = 60;
-        BALL_CLOSE_STRENGTH = 30;
-        ORBIT_SPEED_SLOW = 30;
-        ORBIT_SPEED_FAST = 50;
+        BALL_FAR_STRENGTH = 80;
+        BALL_CLOSE_STRENGTH = 50;
+        ORBIT_SPEED_SLOW = 20;
+        ORBIT_SPEED_FAST = 30;
         ORBIT_CONST = 0.2;
         DRIBBLE_BALL_TOO_FAR = 0;
         ORBIT_DIST = 0;
-        IN_FRONT_MIN_ANGLE = 20;
-        IN_FRONT_MAX_ANGLE = 340;
+        IN_FRONT_MIN_ANGLE = 10;
+        IN_FRONT_MAX_ANGLE = 350;
         
         memcpy(TSOP_TUNING, values, TSOP_NUM * sizeof(float));
     }

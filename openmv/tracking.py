@@ -6,10 +6,12 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(0, 0, 0, 0, 0, 0), # yellow
-              (0, 0, 0, 0, 0, 0), # blue
-              (52, 81, 18, 74, 18, 66)] # orange
+thresholds = [(51, 71, 22, 72, -12, 48), # orange
+              (0, 0, 0, 0, 0, 0), # yellow
+              (0, 0, 0, 0, 0, 0)] # blue
 
+# Robot A (64, 73, 25, 48, 4, 48)
+# Robot B (53, 77, 17, 65, 12, 29)
 
 # Deus Orange (38, 81, 18, 74, 18, 65)
 # Apex Orange (46, 84, 24, 94, -2, 84)
@@ -54,7 +56,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((36, 0, 112, 112)) # Robot 0
+#sensor.set_windowing((65, 5, 235, 235)) # Robot 0
 sensor.set_windowing((70, 0, 235, 235)) # Robot 1
 
 # === GAIN ===
@@ -63,7 +65,7 @@ sensor.set_auto_gain(False, gain_db=curr_gain)
 
 # === EXPOSURE ===
 curr_exposure = sensor.get_exposure_us()
-sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
+sensor.set_auto_exposure(False, exposure_us = 12000)
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
