@@ -61,7 +61,7 @@ void state_attack_idle_update(state_machine_t *fsm){
     // rs.outSpeed = 0.0f;
 
     // Check criteria: ball must not be visible, goal must be visible (this is the root state so don't revert)
-    if (!goalYellow.exists) {
+    if (!orangeBall.exists) {
         LOG_ONCE(TAG, "Ball is visible, reverting");
         FSM_REVERT;
     } else if (!rs.inOtherGoalVisible) {
@@ -96,7 +96,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
 
     // Check criteria:
     // Ball not visible (brake) and ball too close (switch to orbit)
-    if (!goalYellow.exists){
+    if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball is not visible, braking");
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
@@ -167,7 +167,7 @@ void state_attack_dribble_update(state_machine_t *fsm){
     if (rs.inBallStrength >= 180.0f && canShoot){
         LOG_ONCE(TAG, "Ball close enough and shoot permitted, shooting, strength: %f", rs.inBallStrength);
         FSM_CHANGE_STATE_GENERAL(Shoot);
-    } else if (!goalYellow.exists){
+    } else if (!orangeBall.exists){
         LOG_ONCE(TAG, "Ball not visible, braking, strength: %f", robotState.inBallStrength);
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
