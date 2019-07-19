@@ -92,7 +92,7 @@ static void master_task(void *pvParameter){
     #endif
 
     // Initialise FSM, start out in defence until we get a BT connection
-    #ifdef BLUETOOTH_ENABLED
+    #if DEFENCE
     stateMachine = fsm_new(&stateDefenceDefend);
     #else
     stateMachine = fsm_new(&stateAttackPursue);
@@ -100,7 +100,7 @@ static void master_task(void *pvParameter){
 
     // Wait for the slave to calibrate IMU and send over the first packets
     ESP_LOGI(TAG, "Waiting for slave IMU calibration to complete...");
-    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 500));
+    vTaskDelay(pdMS_TO_TICKS(IMU_CALIBRATION_COUNT * IMU_CALIBRATION_TIME + 1000));
     ESP_LOGI(TAG, "Running!");
 
     esp_task_wdt_add(NULL);
@@ -123,27 +123,27 @@ static void master_task(void *pvParameter){
                 robotState.inBallAngle = orangeBall.angle;
                 robotState.inBallStrength = orangeBall.length;
                 // TODO make goal stuff floats as well
-                // if (robotState.outIsAttack){
-                //     robotState.inGoalVisible = AWAY_GOAL.exists;
-                //     robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
-                //     robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
-                //     robotState.inGoalDistance = AWAY_GOAL.distance;
+                if (robotState.outIsAttack){
+                    robotState.inGoalVisible = AWAY_GOAL.exists;
+                    robotState.inGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoalLength = (int16_t) AWAY_GOAL.length;
+                    robotState.inGoalDistance = AWAY_GOAL.distance;
 
-                //     robotState.inOtherGoalVisible = HOME_GOAL.exists;
-                //     robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
-                //     robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
-                //     robotState.inOtherGoalDistance = HOME_GOAL.distance;
-                // } else {
-                //     robotState.inOtherGoalVisible = AWAY_GOAL.exists;
-                //     robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
-                //     robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
-                //     robotState.inOtherGoalDistance = AWAY_GOAL.distance;
+                    robotState.inOtherGoalVisible = HOME_GOAL.exists;
+                    robotState.inOtherGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inOtherGoalLength = (int16_t) HOME_GOAL.length;
+                    robotState.inOtherGoalDistance = HOME_GOAL.distance;
+                } else {
+                    robotState.inOtherGoalVisible = AWAY_GOAL.exists;
+                    robotState.inOtherGoalAngle = AWAY_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inOtherGoalLength = (int16_t) AWAY_GOAL.length;
+                    robotState.inOtherGoalDistance = AWAY_GOAL.distance;
 
-                //     robotState.inGoalVisible = HOME_GOAL.exists;
-                //     robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
-                //     robotState.inGoalLength = (int16_t) HOME_GOAL.length;
-                //     robotState.inGoalDistance = HOME_GOAL.distance;
-                // }
+                    robotState.inGoalVisible = HOME_GOAL.exists;
+                    robotState.inGoalAngle = HOME_GOAL.angle + CAM_ANGLE_OFFSET;
+                    robotState.inGoalLength = (int16_t) HOME_GOAL.length;
+                    robotState.inGoalDistance = HOME_GOAL.distance;
+                }
                 robotState.inHeading = lastSensorUpdate.heading;
                 // robotState.inX = robotX;
                 // robotState.inY = robotY;
@@ -169,7 +169,7 @@ static void master_task(void *pvParameter){
         // imu_correction(&robotState);
 
         // line over runs after the FSM to override it
-        // update_line(&robotState);
+        update_line(&robotState);
 
         // print_ball_data(&robotState);
         // print_goal_data(&robotState);

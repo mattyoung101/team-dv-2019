@@ -6,23 +6,16 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(100, 100, 100, 100, 100, 100), # yellow
-             (40, 45, -15, 6, -43, -5), # blue
-             (54, 77, 28, 80, 1, 127)] # orange
+thresholds = [(53, 66, 1, 25, 3, 42), # yellow
+             (31, 39, -8, 21, -59, -22), # blue
+             (35, 62, 42, 73, -1, 71)] # orange
 
-# Normal
-# Blue (31, 50, -13, 24, -70, -21)
-# Yellow (50, 89, -9, 34, 26, 74)
+# Robot A
+# Yellow (53, 66, 1, 25, 3, 42)
 
-# Field 6
-# Blue (30, 43, -13, 14, -46, -10)
-
-# Field 10
-# Blue (27, 45, -8, 17, -61, -12)
-# Yellow (60, 94, -3, 43, 38, 97)
-
-# Field 12
-# Blue (28, 38, -17, 10, -48, -8)
+# Robot B
+# Yellow (53, 73, -5, 35, 15, 41)
+# Blue (31, 39, -8, 21, -59, -22)
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -50,8 +43,8 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-#sensor.set_windowing((36, 0, 112, 112)) # Robot 0
-sensor.set_windowing((70, 0, 235, 235)) # Robot 1
+sensor.set_windowing((80, 0, 220, 220)) # Robot A
+#sensor.set_windowing((45, 0, 220, 220)) # Robot B
 
 # === GAIN ===
 curr_gain = sensor.get_gain_db()
@@ -63,7 +56,7 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-6.02073, -5.494869, -1.43545e-05)))
+rgb_gain_db=((-5.623446, -6.02073, 0.9007286)))
 
 # Standard
 sensor.set_brightness(0)
@@ -119,7 +112,10 @@ while True:
     print(thresholds[-1])
     orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=3, y_stride=3, pixels_threshold=15,
                     area_threshold=15, merge=True, margin=2)
-    biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
+    try:
+        biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
+    except Exception:
+        biggestOrange = None
 
     # Debug drawing
     if biggestYellow != None and debug:
