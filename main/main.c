@@ -30,6 +30,7 @@
 #include "pb_decode.h"
 #include "i2c.pb.h"
 #include "lrf.h"
+#include "driver/spi_master.h"
 
 #if ENEMY_GOAL == GOAL_YELLOW
     #define AWAY_GOAL goalYellow
@@ -300,28 +301,28 @@ static void slave_task(void *pvParameter){
 }
 
 void motor_test_task(void *pvParameter){
-    static const char *TAG = "MotorTestTask";
+    static const char *TAG = "TestTask";
 
-    motor_init();
-    ESP_ERROR_CHECK(gpio_set_direction(KICKER_PIN, GPIO_MODE_OUTPUT));
-    ESP_LOGI(TAG, "Motor test init OK");
+    spi_bus_config_t conf = {
+        .mosi_io_num = -1,
+        .miso_io_num = -1,
+        .sclk_io_num = -1,
+    };
+    ESP_ERROR_CHECK(spi_bus_initialize(HSPI_HOST, &conf, 1));
+
+    spi_device_handle_t *teensyHandle = NULL;
+    spi_device_interface_config_t teensyConf = {0};
+    ESP_ERROR_CHECK(spi_bus_add_device(HSPI_HOST, &teensyConf, teensyHandle));
 
     while (true){
-        ESP_LOGI(TAG, "Going forward");
-        motor_calc(0, 0, 75.0f);
-        motor_move(false);
-        vTaskDelay(pdMS_TO_TICKS(1000));
-        
-        ESP_LOGI(TAG, "Going backwards");
-        motor_calc(180, 0, 75.0f);
-        motor_move(false);
-        vTaskDelay(pdMS_TO_TICKS(2500));
+        uint8_t data[] = {42, 33, 100, 22, 100};
+        spi_transaction_t trans = {0};
+        trans.length = 5 * 8;
+        trans.tx_buffer = data;
+        ESP_ERROR_CHECK(spi_device_transmit(teensyHandle, &trans));
+        ESP_LOGI(TAG, "Transmission completed");
 
-        // ESP_LOGI(TAG, "Kicking");
-        // ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 1));
-        // vTaskDelay(pdMS_TO_TICKS(KICKER_DELAY));
-        // ESP_ERROR_CHECK(gpio_set_level(KICKER_PIN, 0));
-        // vTaskDelay(pdMS_TO_TICKS(SHOOT_TIMEOUT));
+        vTaskDelay(pdMS_TO_TICKS(100));
     }
 }
 
