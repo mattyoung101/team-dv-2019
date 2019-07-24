@@ -1,6 +1,9 @@
 Team Deus Vult (ESP32 IDF)
 ====================
 
+## Notice
+> **As the 2019 RoboCup Junior Internationals in Sydney were completed some time ago, this repo is now defunct. Team Deus Vult has been renamed to Team Omicron, and our new repo lives [here](https://github.com/mattyoung101/omicron-2019).**
+
 This repository contains the code powering Team Deus Vult's 2019 robot, competing in RoboCup Jr Soccer. It is written almost entirely in C, without some Python scripts for code generation and debugging.
 
 For more information on our robot, please see our team's PowerPoint and poster.
@@ -31,7 +34,7 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
 ## License
 This code is currently proprietary and confidential to Brisbane Boys' College and Team Deus Vult. No redistribution or use outside BBC teams is permitted. 
 
-_At some point, the code may be re-licensed under the BSD 4-Clause or MPL._
+_In the near future, this code will be open-sourced under a BSD license._
 
 ## Libraries and licenses
 - ESP-IDF: Apache 2
