@@ -277,24 +277,24 @@ void nvs_get_u8_graceful(char *namespace, char *key, uint8_t *value){
 void update_line(robot_state_t *robotState) {
     if (robotState->inOnLine || robotState->inLineOver){
         // imu_correction(robotState);
-        if (robotState->inGoalVisible){
+        if (robotState->inOtherGoalVisible){
             if (robotState->inGoalLength <= robotState->inOtherGoalLength){
-                positionFast(robotState, 40.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
+                positionFast(robotState, 90.0f, 0.0f, robotState->inGoalAngle, robotState->inGoalLength, robotState->outIsAttack == false);
                 // printf("Case 1\n");
             } else {
-                positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                positionFast(robotState, 90.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
                 // printf("Case 2\n");
             }
         } else if (robotState->inOtherGoalVisible){
             // if (robotState->inGoalLength <= 35.0f){
-                positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
+                positionFast(robotState, 90.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
                 // printf("Case 3\n");
             // } else {
             //     positionFast(robotState, 40.0f, 0.0f, robotState->inOtherGoalAngle, robotState->inOtherGoalLength, robotState->outIsAttack == true);
             //     // printf("Case 4\n");
             // }
         } else {
-            robotState->outSpeed = constrain(robotState->outSpeed, 20.0f, 100.0f);
+            robotState->outSpeed = constrain(robotState->outSpeed, 50.0f, 100.0f);
             robotState->outDirection = fmodf(robotState->inLastAngle + 180.0f, 360.0f);
             // printf("Case 5\n");
         }

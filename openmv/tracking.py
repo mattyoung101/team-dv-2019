@@ -6,16 +6,19 @@ import ucollections
 # Serial out format:
 # [0xB, bfound, bx, by, yfound, yx, yy, 0xE] (6 bytes not including 0xB and 0xE)
 
-thresholds = [(53, 66, 1, 25, 3, 42), # yellow
-             (31, 39, -8, 21, -59, -22), # blue
-             (35, 62, 42, 73, -1, 71)] # orange
+thresholds = [(43, 70, -14, 35, 10, 59), # yellow
+             (28, 60, -24, 11, -41, -15), # blue
+             (35, 76, 23, 104, -6, 73)] # orange
 
 # Robot A
-# Yellow (53, 66, 1, 25, 3, 42)
+# Yellow (58, 73, -2, 31, 8, 54)
+# Blue (34, 58, -14, 1, -43, -25)
+# Orange (53, 79, 29, 64, 9, 28)
 
 # Robot B
 # Yellow (53, 73, -5, 35, 15, 41)
 # Blue (31, 39, -8, 21, -59, -22)
+# Orange (56, 67, 10, 74, 11, 61)
 
 # this comes from the output of blob.code()
 # you're meant to compare them using binary (see docs) but... yeah nah
@@ -43,7 +46,7 @@ sensor.set_auto_exposure(False)
 sensor.set_auto_whitebal(False)
 # Need to let the above settings get in...
 sensor.skip_frames(time=500)
-sensor.set_windowing((80, 0, 220, 220)) # Robot A
+sensor.set_windowing((80, 9, 220, 220)) # Robot A
 #sensor.set_windowing((45, 0, 220, 220)) # Robot B
 
 # === GAIN ===
@@ -56,10 +59,10 @@ sensor.set_auto_exposure(False, exposure_us = int(curr_exposure))
 
 # === WHITE BAL ===
 sensor.set_auto_whitebal(False,
-rgb_gain_db=((-5.623446, -6.02073, 0.9007286)))
+rgb_gain_db=((-6.02073, -6.02073, 0.652583)))
 
 # Standard
-sensor.set_brightness(0)
+sensor.set_brightness(-2)
 sensor.set_contrast(0)
 sensor.set_saturation(0)
 
@@ -111,7 +114,7 @@ while True:
 
     print(thresholds[-1])
     orangeBlobs = img.find_blobs([thresholds[-1]], x_stride=3, y_stride=3, pixels_threshold=15,
-                    area_threshold=15, merge=True, margin=2)
+                    area_threshold=15)
     try:
         biggestOrange = sorted(orangeBlobs, key=lambda l: l.area(), reverse=True)[0]
     except Exception:

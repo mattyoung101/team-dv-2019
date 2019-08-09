@@ -100,7 +100,7 @@ void state_attack_pursue_update(state_machine_t *fsm){
         LOG_ONCE(TAG, "Ball is not visible, braking");
         dv_timer_start(&idleTimer);
         FSM_MOTOR_BRAKE;
-    } else if (rs.inBallStrength >= ORBIT_DIST){
+    } else if (orangeBall.exists){
         LOG_ONCE(TAG, "Ball close enough, switching to orbit, strength: %f, orbit dist thresh: %d", rs.inBallStrength,
         ORBIT_DIST);
         FSM_CHANGE_STATE(Orbit);
@@ -121,9 +121,9 @@ void state_attack_orbit_update(state_machine_t *fsm){
     rs.outIsAttack = true;
     rs.outSwitchOk = true;
     RS_SEM_UNLOCK
-    // if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
-    // else imu_correction(&robotState);
-    goal_correction(&robotState);
+    if(is_angle_between(rs.inBallAngle, 60, 300)) goal_correction(&robotState);
+    else imu_correction(&robotState);
+    // imu_correction(&robotState);
     timer_check();
 
     if (rs.inBallStrength >= DRIBBLE_BALL_TOO_FAR && is_angle_between(rs.inBallAngle, IN_FRONT_MIN_ANGLE, IN_FRONT_MAX_ANGLE)){

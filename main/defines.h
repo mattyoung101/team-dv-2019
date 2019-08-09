@@ -24,7 +24,7 @@
 // #define BLUETOOTH_ENABLED
 // #define BT_SWITCHING_ENABLED // if Bluetooth role switching is enabled or not (defender damage switch always runs)
 #define BT_CONF_RES_MODE BT_CONF_RES_STATIC
-#define DEFENCE false
+#define DEFENCE true
 
 // I2C
 #define I2C_ESP_SLAVE_ADDR 0x23
@@ -45,7 +45,7 @@
 #define IDLE_MIN_SPEED 0 // The lowest speed for which the robot will move while positioning
 #define GOAL_TOO_CLOSE 30
 #define GOAL_WIDTH 40
-#define ENEMY_GOAL GOAL_YELLOW
+#define ENEMY_GOAL GOAL_BLUE
 
 // Protobuf
 #define PROTOBUF_SIZE 64 // size of protobuf input/output buffer, make it a safe size to avoid buffer overflows
@@ -82,15 +82,15 @@
 #define FORWARD_KD 0
 #define FORWARD_MAX 100
 
-#define SIDE_KP 1
+#define SIDE_KP 2
 #define SIDE_KI 0
 #define SIDE_KD 0
 #define SIDE_MAX 100
 
 #define INTERCEPT_KP 2
 #define INTERCEPT_KI 0
-#define INTERCEPT_KD 0
-#define INTERCEPT_MAX 60
+#define INTERCEPT_KD 0.01
+#define INTERCEPT_MAX 50
 #define INTERCEPT_MIN 0
 
 #define GOALIE_KP 1.5
@@ -261,12 +261,12 @@ extern uint16_t ORBIT_DIST;  // switch from orbit to pursue if value is more tha
 extern uint16_t IN_FRONT_MIN_ANGLE; // angle range in which the ball is considered to be in front of the robot
 extern uint16_t  IN_FRONT_MAX_ANGLE;
 #define IN_FRONT_ANGLE_BUFFER 40
-#define IN_FRONT_STRENGTH_BUFFER 30
+#define IN_FRONT_STRENGTH_BUFFER 0
 #define IDLE_TIMEOUT 3000 // if ball is not visible for this length of time in ms or more, switch to idle state
 #define IDLE_DISTANCE 40
 #define IDLE_OFFSET 0
 #define DRIBBLE_TIMEOUT 100 // ms, if robot sees ball in this position for this time it will switch to dribble state
-#define DRIBBLE_SPEED 80 // speed at which robot dribbles the ball, out of 100
+#define DRIBBLE_SPEED 70 // speed at which robot dribbles the ball, out of 100
 #define ACCEL_PROG 0.01 // update the acceleration interpolation by this amount per tick, 1 tick is about 10ms, so 0.01 will accelerate completely in 1 second
 #define GOAL_MIN_ANGLE 30
 #define GOAL_MAX_ANGLE 330
