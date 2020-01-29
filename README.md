@@ -1,14 +1,31 @@
-Team Deus Vult (ESP32 IDF)
+Team Deus Vult (2019)
 ====================
 
-## Notice
-> **As the 2019 RoboCup Junior Internationals in Sydney were completed some time ago, this repo is now defunct. Team Deus Vult has been renamed to Team Omicron, and our new repo lives [here](https://github.com/mattyoung101/omicron-2019).**
+Welcome to the repository for Team Deus Vult's code and designs, which powered our robot in the 2019 RoboCup Jr Internationals in Sydney, Australia. We competed in RoboCup Jr Lightweight at the time,
+and placed 11th in gameplay. However, we placed highly in SuperTeam and won the innovation prize for our Protocol Buffers technology.
 
+## Team members
+- Ethan Lo: electrical and mechanical designer, software engineer, hardware engineer, documentation
+- Matt Young: software engineer, documentation
+- Daniel Aziz: hardware engineer
+- Henry Hulbert: hardware engineer, electrical engineer
+- Taehwan Kim (uncredited at the time): documentation, hardware engineer
+
+## Post-mortem analysis of competition
+We failed for a variety of hardware and software issues. Our light sensor ring had a serious hardware fault related to multiplexers which has since been fixed. The IMU we used at the time, the MPU9250 was very susceptible to drift and has been replaced with a BNO055. Our ESP32 slave had a very slow main loop, which we never diagnosed what the issue was but it did relate to TSSP reading. Our camera was extremely
+low resolution and suffered due to the lighting conditions at the venue, which is being replaced by an entirely custom SBC camera in 2020.
+
+## Disclaimers
+Please consider the following before working with this code:
+
+- This repository is very old and the code is now defunct. Our team has merged with another BBC team to form Team Omicron, and we are competing in the 2020 Bordeaux RoboCup Jr Open Soccer competition.
+- Our documentation website is no longer readily available. If you have any questions, please contact us directly. This isn't really under our control, so we apologise.
+- At this time, we do not have time to write proper installation instructions. Please lookup the ESP IDF v3.3 install instructions and treat this like a regular ESP-IDF project.
+- We apologise for our potentially distasteful team name at the time. This is no longer the case.
+- We also apologise for any offensive language in commits and code, but we feel like preserving the whole repository history is important.
+
+## Original description
 This repository contains the code powering Team Deus Vult's 2019 robot, competing in RoboCup Jr Soccer. It is written almost entirely in C, without some Python scripts for code generation and debugging.
-
-For more information on our robot, please see our team's PowerPoint and poster.
-
-Contact Matt Young (25070@bbc.qld.edu.au) for any questions, queries, qualms or concerns.
 
 ### Important notice about IDF version
 Due to the fact that we sync the file `sdkconfig`, it's important that you use the exact same IDF version that we do, to avoid merge conflicts.
@@ -32,9 +49,7 @@ Please visit [the docs](https://docs.espressif.com/projects/esp-idf/en/latest/ve
     - midis: contains MIDI files to be converted and played on the robot
 
 ## License
-This code is currently proprietary and confidential to Brisbane Boys' College and Team Deus Vult. No redistribution or use outside BBC teams is permitted. 
-
-_In the near future, this code will be open-sourced under a BSD license._
+Everything in the repository written by us is available under the Mozilla Public Licenses 2.0. Please see LICENSE.txt.
 
 ## Libraries and licenses
 - ESP-IDF: Apache 2
