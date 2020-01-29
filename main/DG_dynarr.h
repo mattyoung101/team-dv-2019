@@ -1,70 +1,9 @@
 /*
- * A header-only typesafe dynamic array implementation for plain C,
- * kinda like C++ std::vector. This code is compatible with C++, but should
- * only be used with POD (plain old data) types, as it uses memcpy() etc
- * instead of copy/move construction/assignment.
- * It requires a new type (created with the DA_TYPEDEF(ELEMENT_TYPE, ARRAY_TYPE_NAME)
- * macro) for each kind of element you want to put in a dynamic array; however
- * the "functions" to manipulate the array are actually macros and the same
- * for all element types.
- * The array elements are accessed via dynArr.p[i] or da_get(dynArr, i)
- * - the latter checks whether i is a valid index and asserts if not.
+ * Copyright (c) 2019 Team Deus Vult (Ethan Lo, Matt Young, Henry Hulbert, Daniel Aziz, Taehwan Kim). 
  *
- * One thing to keep in mind is that, because of using macros, the arguments to
- * the "functions" are usually evaluated more than once, so you should avoid
- * putting things with side effect (like function-calls with side effects or i++)
- * into them. Notable exceptions are the value arguments (v) of da_push()
- * and da_insert(), so it's still ok to do da_push(arr, fun_with_sideffects());
- * or da_insert(a, 3, x++);
- *
- * The function-like da_* macros are short aliases of dg_dynarr_* macros.
- * If the short names clash with anything in your code or other headers
- * you are using, you can, before #including this header, do
- *  #define DG_DYNARR_NO_SHORTNAMES
- * and use the long dg_dynarr_* forms of the macros instead.
- *
- * Using this library in your project:
- *   Put this file somewhere in your project.
- *   In *one* of your .c/.cpp files, do
- *     #define DG_DYNARR_IMPLEMENTATION
- *     #include "DG_dynarr.h"
- *   to create the implementation of this library in that file.
- *   You can just #include "DG_dynarr.h" (without the #define) in other source
- *   files to use it there.
- *
- * See below this comment block for a usage example.
- *
- * You can #define your own allocators, assertion and the amount of runtime
- * checking of indexes, see CONFIGURATION section in the code for more information.
- *
- * 
- * This is heavily inspired by Sean Barrett's stretchy_buffer.h
- * ( see: https://github.com/nothings/stb/blob/master/stretchy_buffer.h )
- * However I wanted to have a struct that holds the array pointer and the length
- * and capacity, so that struct always remains at the same address while the
- * array memory might be reallocated.
- * I can live with arr.p[i] instead of arr[i], but I like how he managed to use
- * macros to create an API that doesn't force the user to specify the stored
- * type over and over again, so I stole some of his tricks :-)
- *
- * This has been tested with GCC 4.8 and clang 3.8 (-std=gnu89, -std=c99 and as C++;
- * -std=c89 works if you convert the C++-style comments to C comments) and
- * Microsoft Visual Studio 6 and 2010 (32bit) and 2013 (32bit and 64bit).
- * I guess it works with all (recentish) C++ compilers and C compilers supporting
- * C99 or even C89 + C++ comments (otherwise converting the comments should help).
- * 
- * (C) 2016 Daniel Gibson
- *
- * LICENSE
- *   This software is dual-licensed to the public domain and under the following
- *   license: you are granted a perpetual, irrevocable license to copy, modify,
- *   publish, and distribute this file as you see fit.
- *   No warranty implied; use at your own risk.
- *
- * So you can do whatever you want with this code, including copying it
- * (or parts of it) into your own source.
- * No need to mention me or this "license" in your code or docs, even though
- * it would be appreciated, of course.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 #if 0 // Usage Example:
  #define DG_DYNARR_IMPLEMENTATION // this define is only needed in *one* .c/.cpp file!

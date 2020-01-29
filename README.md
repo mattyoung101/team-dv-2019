@@ -11,12 +11,13 @@ and placed 11th in gameplay. However, we placed highly in SuperTeam and won the 
 - Henry Hulbert: hardware engineer, electrical engineer
 - Taehwan Kim (uncredited at the time): documentation, hardware engineer
 
-## Post-mortem analysis of competition
-We failed for a variety of hardware and software issues. Our light sensor ring had a serious hardware fault related to multiplexers which has since been fixed. The IMU we used at the time, the MPU9250 was very susceptible to drift and has been replaced with a BNO055. Our ESP32 slave had a very slow main loop, which we never diagnosed what the issue was but it did relate to TSSP reading. Our camera was extremely
-low resolution and suffered due to the lighting conditions at the venue, which is being replaced by an entirely custom SBC camera in 2020.
+### Contacting us
+If you have any questions about our code or designs, don't hesitate to get in touch. Although this is an old project, we're always happy to answer any questions we may get.
+
+Since Daniel, Henry and Taehwan have all graduated, it may be difficult to get in touch with them directly. Feel free to contact [Matt](matt.young.1@outlook.com) or [Ethan](ethanlo2010@gmail.com), and we can forward you to the right person if need be.
 
 ## Disclaimers
-Please consider the following before working with this code:
+Please take into account the following before using our code:
 
 - This repository is very old and the code is now defunct. Our team has merged with another BBC team to form Team Omicron, and we are competing in the 2020 Bordeaux RoboCup Jr Open Soccer competition.
 - Our documentation website is no longer readily available. If you have any questions, please contact us directly. This isn't really under our control, so we apologise.
